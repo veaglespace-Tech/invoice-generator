@@ -12,7 +12,8 @@ import {
   LogOut,
   Hexagon,
   Menu,
-  X
+  X,
+  ChevronLeft
 } from 'lucide-react';
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpenMobile, setIsOpenMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
@@ -52,13 +54,26 @@ export function Sidebar() {
 
       {/* Sidebar Content */}
       <div 
-        className={`flex flex-col w-64 bg-slate-950 text-slate-300 border-r border-slate-800 h-screen transition-all duration-300 z-50 fixed md:relative top-0 left-0
+        className={`flex flex-col bg-slate-950 text-slate-300 border-r border-slate-800 h-screen transition-all duration-300 z-50 fixed md:relative top-0 left-0
+          ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64
           ${isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >
-        <div className="flex items-center justify-center h-20 border-b border-slate-800 pt-8 md:pt-0 bg-slate-950">
-          <Link href="/dashboard" className="flex items-center justify-center w-full h-full px-6 py-2 group">
-            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[64px] w-auto object-contain brightness-0 invert" />
+        {/* Toggle Button */}
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-8 bg-slate-800 text-slate-400 hover:text-white rounded-full p-1 border border-slate-700 shadow-lg z-10 hidden md:block"
+        >
+          <ChevronLeft className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
+        </button>
+
+        <div className="flex items-center justify-center h-20 border-b border-slate-800 pt-8 md:pt-0 bg-slate-950 overflow-hidden">
+          <Link href="/" className="flex items-center justify-center w-full h-full px-2 py-2 group">
+            {isCollapsed ? (
+              <img src="/logo.webp" alt="Veagle Space" className="h-[32px] w-auto object-contain" />
+            ) : (
+              <img src="/logo.webp" alt="Veagle Space Technology" className="h-[64px] w-auto object-contain" />
+            )}
           </Link>
         </div>
 
@@ -69,12 +84,15 @@ export function Sidebar() {
             <li key={item.name}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${
+                  isCollapsed ? 'justify-center px-0' : 'px-4'
+                } ${
                   isActive ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
                 }`}
+                title={isCollapsed ? item.name : undefined}
               >
                 <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
-                {item.name}
+                {!isCollapsed && <span className="whitespace-nowrap">{item.name}</span>}
               </Link>
             </li>
           );
@@ -86,10 +104,13 @@ export function Sidebar() {
           <li>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-colors duration-200 font-medium group w-full"
+              className={`flex items-center gap-3 py-3 text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-colors duration-200 font-medium group w-full ${
+                isCollapsed ? 'justify-center px-0' : 'px-4'
+              }`}
+              title={isCollapsed ? "Logout" : undefined}
             >
               <LogOut className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-red-400 transition-colors" />
-              Logout
+              {!isCollapsed && <span className="whitespace-nowrap">Logout</span>}
             </button>
           </li>
         </ul>

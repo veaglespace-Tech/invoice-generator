@@ -225,6 +225,11 @@ export default function InvoiceGenerator() {
   const subtotal = items.reduce((sum, item) => sum + (item.qty * item.rate), 0);
   const taxAmount = (subtotal - invoiceData.discount) * (invoiceData.taxRate / 100);
   const total = subtotal - invoiceData.discount + taxAmount;
+  
+  const isInterstate = (orgProfile?.state || '').trim().toLowerCase() !== (invoiceData.clientState || '').trim().toLowerCase();
+  const cgstAmount = isInterstate ? 0 : taxAmount / 2;
+  const sgstAmount = isInterstate ? 0 : taxAmount / 2;
+  const igstAmount = isInterstate ? taxAmount : 0;
 
   return (
     <>
@@ -379,7 +384,7 @@ export default function InvoiceGenerator() {
                           <input type="number" value={item.qty} onChange={e => updateItem(item.id, 'qty', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                         </div>
                         <div className="flex-1 flex items-center gap-2">
-                          <span className="text-xs text-slate-500">Rate</span>
+                          <span className="text-xs text-slate-500 whitespace-nowrap">Unit Price (₹)</span>
                           <input type="number" value={item.rate} onChange={e => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                         </div>
                       </div>
@@ -568,16 +573,16 @@ export default function InvoiceGenerator() {
                     <div className="w-1/2 p-1.5"></div>
                   </div>
                   <div className="flex">
-                    <div className="w-1/2 p-1 border-r border-black">CGST (9%)</div>
-                    <div className="w-1/2 p-1 text-right">0.00</div>
+                    <div className="w-1/2 p-1 border-r border-black">CGST ({invoiceData.taxRate / 2}%)</div>
+                    <div className="w-1/2 p-1 text-right">{cgstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
                   </div>
                   <div className="flex">
-                    <div className="w-1/2 p-1 border-r border-black">SGST (9%)</div>
-                    <div className="w-1/2 p-1 text-right">0.00</div>
+                    <div className="w-1/2 p-1 border-r border-black">SGST ({invoiceData.taxRate / 2}%)</div>
+                    <div className="w-1/2 p-1 text-right">{sgstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
                   </div>
                   <div className="flex">
                     <div className="w-1/2 p-1 border-r border-black">IGST ({invoiceData.taxRate}%)</div>
-                    <div className="w-1/2 p-1 text-right">{taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                    <div className="w-1/2 p-1 text-right">{igstAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
                   </div>
                   <div className="flex border-t border-black mt-auto">
                     <div className="w-1/2 p-1.5 border-r border-black">Total Tax Amount</div>

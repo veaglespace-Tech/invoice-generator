@@ -53,10 +53,10 @@ export function SuperAdminSidebar() {
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-slate-950 text-white border-b border-slate-800 w-full fixed top-0 left-0 z-40">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center flex-shrink-0 text-white font-bold shadow-lg shadow-red-600/20">
-            <ShieldAlert className="w-4 h-4" />
-          </div>
-          <span className="font-bold text-lg text-white whitespace-nowrap">Admin Portal</span>
+          <Link href="/" className="flex items-center h-10 px-2 group">
+            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] w-auto object-contain" />
+          </Link>
+          <span className="font-bold text-lg text-white whitespace-nowrap hidden sm:block">Admin Portal</span>
         </div>
         <button onClick={() => setIsOpenMobile(!isOpenMobile)} className="p-1">
           {isOpenMobile ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -90,10 +90,10 @@ export function SuperAdminSidebar() {
 
       {/* Header */}
       <div className="h-16 flex items-center px-4 border-b border-slate-800">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center flex-shrink-0 text-white font-bold shadow-lg shadow-red-600/20">
-            <ShieldAlert className="w-4 h-4" />
-          </div>
+        <div className="flex items-center gap-3 overflow-hidden h-full">
+          <Link href="/" className="flex items-center h-full px-2 group">
+            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[48px] w-auto object-contain" />
+          </Link>
           {!isCollapsed && (
             <span className="font-bold text-lg text-white whitespace-nowrap">Admin Portal</span>
           )}

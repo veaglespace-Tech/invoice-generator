@@ -9,8 +9,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice Generator | Premium SaaS",
+  title: "Veagle Space Technology | Invoice Generator",
   description: "Generate and manage invoices seamlessly with our premium SaaS solution.",
+  icons: {
+    icon: "/logo.webp",
+  },
 };
 
 export default function RootLayout({
