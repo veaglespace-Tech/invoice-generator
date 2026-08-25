@@ -1,0 +1,89 @@
+@import "tailwindcss";
+@plugin "daisyui";
+/* Force class-based dark mode (since .dark is not present, it forces Light Mode everywhere) */
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-secondary: #0CA5E9;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+}
+
+/* Dark mode variables removed to enforce strict light theme */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Dark mode glass styles removed */
+
+.glass-card {
+  @apply rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)];
+}
+
+/* Explicit borders for DaisyUI inputs */
+.input-bordered, .textarea-bordered {
+  border: 1px solid var(--border) !important;
+  background-color: var(--muted) !important;
+}
+
+.input-bordered:focus, .textarea-bordered:focus {
+  border-color: var(--color-primary) !important;
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: -1px;
+}
+
+/* Print Styles for Invoice Generator */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-preview, #invoice-preview * {
+    visibility: visible;
+  }
+  #invoice-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    margin: 0.5cm;
+  }
+}
