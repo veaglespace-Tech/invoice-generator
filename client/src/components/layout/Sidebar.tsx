@@ -67,12 +67,12 @@ export function Sidebar() {
           <ChevronLeft className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
         </button>
 
-        <div className="flex items-center justify-center h-20 border-b border-slate-800 pt-8 md:pt-0 bg-slate-950 overflow-hidden">
-          <Link href="/dashboard" className="flex items-center justify-center w-full h-full px-2 py-2 group">
+        <div className="flex items-center justify-center border-b border-slate-800 bg-slate-950" style={{minHeight: '80px', padding: '12px 16px'}}>
+          <Link href="/dashboard" className="flex items-center justify-center w-full group">
             {isCollapsed ? (
-              <img src="/logo.webp" alt="Veagle Space" className="h-[32px] w-auto object-contain" />
+              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
             ) : (
-              <img src="/logo.webp" alt="Veagle Space Technology" className="h-[64px] w-auto object-contain" />
+              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[160px] object-contain" />
             )}
           </Link>
         </div>

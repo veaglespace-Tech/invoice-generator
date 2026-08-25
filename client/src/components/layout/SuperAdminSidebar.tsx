@@ -89,13 +89,17 @@ export function SuperAdminSidebar() {
       </button>
 
       {/* Header */}
-      <div className="h-16 flex items-center px-4 border-b border-slate-800">
-        <div className="flex items-center gap-3 overflow-hidden h-full">
-          <Link href="/super-admin/dashboard" className="flex items-center h-full px-2 group">
-            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[48px] w-auto object-contain" />
+      <div className="flex items-center border-b border-slate-800 bg-slate-950" style={{minHeight: '80px', padding: '12px 16px'}}>
+        <div className="flex items-center gap-3 w-full overflow-hidden">
+          <Link href="/super-admin/dashboard" className="flex items-center group">
+            {isCollapsed ? (
+              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
+            ) : (
+              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[120px] object-contain" />
+            )}
           </Link>
           {!isCollapsed && (
-            <span className="font-bold text-lg text-white whitespace-nowrap">Admin Portal</span>
+            <span className="font-bold text-base text-white whitespace-nowrap">Admin Portal</span>
           )}
         </div>
       </div>
