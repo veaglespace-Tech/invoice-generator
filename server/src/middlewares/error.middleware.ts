@@ -8,7 +8,7 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     return res.status(400).json({
       success: false,
       message: 'Validation Error',
-      errors: err.errors.map(e => ({
+      errors: err.issues.map((e: any) => ({
         path: e.path.join('.'),
         message: e.message
       }))

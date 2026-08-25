@@ -17,7 +17,7 @@ export const generateInvoicePDF = async (invoiceData: any): Promise<Buffer> => {
   const page = await browser.newPage();
   
   // Set HTML content
-  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await page.setContent(html, { waitUntil: 'load' });
 
   // Generate PDF buffer
   const pdfBuffer = await page.pdf({

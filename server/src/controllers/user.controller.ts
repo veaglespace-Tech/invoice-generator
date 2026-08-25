@@ -138,7 +138,8 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
         data: {
           name: data.name,
           role: data.role,
-          status: data.status,
+          status: data.status as any,
+          avatar: data.avatar,
         }
       });
 

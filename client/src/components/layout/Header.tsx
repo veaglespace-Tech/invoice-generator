@@ -47,8 +47,12 @@ export function Header() {
           </button>
           
           <div className="flex items-center gap-3 cursor-pointer p-1.5 pr-4 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <User className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 overflow-hidden">
+              {(profile as any)?.avatar ? (
+                <img src={(profile as any).avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5" />
+              )}
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">

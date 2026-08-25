@@ -68,7 +68,7 @@ export function Sidebar() {
         </button>
 
         <div className="flex items-center justify-center h-20 border-b border-slate-800 pt-8 md:pt-0 bg-slate-950 overflow-hidden">
-          <Link href="/" className="flex items-center justify-center w-full h-full px-2 py-2 group">
+          <Link href="/dashboard" className="flex items-center justify-center w-full h-full px-2 py-2 group">
             {isCollapsed ? (
               <img src="/logo.webp" alt="Veagle Space" className="h-[32px] w-auto object-contain" />
             ) : (

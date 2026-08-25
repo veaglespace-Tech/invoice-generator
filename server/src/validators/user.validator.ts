@@ -14,5 +14,6 @@ export const updateUserSchema = z.object({
   name: z.string().min(2).optional(),
   role: z.nativeEnum(Role).optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  avatar: z.string().optional(),
   permissions: z.array(z.string()).optional()
 });

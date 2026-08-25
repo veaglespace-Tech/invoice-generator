@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Loader2, UploadCloud, Save, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
+import BillingPage from './billing/page';
 
 interface OrgProfile {
   id: string;
@@ -35,7 +36,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'profile' | 'invoice'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'invoice' | 'billing'>('profile');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -165,8 +166,8 @@ export default function SettingsPage() {
           Invoice Settings
         </button>
         <button 
-          className="tab tab-lg transition-all"
-          onClick={() => window.location.href = '/settings/billing'}
+          className={`tab tab-lg transition-all ${activeTab === 'billing' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          onClick={() => setActiveTab('billing')}
         >
           Billing & Plans
         </button>
@@ -342,6 +343,12 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {activeTab === 'billing' && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <BillingPage />
         </div>
       )}
     </div>

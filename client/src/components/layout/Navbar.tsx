@@ -19,7 +19,7 @@ export function Navbar() {
         </div>
         <div className="flex-none ml-4">
           <Link href="/register" className="btn btn-primary rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-            Go to App <ArrowRight className="w-4 h-4" />
+            Get Started <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
