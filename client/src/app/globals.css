@@ -15,7 +15,7 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-outfit);
 }
 
 :root {
@@ -61,6 +61,33 @@ body {
   border-color: var(--color-primary) !important;
   outline: 2px solid var(--color-primary) !important;
   outline-offset: -1px;
+}
+
+/* Premium Buttons Styling */
+.btn {
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+.btn-primary {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4), 0 8px 10px -6px rgba(37, 99, 235, 0.4) !important;
 }
 
 /* Print Styles for Invoice Generator */
