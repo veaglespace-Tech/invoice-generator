@@ -51,12 +51,12 @@ export function SuperAdminSidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-slate-950 text-white border-b border-slate-800 w-full fixed top-0 left-0 z-40">
+      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 w-full fixed top-0 left-0 z-40 shadow-sm">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center h-10 px-2 group">
             <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] w-auto object-contain" />
           </Link>
-          <span className="font-bold text-lg text-white whitespace-nowrap hidden sm:block">Admin Portal</span>
+          <span className="font-bold text-lg whitespace-nowrap hidden sm:block">Admin Portal</span>
         </div>
         <button onClick={() => setIsOpenMobile(!isOpenMobile)} className="p-1">
           {isOpenMobile ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
