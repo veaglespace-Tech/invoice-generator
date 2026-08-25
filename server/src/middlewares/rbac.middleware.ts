@@ -1,0 +1,50 @@
+import { Request, Response, NextFunction } from 'express';
+import { Role } from '@prisma/client';
+import { prisma } from '../server';
+
+export const requireRole = (roles: Role[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Forbidden: Insufficient role' });
+    }
+
+    next();
+  };
+};
+
+export const requirePermission = (permission: string) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // SUPER_ADMIN and ORGANIZATION_ADMIN have all permissions inherently in this system
+    if (req.user.role === 'SUPER_ADMIN' || req.user.role === 'ORGANIZATION_ADMIN') {
+      return next();
+    }
+
+    // Check specific permission for STAFF
+    try {
+      const userPermission = await prisma.userPermission.findUnique({
+        where: {
+          user_id_permission: {
+            user_id: req.user.id,
+            permission: permission
+          }
+        }
+      });
+
+      if (!userPermission) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Missing required permission' });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+  };
+};

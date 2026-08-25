@@ -1,0 +1,318 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id              String    @id @default(uuid())
+  name            String
+  legal_name      String?
+  email           String    @unique
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  pincode         String?
+  GSTIN           String?
+  PAN             String?
+  logo            String?   @db.LongText
+  website         String?
+  currency        String    @default("INR")
+  timezone        String    @default("Asia/Kolkata")
+  status          OrgStatus @default(ACTIVE)
+  plan            PlanType  @default(FREE)
+  is_deleted      Boolean   @default(false)
+  deleted_at      DateTime?
+  
+  users           User[]
+  customers       Customer[]
+  products        Product[]
+  invoices        Invoice[]
+  subscriptions   Subscription[]
+  settings        InvoiceSetting?
+  audit_logs      AuditLog[]
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([status])
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PRO
+}
+
+model User {
+  id              String    @id @default(uuid())
+  organization_id String?
+  organization    Organization? @relation(fields: [organization_id], references: [id])
+  name            String
+  email           String    @unique
+  password        String
+  role            Role      @default(STAFF)
+  status          UserStatus @default(ACTIVE)
+  last_login      DateTime?
+  is_deleted      Boolean   @default(false)
+  deleted_at      DateTime?
+
+  permissions     UserPermission[]
+  audit_logs      AuditLog[]
+  refresh_tokens  RefreshToken[]
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([organization_id, email])
+}
+
+enum Role {
+  SUPER_ADMIN
+  ORGANIZATION_ADMIN
+  STAFF
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model UserPermission {
+  id              String    @id @default(uuid())
+  user_id         String
+  user            User      @relation(fields: [user_id], references: [id])
+  permission      String    // e.g., CREATE_INVOICE, VIEW_CUSTOMERS
+
+  @@unique([user_id, permission])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(512)
+  user_id   String
+  user      User     @relation(fields: [user_id], references: [id])
+  expires_at DateTime
+  created_at DateTime @default(now())
+}
+
+model Customer {
+  id              String    @id @default(uuid())
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  customer_name   String
+  company_name    String?
+  email           String?
+  phone           String?
+  billing_address String?
+  shipping_address String?
+  city            String?
+  state           String?
+  country         String?
+  pincode         String?
+  GSTIN           String?
+  PAN             String?
+  notes           String?
+  status          CustomerStatus @default(ACTIVE)
+  is_deleted      Boolean   @default(false)
+  deleted_at      DateTime?
+  
+  invoices        Invoice[]
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([organization_id])
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Product {
+  id              String    @id @default(uuid())
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  name            String
+  description     String?
+  SKU             String?
+  type            ProductType
+  unit            String?
+  price           Decimal   @db.Decimal(10, 2)
+  tax_rate        Decimal   @default(0) @db.Decimal(5, 2)
+  status          ProductStatus @default(ACTIVE)
+  is_deleted      Boolean   @default(false)
+  deleted_at      DateTime?
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([organization_id])
+}
+
+enum ProductType {
+  PRODUCT
+  SERVICE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Invoice {
+  id              String    @id @default(uuid())
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  invoice_number  String
+  customer_id     String
+  customer        Customer  @relation(fields: [customer_id], references: [id])
+  invoice_date    DateTime
+  due_date        DateTime
+  
+  subtotal        Decimal   @db.Decimal(10, 2)
+  discount        Decimal   @default(0) @db.Decimal(10, 2)
+  taxable_amount  Decimal   @db.Decimal(10, 2)
+  tax_total       Decimal   @db.Decimal(10, 2)
+  CGST            Decimal   @default(0) @db.Decimal(10, 2)
+  SGST            Decimal   @default(0) @db.Decimal(10, 2)
+  IGST            Decimal   @default(0) @db.Decimal(10, 2)
+  round_off       Decimal   @default(0) @db.Decimal(10, 2)
+  grand_total     Decimal   @db.Decimal(10, 2)
+  
+  notes           String?
+  terms           String?
+  payment_details String?
+  status          InvoiceStatus @default(DRAFT)
+  
+  is_deleted      Boolean   @default(false)
+  deleted_at      DateTime?
+
+  items           InvoiceItem[]
+  payments        Payment[]
+
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@unique([organization_id, invoice_number])
+  @@index([organization_id, status])
+  @@index([customer_id])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  GENERATED
+  SENT
+  VIEWED
+  PAID
+  PARTIALLY_PAID
+  OVERDUE
+  CANCELLED
+}
+
+model InvoiceItem {
+  id              String    @id @default(uuid())
+  invoice_id      String
+  invoice         Invoice   @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  product_id      String?
+  description     String
+  quantity        Decimal   @db.Decimal(10, 2)
+  unit            String?
+  rate            Decimal   @db.Decimal(10, 2)
+  discount        Decimal   @default(0) @db.Decimal(10, 2)
+  tax_rate        Decimal   @db.Decimal(5, 2)
+  tax_amount      Decimal   @db.Decimal(10, 2)
+  amount          Decimal   @db.Decimal(10, 2)
+}
+
+model Payment {
+  id                    String    @id @default(uuid())
+  invoice_id            String
+  invoice               Invoice   @relation(fields: [invoice_id], references: [id])
+  organization_id       String
+  amount                Decimal   @db.Decimal(10, 2)
+  payment_date          DateTime
+  payment_method        String
+  transaction_reference String?
+  notes                 String?
+
+  created_at            DateTime  @default(now())
+}
+
+model InvoiceSetting {
+  id                    String    @id @default(uuid())
+  organization_id       String    @unique
+  organization          Organization @relation(fields: [organization_id], references: [id])
+  prefix                String    @default("INV-")
+  number_format         String    @default("0000")
+  default_tax_rate      Decimal   @default(0) @db.Decimal(5, 2)
+  gst_enabled           Boolean   @default(false)
+  invoice_footer        String?
+  terms_conditions      String?   @db.Text
+  payment_instructions  String?
+  bank_details          String?
+  signature_url         String?
+
+  // Additional Layout Settings
+  supplier_state_code   String?
+  transaction_type      String?
+  merchant_id           String?
+  hsn_code              String?
+  signature_name        String?
+  signature_location    String?
+}
+
+model AuditLog {
+  id              String    @id @default(uuid())
+  organization_id String?
+  organization    Organization? @relation(fields: [organization_id], references: [id])
+  user_id         String
+  user            User      @relation(fields: [user_id], references: [id])
+  action          String
+  entity_type     String
+  entity_id       String
+  description     String?
+  ip_address      String?
+  user_agent      String?
+  
+  created_at      DateTime  @default(now())
+
+  @@index([organization_id])
+  @@index([user_id])
+}
+
+model Subscription {
+  id              String    @id @default(uuid())
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  plan            PlanType
+  amount          Decimal   @db.Decimal(10, 2)
+  status          SubscriptionStatus @default(PENDING)
+  txnid           String    @unique
+  payu_mihpayid   String?
+  start_date      DateTime?
+  end_date        DateTime?
+  
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([organization_id])
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  FAILED
+}
