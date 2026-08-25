@@ -41,8 +41,8 @@ export const initiateSubscription = async (req: Request, res: Response): Promise
     const phone = org.phone || '9999999999';
 
     // Surl and Furl
-    const surl = `http://localhost:5000/api/subscriptions/success`;
-    const furl = `http://localhost:5000/api/subscriptions/fail`;
+    const surl = `http://localhost:5000/api/v1/subscriptions/success`;
+    const furl = `http://localhost:5000/api/v1/subscriptions/fail`;
 
     // Hash sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
     const hashString = `${PAYU_TEST_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_TEST_SALT}`;
@@ -89,7 +89,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
     } = req.body;
 
     if (status !== 'success') {
-      res.redirect(`http://localhost:3000/settings/billing/failure`);
+      res.redirect(`http://localhost:3000/dashboard?payment=failed`);
       return;
     }
 
@@ -100,7 +100,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
 
     if (calculatedHash !== hash) {
       console.error('Hash mismatch on PayU success callback!');
-      res.redirect(`http://localhost:3000/settings/billing/failure`);
+      res.redirect(`http://localhost:3000/dashboard?payment=failed`);
       return;
     }
 
@@ -127,10 +127,10 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
       });
     }
 
-    res.redirect(`http://localhost:3000/settings/billing/success`);
+    res.redirect(`http://localhost:3000/dashboard?payment=success`);
   } catch (error) {
     console.error('Error in handlePaymentSuccess:', error);
-    res.redirect(`http://localhost:3000/settings/billing/failure`);
+    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
   }
 };
 
@@ -145,10 +145,10 @@ export const handlePaymentFail = async (req: Request, res: Response): Promise<vo
       });
     }
 
-    res.redirect(`http://localhost:3000/settings/billing/failure`);
+    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
   } catch (error) {
     console.error('Error in handlePaymentFail:', error);
-    res.redirect(`http://localhost:3000/settings/billing/failure`);
+    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
   }
 };
 

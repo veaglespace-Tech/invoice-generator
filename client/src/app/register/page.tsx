@@ -119,11 +119,53 @@ export default function RegisterPage() {
         if (loginRes.success && loginRes.data) {
           localStorage.setItem('auth_token', loginRes.data.accessToken);
           
-          setIsSuccess(true);
-          // Redirect to Dashboard after showing success message
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 3000);
+          if (selectedPlan === 'Starter') {
+            setIsSuccess(true);
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 3000);
+          } else {
+            // Initiate PayU Payment for paid plans
+            const planKey = selectedPlan === 'Professional' ? 'BASIC' : 'PRO';
+            const payRes = await fetchApi<{ success: boolean; data: any }>('/subscriptions/initiate', {
+              method: 'POST',
+              data: { plan: planKey }
+            });
+
+            if (payRes.success && payRes.data) {
+              const payuData = payRes.data;
+              
+              const form = document.createElement('form');
+              form.method = 'POST';
+              form.action = payuData.action;
+
+              const addField = (name: string, value: string) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+              };
+
+              addField('key', payuData.key);
+              addField('txnid', payuData.txnid);
+              addField('amount', payuData.amount);
+              addField('productinfo', payuData.productinfo);
+              addField('firstname', payuData.firstname);
+              addField('email', payuData.email);
+              addField('phone', payuData.phone);
+              addField('surl', payuData.surl);
+              addField('furl', payuData.furl);
+              addField('hash', payuData.hash);
+              addField('service_provider', 'payu_paisa');
+
+              document.body.appendChild(form);
+              form.submit();
+            } else {
+              setError('Account created, but failed to initiate payment.');
+              setIsLoading(false);
+            }
+          }
         }
       }
     } catch (err: any) {
