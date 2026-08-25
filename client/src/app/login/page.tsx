@@ -1,21 +1,24 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Hexagon, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowRight, Loader2, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Payment status from PayU redirect
+  const paymentStatus = searchParams.get('payment');
 
   const validate = () => {
     if (!email) return 'Email is required';
@@ -49,7 +52,7 @@ export default function LoginPage() {
           return;
         }
 
-        // Save token (using localStorage for client-side persistence)
+        // Save token
         localStorage.setItem('auth_token', response.data.accessToken);
 
         // Redirect to dashboard
@@ -71,7 +74,29 @@ export default function LoginPage() {
       <Navbar />
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 z-10 pt-24">
-        <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-12">
+
+        {/* Payment success / failed banner */}
+        {paymentStatus === 'success' && (
+          <div className="w-full max-w-md mb-5 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-500">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">🎉 Payment Successful!</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Your plan is now active. Please login to access your dashboard.</p>
+            </div>
+          </div>
+        )}
+
+        {paymentStatus === 'failed' && (
+          <div className="w-full max-w-md mb-5 p-4 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-500">
+            <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-red-700 dark:text-red-300">Payment Failed or Cancelled</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">Your account was created. Login and upgrade from Settings &gt; Billing.</p>
+            </div>
+          </div>
+        )}
+
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-2">Log in to your account to continue.</p>
@@ -129,6 +154,13 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              Create one free
+            </Link>
+          </p>
         </div>
       </main>
       <Footer />

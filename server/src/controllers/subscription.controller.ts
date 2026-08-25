@@ -89,7 +89,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
     } = req.body;
 
     if (status !== 'success') {
-      res.redirect(`http://localhost:3000/dashboard?payment=failed`);
+      res.redirect(`http://localhost:3000/login?payment=failed`);
       return;
     }
 
@@ -100,7 +100,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
 
     if (calculatedHash !== hash) {
       console.error('Hash mismatch on PayU success callback!');
-      res.redirect(`http://localhost:3000/dashboard?payment=failed`);
+      res.redirect(`http://localhost:3000/login?payment=failed`);
       return;
     }
 
@@ -127,10 +127,10 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
       });
     }
 
-    res.redirect(`http://localhost:3000/dashboard?payment=success`);
+    res.redirect(`http://localhost:3000/login?payment=success`);
   } catch (error) {
     console.error('Error in handlePaymentSuccess:', error);
-    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
+    res.redirect(`http://localhost:3000/login?payment=failed`);
   }
 };
 
@@ -145,10 +145,10 @@ export const handlePaymentFail = async (req: Request, res: Response): Promise<vo
       });
     }
 
-    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
+    res.redirect(`http://localhost:3000/login?payment=failed`);
   } catch (error) {
     console.error('Error in handlePaymentFail:', error);
-    res.redirect(`http://localhost:3000/dashboard?payment=failed`);
+    res.redirect(`http://localhost:3000/login?payment=failed`);
   }
 };
 
