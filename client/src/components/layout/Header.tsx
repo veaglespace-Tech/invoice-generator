@@ -5,6 +5,7 @@ import { fetchApi } from '@/lib/api';
 
 interface UserProfile {
   name: string;
+  role?: string;
   organization: {
     name: string;
   };

@@ -52,7 +52,7 @@ export default function PlansPage() {
       // Optimistic update
       setOrganizations(orgs => orgs.map(o => o.id === orgId ? { ...o, plan: newPlan as any } : o));
       
-      const res = await fetchApi(`/organizations/${orgId}`, {
+      const res = await fetchApi<{ success: boolean }>(`/organizations/${orgId}`, {
         method: 'PUT',
         data: { plan: newPlan }
       });
