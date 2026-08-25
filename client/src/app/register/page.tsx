@@ -110,63 +110,13 @@ export default function RegisterPage() {
       });
 
       if (response.success) {
-        // Automatically login user after registration
-        const loginRes = await fetchApi<{ success: boolean; data: { accessToken: string } }>('/auth/login', {
-          method: 'POST',
-          data: { email, password }
-        });
-
-        if (loginRes.success && loginRes.data) {
-          localStorage.setItem('auth_token', loginRes.data.accessToken);
-          
-          if (selectedPlan === 'Starter') {
-            setIsSuccess(true);
-            setTimeout(() => {
-              router.push('/dashboard');
-            }, 3000);
-          } else {
-            // Initiate PayU Payment for paid plans
-            const planKey = selectedPlan === 'Professional' ? 'BASIC' : 'PRO';
-            const payRes = await fetchApi<{ success: boolean; data: any }>('/subscriptions/initiate', {
-              method: 'POST',
-              data: { plan: planKey }
-            });
-
-            if (payRes.success && payRes.data) {
-              const payuData = payRes.data;
-              
-              const form = document.createElement('form');
-              form.method = 'POST';
-              form.action = payuData.action;
-
-              const addField = (name: string, value: string) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-              };
-
-              addField('key', payuData.key);
-              addField('txnid', payuData.txnid);
-              addField('amount', payuData.amount);
-              addField('productinfo', payuData.productinfo);
-              addField('firstname', payuData.firstname);
-              addField('email', payuData.email);
-              addField('phone', payuData.phone);
-              addField('surl', payuData.surl);
-              addField('furl', payuData.furl);
-              addField('hash', payuData.hash);
-              addField('service_provider', 'payu_paisa');
-
-              document.body.appendChild(form);
-              form.submit();
-            } else {
-              setError('Account created, but failed to initiate payment.');
-              setIsLoading(false);
-            }
-          }
-        }
+        // Registration successful – show success screen, then redirect to login
+        // Do NOT auto-login; user must login manually
+        localStorage.removeItem('auth_token');
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push('/login');
+        }, 3500);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to register account.');
@@ -225,16 +175,33 @@ export default function RegisterPage() {
           {/* Form Content */}
           <div className="min-h-[250px]">
             {isSuccess && (
-              <div className="flex flex-col items-center justify-center text-center space-y-4 py-8 animate-in zoom-in duration-500">
-                <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
+              <div className="flex flex-col items-center justify-center text-center space-y-6 py-8 animate-in zoom-in duration-500">
+                {/* Animated checkmark */}
+                <div className="relative">
+                  <div className="w-28 h-28 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center animate-in zoom-in duration-700">
+                    <CheckCircle2 className="w-14 h-14 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="absolute inset-0 rounded-full border-4 border-emerald-400 animate-ping opacity-30"></div>
                 </div>
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Payment Successful!</h2>
-                <p className="text-lg text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                  Your organization <span className="font-semibold text-slate-700 dark:text-slate-200">{orgName}</span> has been registered and your plan is active. Setting up your dashboard...
-                </p>
-                <div className="mt-8 flex items-center gap-3 text-indigo-600 dark:text-indigo-400 font-medium">
-                  <Loader2 className="w-5 h-5 animate-spin" /> Redirecting...
+
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold text-slate-900 dark:text-white">🎉 Registration Successful!</h2>
+                  <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto text-base">
+                    Welcome, <span className="font-semibold text-slate-800 dark:text-white">{orgName}</span>!<br />
+                    Your account has been created successfully.
+                  </p>
+                </div>
+
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-2xl px-6 py-4 text-center">
+                  <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
+                    📧 Please login with your email to continue
+                  </p>
+                  <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1">Email: {email}</p>
+                </div>
+
+                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Redirecting to Login page...
                 </div>
               </div>
             )}
