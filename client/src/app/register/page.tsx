@@ -110,13 +110,63 @@ export default function RegisterPage() {
       });
 
       if (response.success) {
-        // Registration successful – show success screen, then redirect to login
-        // Do NOT auto-login; user must login manually
-        localStorage.removeItem('auth_token');
-        setIsSuccess(true);
-        setTimeout(() => {
-          router.push('/login');
-        }, 3500);
+        if (selectedPlan === 'Starter') {
+          // Free plan — show success and redirect to login
+          localStorage.removeItem('auth_token');
+          setIsSuccess(true);
+          setTimeout(() => {
+            router.push('/login');
+          }, 3500);
+        } else {
+          // Paid plan — auto-login then open PayU
+          const loginRes = await fetchApi<{ success: boolean; data: { accessToken: string } }>('/auth/login', {
+            method: 'POST',
+            data: { email, password }
+          });
+
+          if (loginRes.success && loginRes.data) {
+            localStorage.setItem('auth_token', loginRes.data.accessToken);
+
+            const planKey = selectedPlan === 'Professional' ? 'BASIC' : 'PRO';
+            const payRes = await fetchApi<{ success: boolean; data: any }>('/subscriptions/initiate', {
+              method: 'POST',
+              data: { plan: planKey }
+            });
+
+            if (payRes.success && payRes.data) {
+              const payuData = payRes.data;
+              const form = document.createElement('form');
+              form.method = 'POST';
+              form.action = payuData.action;
+
+              const addField = (name: string, value: string) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+              };
+
+              addField('key', payuData.key);
+              addField('txnid', payuData.txnid);
+              addField('amount', payuData.amount);
+              addField('productinfo', payuData.productinfo);
+              addField('firstname', payuData.firstname);
+              addField('email', payuData.email);
+              addField('phone', payuData.phone);
+              addField('surl', payuData.surl);
+              addField('furl', payuData.furl);
+              addField('hash', payuData.hash);
+              addField('service_provider', 'payu_paisa');
+
+              document.body.appendChild(form);
+              form.submit();
+            } else {
+              setError('Account created! But payment initiation failed. Please login and go to Settings > Billing.');
+              setIsLoading(false);
+            }
+          }
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to register account.');
@@ -400,38 +450,84 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Free Plan */}
                   <div 
                     onClick={() => setSelectedPlan('Starter')}
-                    className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${selectedPlan === 'Starter' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-md shadow-indigo-100 dark:shadow-none transform -translate-y-1' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
+                    className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${selectedPlan === 'Starter' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-md transform -translate-y-1' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
                   >
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">Starter</h3>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-bold text-2xl mb-4">
-                      {isYearly ? '₹290' : '₹350'}<span className="text-sm text-slate-500 font-medium">/mo</span>
+                    <div className="text-2xl mb-2">🆓</div>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">Free</h3>
+                    <p className="text-emerald-600 dark:text-emerald-400 font-bold text-2xl mb-3">
+                      ₹0<span className="text-sm text-slate-500 font-medium">/forever</span>
                     </p>
-                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
-                      <li>• Up to 50 Invoices/mo</li>
-                      <li>• 2 Team Members</li>
-                      <li>• Standard Templates</li>
+                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1.5">
+                      <li>• 1 User only</li>
+                      <li>• Up to 10 Invoices/mo</li>
+                      <li>• Basic Templates</li>
+                      <li>• Community Support</li>
                     </ul>
+                    {selectedPlan === 'Starter' && (
+                      <div className="mt-3 text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Selected
+                      </div>
+                    )}
                   </div>
 
+                  {/* Basic / Starter Plan */}
+                  <div 
+                    onClick={() => setSelectedPlan('Professional')}
+                    className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${selectedPlan === 'Professional' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-md shadow-indigo-100 dark:shadow-none transform -translate-y-1' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
+                  >
+                    <div className="text-2xl mb-2">⚡</div>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">Basic</h3>
+                    <p className="text-indigo-600 dark:text-indigo-400 font-bold text-2xl mb-3">
+                      ₹999<span className="text-sm text-slate-500 font-medium">/mo</span>
+                    </p>
+                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1.5">
+                      <li>• Up to 5 Users</li>
+                      <li>• Unlimited Invoices</li>
+                      <li>• GST & Tax Ready</li>
+                      <li>• Email Support</li>
+                    </ul>
+                    {selectedPlan === 'Professional' && (
+                      <div className="mt-3 text-xs text-indigo-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Selected — PayU payment will open
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pro Plan */}
                   <div 
                     onClick={() => setSelectedPlan('Pro')}
-                    className={`cursor-pointer rounded-2xl border-2 p-6 transition-all relative ${selectedPlan === 'Pro' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-md shadow-indigo-100 dark:shadow-none transform -translate-y-1' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
+                    className={`cursor-pointer rounded-2xl border-2 p-5 transition-all relative ${selectedPlan === 'Pro' ? 'border-violet-600 bg-violet-50 dark:bg-violet-900/20 shadow-md shadow-violet-100 dark:shadow-none transform -translate-y-1' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
                   >
-                    <div className="absolute top-0 right-6 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">Popular</div>
+                    <div className="absolute top-0 right-4 -translate-y-1/2 bg-violet-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">Popular</div>
+                    <div className="text-2xl mb-2">⭐</div>
                     <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">Pro</h3>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-bold text-2xl mb-4">
-                      {isYearly ? '₹790' : '₹990'}<span className="text-sm text-slate-500 font-medium">/mo</span>
+                    <p className="text-violet-600 dark:text-violet-400 font-bold text-2xl mb-3">
+                      ₹1999<span className="text-sm text-slate-500 font-medium">/mo</span>
                     </p>
-                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1.5">
+                      <li>• Unlimited Users</li>
                       <li>• Unlimited Invoices</li>
-                      <li>• Unlimited Members</li>
-                      <li>• Custom Branding</li>
+                      <li>• Advanced Analytics</li>
+                      <li>• Priority Support</li>
                     </ul>
+                    {selectedPlan === 'Pro' && (
+                      <div className="mt-3 text-xs text-violet-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Selected — PayU payment will open
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {selectedPlan !== 'Starter' && (
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                    <span>💳</span>
+                    <span>After registration, <strong>PayU payment page</strong> will open. Complete payment to activate your plan.</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
