@@ -48,8 +48,9 @@ export default function Home() {
       <section id="features" className="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Powerful Features</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">Everything you need to manage your business billing seamlessly.</p>
+            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold text-sm mb-2 shadow-sm border border-indigo-100 dark:border-indigo-800/50">✨ Discover the Magic</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Powerful Features</h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Everything you need to manage your business billing seamlessly and accelerate your growth.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="space-y-4 bg-blue-50 p-8 rounded-3xl shadow-[0_10px_40px_rgb(37,99,235,0.15)] border-2 border-blue-200 hover:shadow-[0_20px_50px_rgb(37,99,235,0.25)] hover:border-blue-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
@@ -114,8 +115,9 @@ export default function Home() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Simple, transparent pricing</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">Choose the perfect plan for your business needs. No hidden fees.</p>
+            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-semibold text-sm mb-2 shadow-sm border border-emerald-100 dark:border-emerald-800/50">💎 Plans & Pricing</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Simple, transparent pricing</h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Choose the perfect plan for your business needs. No hidden fees, cancel anytime.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 items-start">
