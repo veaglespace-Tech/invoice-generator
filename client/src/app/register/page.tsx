@@ -175,7 +175,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100 pb-12">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-[40vh] bg-indigo-600 dark:bg-indigo-900 -z-10 clip-path-slant pointer-events-none"></div>
 
