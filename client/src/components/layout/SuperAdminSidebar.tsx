@@ -54,7 +54,7 @@ export function SuperAdminSidebar() {
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 w-full fixed top-0 left-0 z-40 shadow-sm">
         <div className="flex items-center gap-3">
-          <Link href="/super-admin/dashboard" className="flex items-center h-10 px-2 group">
+          <Link href="/" className="flex items-center h-10 px-2 group">
             <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] w-auto object-contain" />
           </Link>
           <span className="font-bold text-lg whitespace-nowrap hidden sm:block">Admin Portal</span>
@@ -92,7 +92,7 @@ export function SuperAdminSidebar() {
       {/* Header */}
       <div className="flex items-center border-b border-slate-800 bg-slate-950" style={{minHeight: '80px', padding: '12px 16px'}}>
         <div className="flex items-center gap-3 w-full overflow-hidden">
-          <Link href="/super-admin/dashboard" className="flex items-center group">
+          <Link href="/" className="flex items-center group">
             {isCollapsed ? (
               <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
             ) : (

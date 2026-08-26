@@ -68,7 +68,7 @@ export function Sidebar() {
         </button>
 
         <div className="flex items-center justify-center border-b border-slate-800 bg-slate-950" style={{minHeight: '80px', padding: '12px 16px'}}>
-          <Link href="/dashboard" className="flex items-center justify-center w-full group">
+          <Link href="/" className="flex items-center justify-center w-full group">
             {isCollapsed ? (
               <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
             ) : (
