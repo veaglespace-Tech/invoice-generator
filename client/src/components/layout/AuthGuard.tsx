@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
@@ -31,7 +32,7 @@ export function AuthGuard({ children, requireSuperAdmin = false }: { children: R
 
       if (requireSuperAdmin) {
         // Fetch user profile to check role
-        fetch('http://localhost:5000/api/v1/auth/me', {
+        fetch(`${API_BASE_URL}/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
           .then(res => res.json())
@@ -48,7 +49,7 @@ export function AuthGuard({ children, requireSuperAdmin = false }: { children: R
           });
       } else {
         // Normal app route - still need to check if they are a super admin
-        fetch('http://localhost:5000/api/v1/auth/me', {
+        fetch(`${API_BASE_URL}/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
           .then(res => res.json())

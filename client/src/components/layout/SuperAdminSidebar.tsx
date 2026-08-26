@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -23,7 +24,7 @@ export function SuperAdminSidebar() {
   React.useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      fetch('http://localhost:5000/api/v1/auth/me', {
+      fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
