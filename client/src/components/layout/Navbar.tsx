@@ -49,7 +49,7 @@ export function Navbar() {
         <div className="flex md:hidden items-center gap-3">
           {isLoggedIn ? (
             <Link href="/dashboard" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full font-medium text-sm shadow-sm transition-all flex items-center gap-1">
-              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
             </Link>
           ) : (
             <Link href="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full font-medium text-sm shadow-sm transition-all">
@@ -70,7 +70,11 @@ export function Navbar() {
         <div className="md:hidden absolute top-24 left-0 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shadow-xl flex flex-col z-40 animate-in slide-in-from-top-4 duration-300">
           <Link href="/#features" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Features</Link>
           <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Pricing</Link>
-          {!isLoggedIn && <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Sign In</Link>}
+          {isLoggedIn ? (
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 font-medium text-lg text-indigo-600 dark:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Dashboard</Link>
+          ) : (
+            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Sign In</Link>
+          )}
         </div>
       )}
     </header>
