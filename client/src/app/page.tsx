@@ -14,9 +14,13 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
         <div className="max-w-4xl mx-auto px-6 text-center space-y-8 z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-900/50 border border-indigo-100 dark:border-indigo-900 backdrop-blur-sm text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-4 shadow-sm">
-            <Sparkles className="w-4 h-4" />
-            <span>The #1 Invoice Generator for Modern Teams</span>
+          <div className="inline-flex items-center gap-3 px-2 py-1.5 pr-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm mb-6 hover:shadow-md transition-shadow">
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> New
+            </span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              The #1 Invoice Generator for Modern Teams
+            </span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
