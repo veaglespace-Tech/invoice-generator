@@ -4,19 +4,17 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'superadmin@invoice.com';
+  const email = 'veaglespaceritesh@gmail.com';
   
-  // Check if exists
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    console.log('Superadmin already exists!');
-    return;
-  }
+  const hashedPassword = await bcrypt.hash('Veagle@123', 10);
 
-  const hashedPassword = await bcrypt.hash('superadmin123', 10);
-
-  const user = await prisma.user.create({
-    data: {
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      password: hashedPassword,
+      role: 'SUPER_ADMIN',
+    },
+    create: {
       name: 'Super Admin',
       email,
       password: hashedPassword,
@@ -24,7 +22,7 @@ async function main() {
     },
   });
 
-  console.log('Created superadmin user:', user.email, 'password: superadmin123');
+  console.log('Upserted superadmin user:', user.email, 'with new password');
 }
 
 main()
