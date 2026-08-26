@@ -52,59 +52,59 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Powerful Features</h2>
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Everything you need to manage your business billing seamlessly and accelerate your growth.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-4 bg-blue-50 p-8 rounded-3xl shadow-[0_10px_40px_rgb(37,99,235,0.15)] border-2 border-blue-200 hover:shadow-[0_20px_50px_rgb(37,99,235,0.25)] hover:border-blue-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl -z-10 group-hover:bg-blue-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center rounded-2xl text-blue-600 group-hover:text-white shadow-sm border border-blue-100">
-                <Zap className="w-8 h-8" />
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="space-y-3 bg-blue-50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(37,99,235,0.1)] border-2 border-blue-200 hover:shadow-[0_15px_40px_rgb(37,99,235,0.2)] hover:border-blue-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full blur-2xl -z-10 group-hover:bg-blue-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center rounded-2xl text-blue-600 group-hover:text-white shadow-sm border border-blue-100">
+                <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Lightning Fast</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Generate PDF invoices and send them to clients in literally seconds, not minutes.</p>
+              <h3 className="text-lg font-bold text-slate-900">Lightning Fast</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Generate PDF invoices and send them to clients in literally seconds, not minutes.</p>
             </div>
             
-            <div className="space-y-4 bg-emerald-50 p-8 rounded-3xl shadow-[0_10px_40px_rgb(16,185,129,0.15)] border-2 border-emerald-200 hover:shadow-[0_20px_50px_rgb(16,185,129,0.25)] hover:border-emerald-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100 rounded-full blur-3xl -z-10 group-hover:bg-emerald-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-emerald-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-emerald-600 group-hover:text-white shadow-sm border border-emerald-100">
-                <Shield className="w-8 h-8" />
+            <div className="space-y-3 bg-emerald-50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(16,185,129,0.1)] border-2 border-emerald-200 hover:shadow-[0_15px_40px_rgb(16,185,129,0.2)] hover:border-emerald-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100 rounded-full blur-2xl -z-10 group-hover:bg-emerald-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-emerald-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-emerald-600 group-hover:text-white shadow-sm border border-emerald-100">
+                <Shield className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Integrated Payments</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Seamless PayU integration allowing clients to pay directly from the invoice link.</p>
+              <h3 className="text-lg font-bold text-slate-900">Integrated Payments</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Seamless PayU integration allowing clients to pay directly from the invoice link.</p>
             </div>
 
-            <div className="space-y-4 bg-violet-50 p-8 rounded-3xl shadow-[0_10px_40px_rgb(139,92,246,0.15)] border-2 border-violet-200 hover:shadow-[0_20px_50px_rgb(139,92,246,0.25)] hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-100 rounded-full blur-3xl -z-10 group-hover:bg-violet-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-violet-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-violet-600 group-hover:text-white shadow-sm border border-violet-100">
-                <Hexagon className="w-8 h-8" />
+            <div className="space-y-3 bg-violet-50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(139,92,246,0.1)] border-2 border-violet-200 hover:shadow-[0_15px_40px_rgb(139,92,246,0.2)] hover:border-violet-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-violet-100 rounded-full blur-2xl -z-10 group-hover:bg-violet-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-violet-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-violet-600 group-hover:text-white shadow-sm border border-violet-100">
+                <Hexagon className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Multi-Org Support</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Manage multiple businesses and branches from a single, unified dashboard.</p>
+              <h3 className="text-lg font-bold text-slate-900">Multi-Org Support</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Manage multiple businesses and branches from a single, unified dashboard.</p>
             </div>
 
-            <div className="space-y-4 bg-amber-50 p-8 rounded-3xl shadow-[0_10px_40px_rgba(245,158,11,0.15)] border-2 border-amber-200 hover:shadow-[0_20px_50px_rgba(245,158,11,0.25)] hover:border-amber-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full blur-3xl -z-10 group-hover:bg-amber-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-amber-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-amber-600 group-hover:text-white shadow-sm border border-amber-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <div className="space-y-3 bg-amber-50 p-6 rounded-3xl shadow-[0_8px_30px_rgba(245,158,11,0.1)] border-2 border-amber-200 hover:shadow-[0_15px_40px_rgba(245,158,11,0.2)] hover:border-amber-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100 rounded-full blur-2xl -z-10 group-hover:bg-amber-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-amber-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-amber-600 group-hover:text-white shadow-sm border border-amber-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Role-Based Access</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Invite your team members with granular permissions (Admin, Viewer, Manager).</p>
+              <h3 className="text-lg font-bold text-slate-900">Role-Based Access</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Invite your team members with granular permissions (Admin, Viewer, Manager).</p>
             </div>
 
-            <div className="space-y-4 bg-rose-50 p-8 rounded-3xl shadow-[0_10px_40px_rgba(244,63,94,0.15)] border-2 border-rose-200 hover:shadow-[0_20px_50px_rgba(244,63,94,0.25)] hover:border-rose-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-100 rounded-full blur-3xl -z-10 group-hover:bg-rose-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-rose-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-rose-600 group-hover:text-white shadow-sm border border-rose-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <div className="space-y-3 bg-rose-50 p-6 rounded-3xl shadow-[0_8px_30px_rgba(244,63,94,0.1)] border-2 border-rose-200 hover:shadow-[0_15px_40px_rgba(244,63,94,0.2)] hover:border-rose-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-rose-100 rounded-full blur-2xl -z-10 group-hover:bg-rose-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-rose-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-rose-600 group-hover:text-white shadow-sm border border-rose-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Tax & GST Ready</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Built-in GST calculation, HSN codes, and fully compliant tax invoices.</p>
+              <h3 className="text-lg font-bold text-slate-900">Tax & GST Ready</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Built-in GST calculation, HSN codes, and fully compliant tax invoices.</p>
             </div>
 
-            <div className="space-y-4 bg-cyan-50 p-8 rounded-3xl shadow-[0_10px_40px_rgba(6,182,212,0.15)] border-2 border-cyan-200 hover:shadow-[0_20px_50px_rgba(6,182,212,0.25)] hover:border-cyan-300 transition-all duration-300 hover:-translate-y-2 group relative overflow-hidden z-10">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-100 rounded-full blur-3xl -z-10 group-hover:bg-cyan-200 transition-colors duration-300"></div>
-              <div className="w-16 h-16 mx-auto bg-white group-hover:bg-cyan-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-cyan-600 group-hover:text-white shadow-sm border border-cyan-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <div className="space-y-3 bg-cyan-50 p-6 rounded-3xl shadow-[0_8px_30px_rgba(6,182,212,0.1)] border-2 border-cyan-200 hover:shadow-[0_15px_40px_rgba(6,182,212,0.2)] hover:border-cyan-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-100 rounded-full blur-2xl -z-10 group-hover:bg-cyan-200 transition-colors duration-300"></div>
+              <div className="w-12 h-12 mx-auto bg-white group-hover:bg-cyan-500 transition-colors duration-300 flex items-center justify-center rounded-2xl text-cyan-600 group-hover:text-white shadow-sm border border-cyan-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Advanced Analytics</h3>
-              <p className="text-slate-700 leading-relaxed font-medium">Track your revenue, unpaid invoices, and business growth at a glance.</p>
+              <h3 className="text-lg font-bold text-slate-900">Advanced Analytics</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium">Track your revenue, unpaid invoices, and business growth at a glance.</p>
             </div>
           </div>
         </div>
