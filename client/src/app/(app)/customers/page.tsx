@@ -78,7 +78,7 @@ export default function CustomersPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Customers</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your clients and their billing details.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Add new and existing customers.</p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
