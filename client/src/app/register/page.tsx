@@ -181,7 +181,7 @@ export default function RegisterPage() {
 
       <Navbar />
 
-      <main className="flex-1 flex flex-col items-center p-6 z-10 mt-[-1rem]">
+      <main className="flex-1 flex flex-col items-center p-6 z-10 pt-28">
         {/* We use max-w-4xl for the first step because it's a big form, max-w-2xl for others */}
         <div className={`w-full ${currentStep === 1 ? 'max-w-4xl' : 'max-w-2xl'} bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all`}>
           
