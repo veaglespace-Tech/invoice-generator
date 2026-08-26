@@ -310,7 +310,7 @@ export default function InvoiceGenerator() {
                       placeholder="Type to search customers..."
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
                     />
-                    {showCustomerDropdown && invoiceData.clientName && customers.length > 0 && (
+                    {showCustomerDropdown && customers.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
                         {customers
                           .filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase()))
@@ -339,7 +339,7 @@ export default function InvoiceGenerator() {
                             </div>
                           ))
                         }
-                        {customers.filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase())).length === 0 && (
+                        {invoiceData.clientName && customers.filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase())).length === 0 && (
                           <div className="p-2 text-sm text-slate-500 text-center">No customers found</div>
                         )}
                       </div>
