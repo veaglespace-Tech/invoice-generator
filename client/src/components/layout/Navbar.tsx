@@ -1,7 +1,18 @@
+"use client";
 import Link from "next/link";
-import { Hexagon, ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function Navbar() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   return (
     <header className="fixed top-0 w-full z-50 bg-base-100/80 backdrop-blur-md border-b border-base-200">
       <div className="navbar max-w-7xl mx-auto px-6 md:px-12 h-24">
@@ -14,13 +25,19 @@ export function Navbar() {
           <ul className="menu menu-horizontal px-1 gap-2 font-medium text-base-content/80">
             <li><Link href="/#features" className="hover:text-primary">Features</Link></li>
             <li><Link href="/#pricing" className="hover:text-primary">Pricing</Link></li>
-            <li><Link href="/login" className="hover:text-primary">Sign In</Link></li>
+            {!isLoggedIn && <li><Link href="/login" className="hover:text-primary">Sign In</Link></li>}
           </ul>
         </div>
         <div className="flex-none ml-4">
-          <Link href="/register" className="btn btn-primary rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-            Get Started <ArrowRight className="w-4 h-4" />
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard" className="btn btn-primary rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+              <LayoutDashboard className="w-4 h-4 mr-1" /> Dashboard
+            </Link>
+          ) : (
+            <Link href="/register" className="btn btn-primary rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       </div>
     </header>
