@@ -40,14 +40,17 @@ interface OrgProfile {
 export default function InvoiceGenerator() {
   const [orgProfile, setOrgProfile] = useState<OrgProfile | null>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [orgRes, productsRes] = await Promise.all([
+        const [orgRes, productsRes, customersRes] = await Promise.all([
           fetchApi<{ success: boolean; data: OrgProfile }>('/organizations/me'),
-          fetchApi<{ success: boolean; data: any[] }>('/products')
+          fetchApi<{ success: boolean; data: any[] }>('/products'),
+          fetchApi<{ success: boolean; data: any[] }>('/customers')
         ]);
         
         if (orgRes.success && orgRes.data) {
@@ -68,6 +71,10 @@ export default function InvoiceGenerator() {
         
         if (productsRes.success && productsRes.data) {
           setProducts(productsRes.data);
+        }
+
+        if (customersRes.success && customersRes.data) {
+          setCustomers(customersRes.data);
         }
       } catch (err) {
         console.error("Failed to load initial data for invoice preview", err);
@@ -289,9 +296,54 @@ export default function InvoiceGenerator() {
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Client</h3>
                 <div className="space-y-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative">
                     <label className="text-xs font-medium text-slate-500">Name</label>
-                    <input type="text" value={invoiceData.clientName} onChange={e => updateData('clientName', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input 
+                      type="text" 
+                      value={invoiceData.clientName} 
+                      onChange={e => {
+                        updateData('clientName', e.target.value);
+                        setShowCustomerDropdown(true);
+                      }} 
+                      onFocus={() => setShowCustomerDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)}
+                      placeholder="Type to search customers..."
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                    />
+                    {showCustomerDropdown && invoiceData.clientName && customers.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
+                        {customers
+                          .filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase()))
+                          .map(c => (
+                            <div 
+                              key={c.id} 
+                              className="p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                setInvoiceData(prev => ({
+                                  ...prev,
+                                  clientName: c.customer_name,
+                                  clientEmail: c.email || '',
+                                  clientAddress: c.billing_address || '',
+                                  clientCity: c.city || '',
+                                  clientState: c.state || '',
+                                  clientPincode: c.pincode || '',
+                                  clientGst: c.GSTIN || '',
+                                  clientPan: c.PAN || ''
+                                }));
+                                setShowCustomerDropdown(false);
+                              }}
+                            >
+                              <div className="font-medium text-slate-900 dark:text-white">{c.customer_name}</div>
+                              {c.email && <div className="text-xs text-slate-500">{c.email}</div>}
+                            </div>
+                          ))
+                        }
+                        {customers.filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase())).length === 0 && (
+                          <div className="p-2 text-sm text-slate-500 text-center">No customers found</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Email</label>
@@ -362,12 +414,12 @@ export default function InvoiceGenerator() {
                                   className="p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                                   onClick={() => {
                                     updateItem(item.id, 'description', p.name);
-                                    updateItem(item.id, 'rate', Number(p.unit_price));
+                                    updateItem(item.id, 'rate', Number(p.price || p.unit_price || 0));
                                   }}
                                 >
                                   <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
                                   <div className="text-xs text-slate-500">
-                                    {p.sku ? `SKU: ${p.sku} - ` : ''}₹{p.unit_price}
+                                    {p.sku ? `SKU: ${p.sku} - ` : ''}₹{p.price || p.unit_price || 0}
                                   </div>
                                 </div>
                               ))
