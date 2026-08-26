@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 const PAYU_BASE_URL = process.env.PAYU_BASE_URL || 'https://test.payu.in/_payment';
 const PAYU_TEST_KEY = process.env.PAYU_TEST_KEY || '';
 const PAYU_TEST_SALT = process.env.PAYU_TEST_SALT || '';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api/v1';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export const initiateSubscription = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -41,8 +43,8 @@ export const initiateSubscription = async (req: Request, res: Response): Promise
     const phone = org.phone || '9999999999';
 
     // Surl and Furl
-    const surl = `http://localhost:5000/api/v1/subscriptions/success`;
-    const furl = `http://localhost:5000/api/v1/subscriptions/fail`;
+    const surl = `${API_BASE_URL}/subscriptions/success`;
+    const furl = `${API_BASE_URL}/subscriptions/fail`;
 
     // Hash sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
     const hashString = `${PAYU_TEST_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_TEST_SALT}`;
@@ -89,7 +91,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
     } = req.body;
 
     if (status !== 'success') {
-      res.redirect(`http://localhost:3000/login?payment=failed`);
+      res.redirect(`${FRONTEND_URL}/login?payment=failed`);
       return;
     }
 
@@ -100,7 +102,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
 
     if (calculatedHash !== hash) {
       console.error('Hash mismatch on PayU success callback!');
-      res.redirect(`http://localhost:3000/login?payment=failed`);
+      res.redirect(`${FRONTEND_URL}/login?payment=failed`);
       return;
     }
 
@@ -127,10 +129,10 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
       });
     }
 
-    res.redirect(`http://localhost:3000/login?payment=success`);
+    res.redirect(`${FRONTEND_URL}/login?payment=success`);
   } catch (error) {
     console.error('Error in handlePaymentSuccess:', error);
-    res.redirect(`http://localhost:3000/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
   }
 };
 
@@ -145,10 +147,10 @@ export const handlePaymentFail = async (req: Request, res: Response): Promise<vo
       });
     }
 
-    res.redirect(`http://localhost:3000/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
   } catch (error) {
     console.error('Error in handlePaymentFail:', error);
-    res.redirect(`http://localhost:3000/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
   }
 };
 
