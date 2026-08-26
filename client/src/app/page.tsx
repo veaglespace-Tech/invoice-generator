@@ -8,7 +8,7 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       <Navbar />
 
-      <main className="flex-1 flex flex-col items-center justify-center relative pt-24 pb-32 overflow-hidden">
+      <main className="flex-1 flex flex-col items-center justify-center relative pt-36 pb-32 overflow-hidden">
         {/* Abstract background elements */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
