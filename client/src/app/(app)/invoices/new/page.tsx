@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Save, Printer, Plus, Trash2, Hexagon, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Printer, Plus, Trash2, Hexagon, Loader2, Download, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { fetchApi } from '@/lib/api';
 
@@ -43,6 +43,7 @@ export default function InvoiceGenerator() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [customerMode, setCustomerMode] = useState<'new' | 'existing'>('new');
 
   useEffect(() => {
     const loadData = async () => {
@@ -177,6 +178,64 @@ export default function InvoiceGenerator() {
     }
   };
 
+  const handleShare = async () => {
+    setIsDownloading(true);
+    try {
+      const element = document.getElementById('invoice-print-area');
+      if (!element) return;
+
+      const dataUrl = await htmlToImage.toPng(element, {
+        quality: 1,
+        pixelRatio: 2,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
+
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      const pdfBlob = pdf.output('blob');
+      const file = new File([pdfBlob], `${invoiceData.invoiceNumber || 'Invoice'}.pdf`, { type: 'application/pdf' });
+
+      let shared = false;
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `Invoice ${invoiceData.invoiceNumber}`,
+            text: 'Please find the attached invoice.',
+          });
+          shared = true;
+        } catch (shareErr: any) {
+          console.warn('Native share failed or was cancelled by user:', shareErr);
+          // If the error is NotAllowedError (user gesture timeout), we fall through to download
+        }
+      }
+
+      if (!shared) {
+        // Fallback: Download PDF automatically
+        pdf.save(`${invoiceData.invoiceNumber || 'Invoice'}.pdf`);
+        alert("Direct sharing is not supported on your current browser/device (or it timed out). The PDF has been downloaded automatically so you can attach it to WhatsApp.");
+      }
+      
+    } catch (err) {
+      console.error("Failed to process share/download", err);
+      alert("Failed to generate PDF. Please use the Print button as a fallback.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -252,15 +311,18 @@ export default function InvoiceGenerator() {
           </div>
         </div>
         <div className="flex gap-3 flex-wrap">
-          <button onClick={handleSave} disabled={isSaving} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-            <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save'}
+          <button onClick={handleShare} disabled={isDownloading || isSaving} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-70">
+            <Share2 className="w-5 h-5 md:w-4 md:h-4" /> <span className="hidden md:inline">Share</span>
           </button>
-          <button onClick={handlePrint} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
-            <Printer className="w-4 h-4" /> Print
+          <button onClick={handleSave} disabled={isSaving} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+            <Save className="w-5 h-5 md:w-4 md:h-4" /> <span className="hidden md:inline">{isSaving ? 'Saving...' : 'Save'}</span>
           </button>
-          <button onClick={handleDownloadPDF} disabled={isDownloading} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-indigo-200 dark:shadow-none flex items-center gap-2 disabled:opacity-70">
-            {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-            {isDownloading ? 'Generating PDF...' : 'Download PDF'}
+          <button onClick={handlePrint} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+            <Printer className="w-5 h-5 md:w-4 md:h-4" /> <span className="hidden md:inline">Print</span>
+          </button>
+          <button onClick={handleDownloadPDF} disabled={isDownloading} className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors shadow-sm shadow-indigo-200 dark:shadow-none flex items-center gap-2 disabled:opacity-70">
+            {isDownloading ? <Loader2 className="w-5 h-5 md:w-4 md:h-4 animate-spin" /> : <Download className="w-5 h-5 md:w-4 md:h-4" />}
+            <span className="hidden md:inline">{isDownloading ? 'Generating PDF...' : 'Download PDF'}</span>
           </button>
         </div>
       </div>
@@ -294,53 +356,87 @@ export default function InvoiceGenerator() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Client</h3>
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Client</h3>
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-fit">
+                    <button 
+                      onClick={() => {
+                        setCustomerMode('new');
+                        setInvoiceData(prev => ({...prev, clientName: '', clientEmail: '', clientAddress: '', clientCity: '', clientState: '', clientPincode: '', clientGst: '', clientPan: ''}));
+                      }}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${customerMode === 'new' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                      New Customer
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setCustomerMode('existing');
+                        setInvoiceData(prev => ({...prev, clientName: '', clientEmail: '', clientAddress: '', clientCity: '', clientState: '', clientPincode: '', clientGst: '', clientPan: ''}));
+                      }}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${customerMode === 'existing' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                      Existing Customer
+                    </button>
+                  </div>
+                </div>
                 <div className="space-y-3">
                   <div className="space-y-1.5 relative">
                     <label className="text-xs font-medium text-slate-500">Name</label>
-                    <input 
-                      type="text" 
-                      value={invoiceData.clientName} 
-                      onChange={e => {
-                        updateData('clientName', e.target.value);
-                        setShowCustomerDropdown(true);
-                      }} 
-                      onFocus={() => setShowCustomerDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)}
-                      placeholder="Type to search customers..."
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
-                    />
-                    {showCustomerDropdown && customers.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
-                        {customers
-                          .filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase()))
-                          .map(c => (
-                            <div 
-                              key={c.id} 
-                              className="p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => {
-                                setInvoiceData(prev => ({
-                                  ...prev,
-                                  clientName: c.customer_name,
-                                  clientEmail: c.email || '',
-                                  clientAddress: c.billing_address || '',
-                                  clientCity: c.city || '',
-                                  clientState: c.state || '',
-                                  clientPincode: c.pincode || '',
-                                  clientGst: c.GSTIN || '',
-                                  clientPan: c.PAN || ''
-                                }));
-                                setShowCustomerDropdown(false);
-                              }}
-                            >
-                              <div className="font-medium text-slate-900 dark:text-white">{c.customer_name}</div>
-                              {c.email && <div className="text-xs text-slate-500">{c.email}</div>}
-                            </div>
-                          ))
-                        }
-                        {invoiceData.clientName && customers.filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase())).length === 0 && (
-                          <div className="p-2 text-sm text-slate-500 text-center">No customers found</div>
+                    {customerMode === 'new' ? (
+                      <input 
+                        type="text" 
+                        value={invoiceData.clientName} 
+                        onChange={e => updateData('clientName', e.target.value)} 
+                        placeholder="Enter new customer name"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                      />
+                    ) : (
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={invoiceData.clientName} 
+                          onChange={e => {
+                            updateData('clientName', e.target.value);
+                            setShowCustomerDropdown(true);
+                          }} 
+                          onFocus={() => setShowCustomerDropdown(true)}
+                          onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)}
+                          placeholder="Type to search existing customers..."
+                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                        />
+                        {showCustomerDropdown && customers.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
+                            {customers
+                              .filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase()))
+                              .map(c => (
+                                <div 
+                                  key={c.id} 
+                                  className="p-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    setInvoiceData(prev => ({
+                                      ...prev,
+                                      clientName: c.customer_name,
+                                      clientEmail: c.email || '',
+                                      clientAddress: c.billing_address || '',
+                                      clientCity: c.city || '',
+                                      clientState: c.state || '',
+                                      clientPincode: c.pincode || '',
+                                      clientGst: c.GSTIN || '',
+                                      clientPan: c.PAN || ''
+                                    }));
+                                    setShowCustomerDropdown(false);
+                                  }}
+                                >
+                                  <div className="font-medium text-slate-900 dark:text-white">{c.customer_name}</div>
+                                  {c.email && <div className="text-xs text-slate-500">{c.email}</div>}
+                                </div>
+                              ))
+                            }
+                            {invoiceData.clientName && customers.filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase())).length === 0 && (
+                              <div className="p-2 text-sm text-slate-500 text-center">No customers found</div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}

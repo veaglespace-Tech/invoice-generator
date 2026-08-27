@@ -320,6 +320,26 @@ export default function InvoicePrintView() {
               </div>
             </div>
 
+            {/* Words */}
+            <div className="border-b border-black p-2 text-[10px]">
+              Total invoice value in words: Rupees --- Only
+            </div>
+
+            {/* Digital Signature */}
+            <div className="border-b border-black p-4 flex-1 flex flex-col items-center justify-center text-center min-h-[90px] text-[10px]">
+              <div>Digitally signed by - {`DS ${invoice.organization.legal_name?.toUpperCase() || invoice.organization.name?.toUpperCase()}`}</div>
+              <div>Location - {invoice.organization.city || 'Gurgaon'}</div>
+              <div>Date - {new Date(invoice.created_at || invoice.invoice_date).toUTCString()}</div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex text-[9px] mt-auto">
+              <div className="flex-1 p-1 border-r border-black">Phone: {invoice.organization.phone || ''}</div>
+              <div className="flex-1 p-1 border-r border-black">Fax:</div>
+              <div className="flex-1 p-1 border-r border-black">Email: {invoice.organization.email || ''}</div>
+              <div className="flex-1 p-1 text-blue-600">Website: {invoice.organization.website || ''}</div>
+            </div>
+
           </div>
         </div>
       </div>

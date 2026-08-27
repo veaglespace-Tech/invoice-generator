@@ -38,7 +38,7 @@ export function Sidebar() {
     <>
       {/* Mobile Toggle Button */}
       <button 
-        className="md:hidden fixed top-5 left-4 z-[60] p-2 bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700"
+        className="md:hidden fixed top-3 left-4 z-[60] p-2 bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700"
         onClick={() => setIsOpenMobile(!isOpenMobile)}
       >
         {isOpenMobile ? <X className="w-6 h-6 text-slate-700 dark:text-slate-200" /> : <Menu className="w-6 h-6 text-slate-700 dark:text-slate-200" />}
@@ -67,7 +67,7 @@ export function Sidebar() {
           <ChevronLeft className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
         </button>
 
-        <div className="flex items-center justify-center border-b border-slate-800 bg-slate-950" style={{minHeight: '80px', padding: '12px 16px'}}>
+        <div className="flex items-center justify-center border-b border-slate-800 bg-slate-950" style={{minHeight: '64px', padding: '8px 16px'}}>
           <Link href="/" onClick={() => setIsOpenMobile(false)} className="flex items-center justify-center w-full group">
             {isCollapsed ? (
               <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />

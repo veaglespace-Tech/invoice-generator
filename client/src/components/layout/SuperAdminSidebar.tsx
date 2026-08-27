@@ -22,16 +22,22 @@ export function SuperAdminSidebar() {
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
 
   React.useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      fetch(`${API_BASE_URL}/auth/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(res => {
-        if(res.success && res.data) setUser(res.data);
-      });
-    }
+    const fetchUser = () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        fetch(`${API_BASE_URL}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(res => {
+          if(res.success && res.data) setUser(res.data);
+        });
+      }
+    };
+    
+    fetchUser();
+    window.addEventListener('profileUpdated', fetchUser);
+    return () => window.removeEventListener('profileUpdated', fetchUser);
   }, []);
 
   const logout = () => {
@@ -144,7 +150,7 @@ export function SuperAdminSidebar() {
         )}
         <div className={`flex ${isCollapsed ? 'flex-col items-center gap-2' : 'gap-2'}`}>
           <Link 
-            href="/settings"
+            href="/super-admin/settings"
             className={`p-2 rounded-lg hover:bg-slate-900 text-slate-400 hover:text-white transition-colors ${!isCollapsed && 'flex-1 flex justify-center'}`}
             title="Account Settings"
           >

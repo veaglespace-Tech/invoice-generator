@@ -16,12 +16,12 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-all">
-      <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-24 flex items-center justify-between">
+      <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-16 flex items-center justify-between">
         
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center gap-2 text-2xl font-bold group cursor-pointer py-2">
-            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[60px] md:h-[76px] w-auto object-contain transition-all" />
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold group cursor-pointer py-1">
+            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] md:h-[48px] w-auto object-contain transition-all" />
           </Link>
         </div>
 
@@ -67,7 +67,7 @@ export function Navbar() {
 
       {/* Mobile Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-24 left-0 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shadow-xl flex flex-col z-40 animate-in slide-in-from-top-4 duration-300">
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shadow-xl flex flex-col z-40 animate-in slide-in-from-top-4 duration-300">
           <Link href="/#features" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Features</Link>
           <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">Pricing</Link>
           {isLoggedIn ? (

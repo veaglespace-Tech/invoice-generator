@@ -57,6 +57,7 @@ export default function SuperAdminSettings() {
       });
       if (res.success) {
         setSaveMessage('Profile saved successfully!');
+        window.dispatchEvent(new Event('profileUpdated'));
         setTimeout(() => setSaveMessage(''), 3000);
       }
     } catch (err) {

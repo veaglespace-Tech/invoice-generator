@@ -130,6 +130,7 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
         name: true,
         email: true,
         role: true,
+        avatar: true,
         organization_id: true,
         status: true,
         created_at: true,

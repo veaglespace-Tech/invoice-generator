@@ -6,6 +6,7 @@ import { Plus, Search, Filter, MoreHorizontal, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 interface Invoice {
   id: string;
@@ -21,6 +22,7 @@ interface Invoice {
 }
 
 export default function InvoicesList() {
+  const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,23 @@ export default function InvoicesList() {
       case 'OVERDUE': return <Badge variant="danger">Overdue</Badge>;
       case 'DRAFT': return <Badge variant="default">Draft</Badge>;
       default: return <Badge variant="default">{status}</Badge>;
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to permanently delete this invoice? This action cannot be undone.')) {
+      try {
+        const response = await fetchApi<{ success: boolean; message: string }>(`/invoices/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.success) {
+          setInvoices(invoices.filter(inv => inv.id !== id));
+        } else {
+          alert('Failed to delete invoice');
+        }
+      } catch (err: any) {
+        alert(err.message || 'Error deleting invoice');
+      }
     }
   };
 
@@ -112,11 +131,13 @@ export default function InvoicesList() {
               </thead>
               <tbody>
                 {invoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover">
+                  <tr 
+                    key={invoice.id} 
+                    className="hover cursor-pointer"
+                    onClick={() => router.push(`/invoices/${invoice.id}`)}
+                  >
                     <td className="font-medium text-primary">
-                      <Link href={`/invoices/${invoice.id}`} className="hover:underline">
-                        {invoice.invoice_number}
-                      </Link>
+                      {invoice.invoice_number}
                     </td>
                     <td className="font-medium text-base-content">{invoice.customer.company_name || invoice.customer.customer_name}</td>
                     <td className="font-semibold text-base-content">₹{Number(invoice.grand_total).toLocaleString()}</td>
@@ -125,10 +146,16 @@ export default function InvoicesList() {
                     <td>
                       {getStatusBadge(invoice.status)}
                     </td>
-                    <td className="text-right">
-                      <Link href={`/invoices/${invoice.id}`} className="btn btn-ghost btn-sm btn-square">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </Link>
+                    <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </div>
+                        <ul tabIndex={0} className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700">
+                          <li><Link href={`/invoices/${invoice.id}`}>View Details</Link></li>
+                          <li><button onClick={() => handleDelete(invoice.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button></li>
+                        </ul>
+                      </div>
                     </td>
                   </tr>
                 ))}

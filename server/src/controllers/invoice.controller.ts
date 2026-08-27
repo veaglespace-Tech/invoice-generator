@@ -148,7 +148,7 @@ export const deleteInvoice = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
 
-    const filter: any = { id, is_deleted: false };
+    const filter: any = { id };
     if (req.user?.role !== 'SUPER_ADMIN') {
       filter.organization_id = req.user?.organization_id;
     }
@@ -158,12 +158,17 @@ export const deleteInvoice = async (req: Request, res: Response, next: NextFunct
       return res.status(404).json({ success: false, message: 'Invoice not found' });
     }
 
-    await prisma.invoice.update({
-      where: { id },
-      data: { is_deleted: true, deleted_at: new Date(), status: 'CANCELLED' }
+    // Hard delete related payments to avoid foreign key constraint errors
+    await prisma.payment.deleteMany({
+      where: { invoice_id: id }
     });
 
-    res.status(200).json({ success: true, message: 'Invoice deleted (cancelled)' });
+    // Hard delete the invoice (InvoiceItem cascades automatically)
+    await prisma.invoice.delete({
+      where: { id }
+    });
+
+    res.status(200).json({ success: true, message: 'Invoice permanently deleted' });
   } catch (error) {
     next(error);
   }

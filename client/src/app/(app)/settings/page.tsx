@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Loader2, UploadCloud, Save, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
 import BillingPage from './billing/page';
+import AdminProfile from './AdminProfile';
 
 interface OrgProfile {
   id: string;
@@ -36,7 +37,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'profile' | 'invoice' | 'billing'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'invoice' | 'billing' | 'admin'>('profile');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -170,6 +171,12 @@ export default function SettingsPage() {
           onClick={() => setActiveTab('billing')}
         >
           Billing & Plans
+        </button>
+        <button 
+          className={`tab tab-lg transition-all ${activeTab === 'admin' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          onClick={() => setActiveTab('admin')}
+        >
+          Admin Profile
         </button>
       </div>
 
@@ -350,6 +357,10 @@ export default function SettingsPage() {
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
           <BillingPage />
         </div>
+      )}
+
+      {activeTab === 'admin' && (
+        <AdminProfile />
       )}
     </div>
   );
