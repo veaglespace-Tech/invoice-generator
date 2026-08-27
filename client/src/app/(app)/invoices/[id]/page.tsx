@@ -10,6 +10,7 @@ interface InvoiceData {
   id: string;
   invoice_number: string;
   invoice_date: string;
+  created_at?: string;
   due_date: string;
   status: string;
   sub_total: string;
@@ -30,6 +31,7 @@ interface InvoiceData {
     PAN: string;
     logo: string;
     phone: string;
+    email: string;
     website: string;
   };
   customer: {

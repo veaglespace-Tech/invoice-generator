@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Printer, Plus, Trash2, Hexagon, Loader2, Download, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { fetchApi } from '@/lib/api';
+import * as htmlToImage from 'html-to-image';
+import jsPDF from 'jspdf';
 
 interface LineItem {
   id: string;
