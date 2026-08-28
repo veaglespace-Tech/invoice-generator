@@ -24,7 +24,7 @@ export default function LeadsPage() {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/contact`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('sa_auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
       if (response.data.success) {
@@ -46,7 +46,7 @@ export default function LeadsPage() {
     try {
       const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/contact/${id}/read`, {}, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('sa_auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
       if (response.data.success) {
