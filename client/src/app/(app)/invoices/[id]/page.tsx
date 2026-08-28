@@ -44,6 +44,7 @@ interface InvoiceData {
     billing_pincode: string;
     billing_country: string;
     GSTIN: string;
+    PAN?: string;
   };
   items: {
     id: string;
