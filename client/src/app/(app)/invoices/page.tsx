@@ -21,11 +21,15 @@ interface Invoice {
   status: string;
 }
 
+import { toast } from 'sonner';
+
 export default function InvoicesList() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadInvoices = async () => {
@@ -63,14 +67,23 @@ export default function InvoicesList() {
         });
         if (response.success) {
           setInvoices(invoices.filter(inv => inv.id !== id));
+          toast.success('Invoice deleted successfully');
         } else {
-          alert('Failed to delete invoice');
+          toast.error('Failed to delete invoice');
         }
       } catch (err: any) {
-        alert(err.message || 'Error deleting invoice');
+        toast.error(err.message || 'Error deleting invoice');
       }
     }
   };
+
+  const filteredInvoices = invoices.filter(inv => {
+    const matchesSearch = inv.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          inv.customer.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          inv.customer.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <>
@@ -93,12 +106,23 @@ export default function InvoicesList() {
               type="text" 
               placeholder="Search invoices..." 
               className="input input-bordered w-full pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="btn btn-outline">
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-outline">
+              <Filter className="w-4 h-4" />
+              {statusFilter === 'ALL' ? 'All Status' : statusFilter}
+            </div>
+            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-52 mt-2 border border-slate-200 dark:border-slate-700">
+              <li><a onClick={() => setStatusFilter('ALL')}>All</a></li>
+              <li><a onClick={() => setStatusFilter('PAID')}>Paid</a></li>
+              <li><a onClick={() => setStatusFilter('PENDING')}>Pending</a></li>
+              <li><a onClick={() => setStatusFilter('OVERDUE')}>Overdue</a></li>
+              <li><a onClick={() => setStatusFilter('DRAFT')}>Draft</a></li>
+            </ul>
+          </div>
         </div>
         
         <div className="overflow-x-auto min-h-[400px]">
@@ -112,9 +136,9 @@ export default function InvoicesList() {
               <p>{error}</p>
               <button onClick={() => window.location.reload()} className="mt-4 text-indigo-600 hover:underline">Try again</button>
             </div>
-          ) : invoices.length === 0 ? (
+          ) : filteredInvoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-slate-500">
-              <p>No invoices found.</p>
+              <p>No invoices found matching your criteria.</p>
             </div>
           ) : (
             <table className="table table-zebra w-full text-sm text-left">
@@ -130,7 +154,7 @@ export default function InvoicesList() {
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((invoice) => (
+                {filteredInvoices.map((invoice) => (
                   <tr 
                     key={invoice.id} 
                     className="hover cursor-pointer"
@@ -166,7 +190,7 @@ export default function InvoicesList() {
         
         {!loading && !error && invoices.length > 0 && (
           <div className="p-4 border-t border-base-200 flex items-center justify-between text-sm text-base-content/70">
-            <span>Showing {invoices.length} result(s)</span>
+            <span>Showing {filteredInvoices.length} result(s)</span>
             <div className="flex gap-2">
               <button className="btn btn-outline btn-sm" disabled>Previous</button>
               <button className="btn btn-outline btn-sm" disabled>Next</button>

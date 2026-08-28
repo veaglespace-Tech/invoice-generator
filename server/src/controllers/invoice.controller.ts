@@ -1,27 +1,59 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 import { createInvoiceSchema, updateInvoiceStatusSchema } from '../validators/invoice.validator';
 import { calculateInvoice, generateInvoiceNumber } from '../services/invoice.service';
 
-export const getAllInvoices = async (req: Request, res: Response, next: NextFunction) => {
+export const getNextInvoiceNumber = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const filter: any = { is_deleted: false };
-
-    if (req.user?.role !== 'SUPER_ADMIN') {
-      filter.organization_id = req.user?.organization_id;
-    } else if (req.query.organization_id) {
-      filter.organization_id = req.query.organization_id;
+    let targetOrgId = req.user?.organization_id;
+    if (req.user?.role === Role.SUPER_ADMIN && req.query.organization_id) {
+      targetOrgId = req.query.organization_id as string;
     }
 
-    const invoices = await prisma.invoice.findMany({
-      where: filter,
-      include: {
-        customer: { select: { customer_name: true, company_name: true } }
-      },
-      orderBy: { created_at: 'desc' }
-    });
+    if (!targetOrgId) {
+      return res.status(400).json({ success: false, message: 'Organization ID is required' });
+    }
 
-    res.status(200).json({ success: true, data: invoices });
+    const invoiceNumber = await generateInvoiceNumber(targetOrgId);
+    res.status(200).json({ success: true, data: { invoice_number: invoiceNumber } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllInvoices = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const filter: Prisma.InvoiceWhereInput = {};
+
+    if (req.user?.role !== Role.SUPER_ADMIN) {
+      filter.organization_id = req.user?.organization_id;
+    } else if (req.query.organization_id) {
+      filter.organization_id = req.query.organization_id as string;
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const skip = (page - 1) * limit;
+
+    const [invoices, total] = await Promise.all([
+      prisma.invoice.findMany({
+        where: filter,
+        include: {
+          customer: { select: { customer_name: true, company_name: true } }
+        },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.invoice.count({ where: filter })
+    ]);
+
+    res.status(200).json({ 
+      success: true, 
+      data: invoices, 
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } 
+    });
   } catch (error) {
     next(error);
   }
@@ -31,8 +63,8 @@ export const getInvoiceById = async (req: Request, res: Response, next: NextFunc
   try {
     const { id } = req.params;
 
-    const filter: any = { id, is_deleted: false };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     }
 
@@ -62,7 +94,7 @@ export const createInvoice = async (req: Request, res: Response, next: NextFunct
     const data = createInvoiceSchema.parse(req.body);
 
     let targetOrgId = req.user?.organization_id;
-    if (req.user?.role === 'SUPER_ADMIN' && req.body.organization_id) {
+    if (req.user?.role === Role.SUPER_ADMIN && req.body.organization_id) {
       targetOrgId = req.body.organization_id;
     }
 
@@ -73,8 +105,11 @@ export const createInvoice = async (req: Request, res: Response, next: NextFunct
     // Backend-side calculation engine
     const { calculatedItems, totals } = await calculateInvoice(targetOrgId, data.customer_id, data.items);
     
-    // Generate Invoice Number
-    const invoiceNumber = await generateInvoiceNumber(targetOrgId);
+    // Generate or Use provided Invoice Number
+    let invoiceNumber = data.invoice_number;
+    if (!invoiceNumber) {
+      invoiceNumber = await generateInvoiceNumber(targetOrgId);
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       const invoice = await tx.invoice.create({
@@ -123,8 +158,8 @@ export const updateInvoiceStatus = async (req: Request, res: Response, next: Nex
     const { id } = req.params;
     const { status } = updateInvoiceStatusSchema.parse(req.body);
 
-    const filter: any = { id, is_deleted: false };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     }
 
@@ -148,8 +183,8 @@ export const deleteInvoice = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
 
-    const filter: any = { id };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     }
 
@@ -180,8 +215,8 @@ export const downloadInvoicePDF = async (req: Request, res: Response, next: Next
   try {
     const { id } = req.params;
 
-    const filter: any = { id, is_deleted: false };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     }
 
@@ -216,8 +251,8 @@ export const sendInvoice = async (req: Request, res: Response, next: NextFunctio
   try {
     const { id } = req.params;
 
-    const filter: any = { id, is_deleted: false };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     }
 

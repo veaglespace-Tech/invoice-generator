@@ -5,6 +5,7 @@ import { Plus, Search, Filter, MoreHorizontal, Mail, Phone, Building2, Loader2, 
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface Customer {
   id: string;
@@ -52,6 +53,10 @@ export default function CustomersPage() {
     loadCustomers();
   }, []);
 
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -66,10 +71,68 @@ export default function CustomersPage() {
         customer_name: '', company_name: '', email: '', phone: '',
         billing_address: '', city: '', state: '', country: '', pincode: '', GSTIN: '', PAN: ''
       });
+      toast.success('Customer added successfully');
     } catch (err: any) {
-      alert(err.message || 'Failed to add customer');
+      toast.error(err.message || 'Failed to add customer');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+    setSubmitting(true);
+    try {
+      await fetchApi(`/customers/${editingCustomer.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(formData)
+      });
+      await loadCustomers();
+      setIsEditModalOpen(false);
+      setEditingCustomer(null);
+      toast.success('Customer updated successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update customer');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setFormData({
+      customer_name: customer.customer_name || '',
+      company_name: customer.company_name || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      // Note: Full details might need to be fetched, but we'll use what we have or empty strings
+      billing_address: (customer as any).billing_address || '',
+      city: (customer as any).city || '',
+      state: (customer as any).state || '',
+      country: (customer as any).country || '',
+      pincode: (customer as any).pincode || '',
+      GSTIN: (customer as any).GSTIN || '',
+      PAN: (customer as any).PAN || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this customer?')) {
+      try {
+        const response = await fetchApi<{ success: boolean; message: string }>(`/customers/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.success) {
+          setCustomers(customers.filter(c => c.id !== id));
+          toast.success('Customer deleted successfully');
+        } else {
+          toast.error('Failed to delete customer');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Error deleting customer');
+      }
     }
   };
 
@@ -166,9 +229,15 @@ export default function CustomersPage() {
                       )}
                     </td>
                     <td className="text-right">
-                      <button className="btn btn-ghost btn-sm btn-square">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
+                      <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </div>
+                        <ul tabIndex={0} className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700">
+                          <li><a onClick={() => openEditModal(customer)}>Edit</a></li>
+                          <li><button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button></li>
+                        </ul>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -188,14 +257,24 @@ export default function CustomersPage() {
         )}
       </Card>
 
-      {/* Add Customer Modal */}
-      {isAddModalOpen && (
+      {/* Customer Modal (Add/Edit) */}
+      {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add New Customer</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {isEditModalOpen ? 'Edit Customer' : 'Add New Customer'}
+              </h2>
               <button 
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setIsEditModalOpen(false);
+                  setEditingCustomer(null);
+                  setFormData({
+                    customer_name: '', company_name: '', email: '', phone: '',
+                    billing_address: '', city: '', state: '', country: '', pincode: '', GSTIN: '', PAN: ''
+                  });
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
               >
                 <X className="w-5 h-5" />
@@ -203,7 +282,7 @@ export default function CustomersPage() {
             </div>
             
             <div className="overflow-y-auto">
-              <form id="add-customer-form" onSubmit={handleAddCustomer} className="p-6 space-y-6">
+              <form id="customer-form" onSubmit={isEditModalOpen ? handleEditCustomer : handleAddCustomer} className="p-6 space-y-6">
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Basic Details</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -332,19 +411,27 @@ export default function CustomersPage() {
             <div className="flex justify-end gap-3 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
               <button 
                 type="button"
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setIsEditModalOpen(false);
+                  setEditingCustomer(null);
+                  setFormData({
+                    customer_name: '', company_name: '', email: '', phone: '',
+                    billing_address: '', city: '', state: '', country: '', pincode: '', GSTIN: '', PAN: ''
+                  });
+                }}
                 className="btn btn-ghost"
               >
                 Cancel
               </button>
               <button 
-                form="add-customer-form"
+                form="customer-form"
                 type="submit"
                 disabled={submitting}
                 className="btn btn-primary text-white"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {submitting ? 'Saving...' : 'Save Customer'}
+                {submitting ? 'Saving...' : isEditModalOpen ? 'Update Customer' : 'Save Customer'}
               </button>
             </div>
           </div>

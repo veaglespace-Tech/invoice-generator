@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 import { createOrganizationSchema, updateOrganizationSchema, updateOrgStatusSchema } from '../validators/organization.validator';
 import { hashPassword } from '../utils/hash';
 
 export const getAllOrganizations = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgs = await prisma.organization.findMany({
-      where: { is_deleted: false },
       include: {
         _count: {
           select: { users: true, customers: true, invoices: true }
@@ -24,12 +24,12 @@ export const getOrganizationById = async (req: Request, res: Response, next: Nex
     const { id } = req.params;
 
     // Enforce data isolation if not Super Admin
-    if (req.user?.role !== 'SUPER_ADMIN' && req.user?.organization_id !== id) {
+    if (req.user?.role !== Role.SUPER_ADMIN && req.user?.organization_id !== id) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
     const org = await prisma.organization.findUnique({
-      where: { id, is_deleted: false },
+      where: { id },
       include: {
         settings: true
       }
@@ -70,7 +70,7 @@ export const createOrganization = async (req: Request, res: Response, next: Next
           name: data.adminName,
           email: data.email,
           password: hashedPassword,
-          role: 'ORGANIZATION_ADMIN'
+          role: Role.ORGANIZATION_ADMIN
         }
       });
 
@@ -92,12 +92,12 @@ export const updateOrganization = async (req: Request, res: Response, next: Next
     const { id } = req.params;
     const { settings, ...orgData } = updateOrganizationSchema.parse(req.body);
 
-    if (req.user?.role !== 'SUPER_ADMIN' && req.user?.organization_id !== id) {
+    if (req.user?.role !== Role.SUPER_ADMIN && req.user?.organization_id !== id) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
-    if (req.user?.role !== 'SUPER_ADMIN') {
-      delete orgData.plan; // Normal admins cannot change plan directly
+    if (req.user?.role !== Role.SUPER_ADMIN) {
+      delete (orgData as any).plan; // Normal admins cannot change plan directly
     }
 
     const org = await prisma.organization.update({
@@ -166,7 +166,7 @@ export const getMeOrg = async (req: Request, res: Response, next: NextFunction) 
     }
 
     const org = await prisma.organization.findUnique({
-      where: { id: orgId, is_deleted: false },
+      where: { id: orgId },
       include: {
         settings: true
       }

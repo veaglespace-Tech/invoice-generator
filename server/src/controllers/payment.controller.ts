@@ -1,16 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 import { createPaymentSchema } from '../validators/payment.validator';
 import Decimal from 'decimal.js';
 
 export const getAllPayments = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const filter: any = {};
+    const filter: Prisma.PaymentWhereInput = {};
 
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     } else if (req.query.organization_id) {
-      filter.organization_id = req.query.organization_id;
+      filter.organization_id = req.query.organization_id as string;
     }
 
     const payments = await prisma.payment.findMany({
@@ -31,8 +32,8 @@ export const addPayment = async (req: Request, res: Response, next: NextFunction
   try {
     const data = createPaymentSchema.parse(req.body);
 
-    const invoiceFilter: any = { id: data.invoice_id, is_deleted: false };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const invoiceFilter: Prisma.InvoiceWhereInput = { id: data.invoice_id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       invoiceFilter.organization_id = req.user?.organization_id;
     }
 
@@ -105,8 +106,8 @@ export const deletePayment = async (req: Request, res: Response, next: NextFunct
   try {
     const { id } = req.params;
 
-    const paymentFilter: any = { id };
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    const paymentFilter: Prisma.PaymentWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       paymentFilter.organization_id = req.user?.organization_id;
     }
 

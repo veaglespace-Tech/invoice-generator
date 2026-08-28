@@ -6,11 +6,15 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
 
+import { toast } from 'sonner';
+
 interface Product {
   id: string;
   name: string;
+  description: string;
   SKU: string;
   type: string;
+  unit: string;
   price: string | number;
   tax_rate: string | number;
   status: string;
@@ -23,6 +27,8 @@ export default function ProductsPage() {
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -65,10 +71,68 @@ export default function ProductsPage() {
       await loadProducts();
       setIsAddModalOpen(false);
       setFormData({ name: '', description: '', SKU: '', type: 'SERVICE', unit: 'pcs', price: '', tax_rate: '0' });
+      toast.success('Item added successfully');
     } catch (err: any) {
-      alert(err.message || 'Failed to add product');
+      toast.error(err.message || 'Failed to add item');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setSubmitting(true);
+    try {
+      const payload = {
+        ...formData,
+        price: Number(formData.price),
+        tax_rate: Number(formData.tax_rate)
+      };
+      await fetchApi(`/products/${editingProduct.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      await loadProducts();
+      setIsEditModalOpen(false);
+      setEditingProduct(null);
+      toast.success('Item updated successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update item');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name || '',
+      description: product.description || '',
+      SKU: product.SKU || '',
+      type: product.type || 'SERVICE',
+      unit: product.unit || 'pcs',
+      price: product.price ? product.price.toString() : '',
+      tax_rate: product.tax_rate ? product.tax_rate.toString() : '0'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        const response = await fetchApi<{ success: boolean; message: string }>(`/products/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.success) {
+          setProducts(products.filter(p => p.id !== id));
+          toast.success('Item deleted successfully');
+        } else {
+          toast.error('Failed to delete item');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Error deleting item');
+      }
     }
   };
 
@@ -155,9 +219,15 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="text-right">
-                      <button className="btn btn-ghost btn-sm btn-square">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
+                      <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </div>
+                        <ul tabIndex={0} className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700">
+                          <li><a onClick={() => openEditModal(item)}>Edit</a></li>
+                          <li><button onClick={() => handleDelete(item.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button></li>
+                        </ul>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -177,21 +247,28 @@ export default function ProductsPage() {
         )}
       </Card>
 
-      {/* Add Product Modal */}
-      {isAddModalOpen && (
+      {/* Item Modal (Add/Edit) */}
+      {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add New Item</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {isEditModalOpen ? 'Edit Item' : 'Add New Item'}
+              </h2>
               <button 
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setIsEditModalOpen(false);
+                  setEditingProduct(null);
+                  setFormData({ name: '', description: '', SKU: '', type: 'SERVICE', unit: 'pcs', price: '', tax_rate: '0' });
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <form onSubmit={handleAddProduct} className="p-6 space-y-4">
+            <form onSubmit={isEditModalOpen ? handleEditProduct : handleAddProduct} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Item Name *</label>
@@ -258,7 +335,12 @@ export default function ProductsPage() {
               <div className="flex justify-end gap-3 pt-4 border-t border-base-200">
                 <button 
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setIsEditModalOpen(false);
+                    setEditingProduct(null);
+                    setFormData({ name: '', description: '', SKU: '', type: 'SERVICE', unit: 'pcs', price: '', tax_rate: '0' });
+                  }}
                   className="btn btn-ghost"
                 >
                   Cancel
@@ -269,7 +351,7 @@ export default function ProductsPage() {
                   className="btn btn-primary text-white"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {submitting ? 'Adding...' : 'Add Item'}
+                  {submitting ? 'Saving...' : isEditModalOpen ? 'Update Item' : 'Add Item'}
                 </button>
               </div>
             </form>

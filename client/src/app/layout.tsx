@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Providers } from "@/components/Providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,9 +27,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${outfit.variable} h-full antialiased`}
-      data-theme="corporate"
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-base-100 text-base-content">{children}</body>
+      <body className="min-h-full flex flex-col bg-base-100 text-base-content">
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

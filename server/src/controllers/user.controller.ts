@@ -1,17 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 import { createUserSchema, updateUserSchema } from '../validators/user.validator';
 import { hashPassword } from '../utils/hash';
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const filter: any = { is_deleted: false };
+    const filter: Prisma.UserWhereInput = {};
 
     // Org Admin can only see their org's users
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     } else if (req.query.organization_id) {
-      filter.organization_id = req.query.organization_id;
+      filter.organization_id = req.query.organization_id as string;
     }
 
     const users = await prisma.user.findMany({
@@ -41,7 +42,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     const { id } = req.params;
     
     const user = await prisma.user.findUnique({
-      where: { id, is_deleted: false },
+      where: { id },
       include: {
         permissions: true,
         organization: {
@@ -55,7 +56,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     }
 
     // Isolate data
-    if (req.user?.role !== 'SUPER_ADMIN' && user.organization_id !== req.user?.organization_id) {
+    if (req.user?.role !== Role.SUPER_ADMIN && user.organization_id !== req.user?.organization_id) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
@@ -74,11 +75,11 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
     // Organization ID logic
     let targetOrgId = req.user?.organization_id;
-    if (req.user?.role === 'SUPER_ADMIN' && data.organization_id) {
+    if (req.user?.role === Role.SUPER_ADMIN && data.organization_id) {
       targetOrgId = data.organization_id;
     }
 
-    if (!targetOrgId && data.role !== 'SUPER_ADMIN') {
+    if (!targetOrgId && data.role !== Role.SUPER_ADMIN) {
       return res.status(400).json({ success: false, message: 'Organization ID is required for non-super admins' });
     }
 
@@ -95,8 +96,8 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
           name: data.name,
           email: data.email,
           password: hashedPassword,
-          role: data.role,
-          organization_id: data.role === 'SUPER_ADMIN' ? null : targetOrgId
+          role: data.role as Role,
+          organization_id: data.role === Role.SUPER_ADMIN ? null : targetOrgId
         }
       });
 
@@ -123,12 +124,12 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
     const { id } = req.params;
     const data = updateUserSchema.parse(req.body);
 
-    const user = await prisma.user.findUnique({ where: { id, is_deleted: false } });
+    const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (req.user?.role !== 'SUPER_ADMIN' && user.organization_id !== req.user?.organization_id) {
+    if (req.user?.role !== Role.SUPER_ADMIN && user.organization_id !== req.user?.organization_id) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
@@ -168,12 +169,12 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
   try {
     const { id } = req.params;
 
-    const user = await prisma.user.findUnique({ where: { id, is_deleted: false } });
+    const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (req.user?.role !== 'SUPER_ADMIN' && user.organization_id !== req.user?.organization_id) {
+    if (req.user?.role !== Role.SUPER_ADMIN && user.organization_id !== req.user?.organization_id) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 

@@ -13,8 +13,11 @@ import {
   Hexagon,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  Moon,
+  Sun
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -28,6 +31,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
@@ -70,9 +79,9 @@ export function Sidebar() {
         <div className="flex items-center justify-center border-b border-slate-800 bg-slate-950" style={{minHeight: '64px', padding: '8px 16px'}}>
           <Link href="/" onClick={() => setIsOpenMobile(false)} className="flex items-center justify-center w-full group">
             {isCollapsed ? (
-              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
+              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg coin-spin" />
             ) : (
-              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[160px] object-contain" />
+              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[160px] object-contain coin-spin" />
             )}
           </Link>
         </div>
@@ -101,7 +110,23 @@ export function Sidebar() {
       </ul>
 
       <div className="p-4 border-t border-slate-800 bg-slate-950">
-        <ul className="menu p-0">
+        <ul className="menu p-0 space-y-1">
+          <li>
+            <button 
+              onClick={() => setTheme(theme === 'corporate' ? 'business' : 'corporate')}
+              className={`flex items-center gap-3 py-3 text-slate-400 hover:bg-slate-900 hover:text-slate-100 rounded-xl transition-colors duration-200 font-medium group w-full ${
+                isCollapsed ? 'justify-center px-0' : 'px-4'
+              }`}
+              title={isCollapsed ? "Toggle Theme" : undefined}
+            >
+              {mounted && theme === 'corporate' ? (
+                <Moon className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors" />
+              ) : mounted ? (
+                <Sun className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors" />
+              ) : <div className="w-5 h-5 flex-shrink-0"></div>}
+              {!isCollapsed && <span className="whitespace-nowrap">Toggle Theme</span>}
+            </button>
+          </li>
           <li>
             <button 
               onClick={handleLogout}

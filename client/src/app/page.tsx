@@ -8,38 +8,38 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       <Navbar />
 
-      <main className="flex-1 flex flex-col items-center justify-center relative pt-36 pb-32 overflow-hidden">
+      <main className="flex-1 flex flex-col items-center justify-center relative pt-16 md:pt-24 pb-8 md:pb-12 overflow-hidden">
         {/* Abstract background elements */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
         <div className="max-w-4xl mx-auto px-6 text-center space-y-8 z-10">
           <div className="inline-flex items-center gap-2 p-1 pr-3 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm mb-6 hover:shadow-md transition-shadow">
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> New
+            <span className="bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-100 dark:to-white text-white dark:text-slate-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-inner">
+              <Sparkles className="w-3 h-3" /> Exclusive
             </span>
-            <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
-              The #1 Invoice Generator for Modern Teams
+            <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 tracking-wide">
+              The Premium Billing Suite for Elite Teams
             </span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-            Get paid faster with <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              beautiful invoices.
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]">
+            Elevate your billing. <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-[gradient_3s_ease_infinite] dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400">
+              Get paid effortlessly.
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Create, send, and track professional invoices in seconds. Built for freelancers, agencies, and growing organizations.
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+            Experience a masterclass in financial management. Generate pristine, tax-compliant invoices in seconds with our state-of-the-art enterprise platform.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <Link href="/register" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgb(79,70,229,0.5)] flex items-center justify-center gap-2 transform hover:-translate-y-1">
-              Start for free <ArrowRight className="w-5 h-5" />
+            <Link href="/register" className="w-full sm:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center gap-2 transform hover:-translate-y-1 border border-transparent">
+              Experience Veagle Space <ArrowRight className="w-5 h-5" />
             </Link>
             <Link href="/login" className="w-full sm:w-auto bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-8 py-4 rounded-full font-semibold text-lg transition-all flex items-center justify-center gap-2">
-              Sign In
+              Sign In to Portal
             </Link>
           </div>
           
@@ -49,12 +49,12 @@ export default function Home() {
         </div>
       </main>
       
-      <section id="features" className="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+      <section id="features" className="scroll-mt-20 py-8 md:py-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold text-sm mb-2 shadow-sm border border-indigo-100 dark:border-indigo-800/50">✨ Discover the Magic</div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Powerful Features</h2>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Everything you need to manage your business billing seamlessly and accelerate your growth.</p>
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
+            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-medium text-sm mb-2 shadow-sm border border-slate-200 dark:border-slate-700/50 uppercase tracking-widest">✨ Precision Engineered</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Uncompromising Excellence</h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light">A meticulously crafted ecosystem designed to handle your finances with absolute precision and elegance.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 text-center">
             <div className="space-y-3 bg-blue-50 p-6 rounded-3xl shadow-[0_8px_30px_rgb(37,99,235,0.1)] border-2 border-blue-200 hover:shadow-[0_15px_40px_rgb(37,99,235,0.2)] hover:border-blue-300 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden z-10">
@@ -115,16 +115,16 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
+      <section id="pricing" className="scroll-mt-20 py-8 md:py-12 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-semibold text-sm mb-2 shadow-sm border border-emerald-100 dark:border-emerald-800/50">💎 Plans & Pricing</div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Simple, transparent pricing</h2>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Choose the perfect plan for your business needs. No hidden fees, cancel anytime.</p>
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
+            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-900 text-white font-medium text-sm mb-2 shadow-sm uppercase tracking-widest">💎 Premium Tiering</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">Invest in your workflow</h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light">Transparent, scalable plans designed for visionaries and industry leaders.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div className="grid md:grid-cols-2 max-w-4xl mx-auto gap-8 items-start">
             {/* Starter Plan */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Starter</h3>
@@ -134,9 +134,9 @@ export default function Home() {
                 <span className="text-slate-500 dark:text-slate-400 font-medium">/ forever</span>
               </div>
               <ul className="space-y-4 mb-8 text-slate-600 dark:text-slate-300">
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Up to 50 invoices/month</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Basic templates</li>
-                <li className="flex items-center gap-3 text-slate-400 dark:text-slate-600"><Zap className="w-5 h-5" /> No multi-org support</li>
+                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Up to 50 Invoices / Month</li>
+                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Basic PDF Export & GST</li>
+                <li className="flex items-center gap-3 text-slate-400 dark:text-slate-600"><Zap className="w-5 h-5" /> No Custom Branding</li>
               </ul>
               <Link href="/register?plan=starter" className="block w-full text-center bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-semibold transition-colors border border-indigo-100 dark:border-indigo-800/50">
                 Get Started
@@ -144,9 +144,9 @@ export default function Home() {
             </div>
 
             {/* Professional Plan */}
-            <div className="bg-indigo-600 rounded-3xl p-8 border border-indigo-500 shadow-2xl shadow-indigo-500/20 transform md:-translate-y-4 relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">
-                Most Popular
+            <div className="bg-slate-900 dark:bg-black rounded-3xl p-8 border border-slate-800 shadow-2xl shadow-slate-900/20 transform md:-translate-y-4 relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-200 to-amber-400 text-amber-950 px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+                The Elite Standard
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
               <p className="text-indigo-200 mb-6">For growing agencies and small businesses.</p>
@@ -154,31 +154,13 @@ export default function Home() {
                 <span className="text-5xl font-extrabold text-white">₹999</span>
                 <span className="text-indigo-200 font-medium">/ month</span>
               </div>
-              <ul className="space-y-4 mb-8 text-indigo-50">
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Unlimited invoices</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Premium templates & branding</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Up to 3 organizations</li>
+              <ul className="space-y-4 mb-8 text-slate-300">
+                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Unlimited Invoices & Customers</li>
+                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Live QR Code on Invoices</li>
+                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Custom Auto-Prefix (e.g. VEA-001)</li>
               </ul>
-              <Link href="/register?plan=professional" className="block w-full text-center bg-white hover:bg-slate-50 text-indigo-600 py-3 rounded-xl font-bold transition-colors shadow-lg">
-                Get Started
-              </Link>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Enterprise</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">For large organizations with complex needs.</p>
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-slate-900 dark:text-white">₹2,999</span>
-                <span className="text-slate-500 dark:text-slate-400 font-medium">/ month</span>
-              </div>
-              <ul className="space-y-4 mb-8 text-slate-600 dark:text-slate-300">
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Unlimited everything</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Dedicated account manager</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Custom integrations</li>
-              </ul>
-              <Link href="/register?plan=enterprise" className="block w-full text-center bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-semibold transition-colors border border-indigo-100 dark:border-indigo-800/50">
-                Get Started
+              <Link href="/register?plan=professional" className="block w-full text-center bg-white hover:bg-slate-200 text-slate-900 py-3.5 rounded-xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5">
+                Elevate Your Billing
               </Link>
             </div>
           </div>

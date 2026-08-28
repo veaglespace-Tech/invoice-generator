@@ -23,7 +23,7 @@ export const requirePermission = (permission: string) => {
     }
 
     // SUPER_ADMIN and ORGANIZATION_ADMIN have all permissions inherently in this system
-    if (req.user.role === 'SUPER_ADMIN' || req.user.role === 'ORGANIZATION_ADMIN') {
+    if (req.user.role === Role.SUPER_ADMIN || req.user.role === Role.ORGANIZATION_ADMIN) {
       return next();
     }
 

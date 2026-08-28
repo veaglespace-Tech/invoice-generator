@@ -18,6 +18,10 @@
   --font-sans: var(--font-outfit);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -113,4 +117,18 @@ body {
   @page {
     margin: 0.5cm;
   }
+}
+
+/* Coin Flip Animation */
+@keyframes coinFlip {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+.coin-spin {
+  animation: coinFlip 4s linear infinite;
+  transform-style: preserve-3d;
+}
+.group:hover .coin-spin-hover {
+  animation: coinFlip 1.5s ease-in-out;
+  transform-style: preserve-3d;
 }

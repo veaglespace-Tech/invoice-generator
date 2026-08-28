@@ -12,6 +12,7 @@ export const createInvoiceItemSchema = z.object({
 
 export const createInvoiceSchema = z.object({
   customer_id: z.string().uuid('Invalid customer ID'),
+  invoice_number: z.string().optional().nullable(),
   invoice_date: z.string().refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),
   due_date: z.string().refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),
   notes: z.string().optional().nullable(),

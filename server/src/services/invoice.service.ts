@@ -105,14 +105,37 @@ export const generateInvoiceNumber = async (organizationId: string) => {
     where: { organization_id: organizationId }
   });
 
-  const prefix = settings?.prefix || 'INV-';
-  const formatLength = settings?.number_format.length || 4;
+  let prefix = settings?.prefix;
+  const formatLength = settings?.number_format?.length || 4;
 
-  const count = await prisma.invoice.count({
-    where: { organization_id: organizationId }
+  if (!prefix || prefix === 'INV-') {
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId }
+    });
+    const orgName = org?.legal_name || org?.name || 'INV';
+    // Clean and take first 3 letters uppercase
+    const cleanName = orgName.replace(/[^a-zA-Z]/g, '');
+    prefix = (cleanName.length >= 3 ? cleanName.substring(0, 3) : cleanName.padEnd(3, 'X')).toUpperCase() + '-';
+  }
+
+  // Find the highest sequence number for this prefix
+  const lastInvoice = await prisma.invoice.findFirst({
+    where: {
+      organization_id: organizationId,
+      invoice_number: { startsWith: prefix }
+    },
+    orderBy: { invoice_number: 'desc' }
   });
 
-  const nextNumber = count + 1;
+  let nextNumber = 1;
+  if (lastInvoice && lastInvoice.invoice_number) {
+    // Extract the numeric part at the end
+    const match = lastInvoice.invoice_number.match(/(\d+)$/);
+    if (match) {
+      nextNumber = parseInt(match[1], 10) + 1;
+    }
+  }
+
   const paddedNumber = String(nextNumber).padStart(formatLength, '0');
 
   return `${prefix}${paddedNumber}`;

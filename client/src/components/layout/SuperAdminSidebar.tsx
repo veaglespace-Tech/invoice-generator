@@ -8,6 +8,7 @@ import {
   Building2, 
   CreditCard,
   LayoutDashboard,
+  MessageSquare,
   ShieldAlert,
   LogOut,
   Settings,
@@ -49,6 +50,7 @@ export function SuperAdminSidebar() {
     { name: 'Dashboard', href: '/super-admin/dashboard', icon: LayoutDashboard },
     { name: 'Organizations', href: '/super-admin/organizations', icon: Building2 },
     { name: 'Plans & Subs', href: '/super-admin/plans', icon: CreditCard },
+    { name: 'Leads', href: '/super-admin/leads', icon: MessageSquare },
   ];
 
   if (pathname === '/super-admin/login') {
@@ -61,7 +63,7 @@ export function SuperAdminSidebar() {
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 w-full fixed top-0 left-0 z-40 shadow-sm">
         <div className="flex items-center gap-3">
           <Link href="/" onClick={() => setIsOpenMobile(false)} className="flex items-center h-10 px-2 group">
-            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] w-auto object-contain" />
+            <img src="/logo.webp" alt="Veagle Space Technology" className="h-[40px] w-auto object-contain coin-spin" />
           </Link>
           <span className="font-bold text-lg whitespace-nowrap hidden sm:block">Admin Portal</span>
         </div>
@@ -100,9 +102,9 @@ export function SuperAdminSidebar() {
         <div className="flex items-center gap-3 w-full overflow-hidden">
           <Link href="/" className="flex items-center group">
             {isCollapsed ? (
-              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg" />
+              <img src="/logo.webp" alt="VS" className="h-9 w-9 object-contain rounded-lg coin-spin" />
             ) : (
-              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[120px] object-contain" />
+              <img src="/logo.webp" alt="Veagle Space Technology" className="h-14 w-auto max-w-[120px] object-contain coin-spin" />
             )}
           </Link>
           {!isCollapsed && (

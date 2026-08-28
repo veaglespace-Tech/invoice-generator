@@ -317,3 +317,16 @@ enum SubscriptionStatus {
   EXPIRED
   FAILED
 }
+
+model ContactLead {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  status    String   @default("UNREAD") // UNREAD, READ
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}

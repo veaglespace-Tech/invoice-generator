@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 
 export const getSuperAdminDashboard = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -12,13 +13,13 @@ export const getSuperAdminDashboard = async (req: Request, res: Response, next: 
       totalInvoices,
       invoices
     ] = await Promise.all([
-      prisma.organization.count({ where: { is_deleted: false } }),
-      prisma.organization.count({ where: { status: 'ACTIVE', is_deleted: false } }),
-      prisma.organization.count({ where: { status: 'SUSPENDED', is_deleted: false } }),
-      prisma.user.count({ where: { is_deleted: false } }),
-      prisma.customer.count({ where: { is_deleted: false } }),
-      prisma.invoice.count({ where: { is_deleted: false } }),
-      prisma.invoice.findMany({ where: { is_deleted: false }, select: { status: true, grand_total: true } })
+      prisma.organization.count(),
+      prisma.organization.count({ where: { status: 'ACTIVE' } }),
+      prisma.organization.count({ where: { status: 'SUSPENDED' } }),
+      prisma.user.count(),
+      prisma.customer.count(),
+      prisma.invoice.count(),
+      prisma.invoice.findMany({ select: { status: true, grand_total: true } })
     ]);
 
     let totalInvoiceValue = 0;
@@ -74,9 +75,9 @@ export const getOrganizationDashboard = async (req: Request, res: Response, next
       totalInvoices,
       invoices
     ] = await Promise.all([
-      prisma.customer.count({ where: { organization_id, is_deleted: false } }),
-      prisma.invoice.count({ where: { organization_id, is_deleted: false } }),
-      prisma.invoice.findMany({ where: { organization_id, is_deleted: false }, select: { status: true, grand_total: true, created_at: true } })
+      prisma.customer.count({ where: { organization_id } }),
+      prisma.invoice.count({ where: { organization_id } }),
+      prisma.invoice.findMany({ where: { organization_id }, select: { status: true, grand_total: true, created_at: true } })
     ]);
 
     let totalInvoiceValue = 0;
@@ -95,7 +96,7 @@ export const getOrganizationDashboard = async (req: Request, res: Response, next
     });
 
     const recentInvoicesRaw = await prisma.invoice.findMany({
-      where: { organization_id, is_deleted: false },
+      where: { organization_id },
       orderBy: { created_at: 'desc' },
       take: 4,
       include: { customer: true }

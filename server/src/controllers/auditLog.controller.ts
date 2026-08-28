@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
+import { Prisma, Role } from '@prisma/client';
 
 export const getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const filter: any = {};
+    const filter: Prisma.AuditLogWhereInput = {};
 
-    if (req.user?.role !== 'SUPER_ADMIN') {
+    if (req.user?.role !== Role.SUPER_ADMIN) {
       filter.organization_id = req.user?.organization_id;
     } else if (req.query.organization_id) {
-      filter.organization_id = req.query.organization_id;
+      filter.organization_id = req.query.organization_id as string;
     }
 
     const logs = await prisma.auditLog.findMany({

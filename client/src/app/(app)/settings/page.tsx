@@ -29,6 +29,7 @@ interface OrgProfile {
     signature_name: string | null;
     signature_location: string | null;
     terms_conditions: string | null;
+    prefix: string | null;
   } | null;
 }
 
@@ -77,7 +78,8 @@ export default function SettingsPage() {
           hsn_code: null,
           signature_name: null,
           signature_location: null,
-          terms_conditions: null
+          terms_conditions: null,
+          prefix: null
         }), 
         [name]: value 
       } 
@@ -323,6 +325,10 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Default HSN/SAC Code</label>
                   <input type="text" name="hsn_code" value={profile.settings?.hsn_code || ''} onChange={handleSettingsChange} className="input input-bordered w-full" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Invoice Number Prefix</label>
+                  <input type="text" name="prefix" value={profile.settings?.prefix || ''} onChange={handleSettingsChange} className="input input-bordered w-full uppercase" placeholder="e.g. VEA- (Leave blank for auto-generation)" />
                 </div>
               </div>
             </CardContent>
