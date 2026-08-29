@@ -16,13 +16,19 @@ export function Header() {
 
   useEffect(() => {
     const getProfile = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+      
       try {
         const res = await fetchApi<{ success: boolean; data: UserProfile }>('/auth/me');
         if (res.success && res.data) {
           setProfile(res.data);
         }
-      } catch (err) {
-        console.error("Failed to load profile", err);
+      } catch (err: any) {
+        if (err.message?.includes('Unauthorized')) {
+          localStorage.removeItem('auth_token');
+        }
+        console.warn("Failed to load profile", err);
       }
     };
     getProfile();

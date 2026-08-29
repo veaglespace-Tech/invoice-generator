@@ -17,6 +17,15 @@ export const registerOrganization = async (req: Request, res: Response, next: Ne
 
     // Use transaction to ensure both Org and User are created
     const result = await prisma.$transaction(async (tx) => {
+      let assignedPlanId = data.plan_id;
+      if (!assignedPlanId) {
+        // Try to find a free plan
+        const freePlan = await tx.plan.findFirst({
+          where: { price: 0, is_active: true }
+        });
+        if (freePlan) assignedPlanId = freePlan.id;
+      }
+
       const org = await tx.organization.create({
         data: {
           name: data.orgName,
@@ -29,7 +38,8 @@ export const registerOrganization = async (req: Request, res: Response, next: Ne
           country: data.country,
           pincode: data.pincode,
           GSTIN: data.GSTIN,
-          PAN: data.PAN
+          PAN: data.PAN,
+          plan_id: assignedPlanId
         }
       });
 

@@ -29,9 +29,17 @@ export function SuperAdminSidebar() {
         fetch(`${API_BASE_URL}/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
-        .then(res => res.json())
+        .then(res => {
+          if (res.status === 401) {
+            localStorage.removeItem('auth_token');
+          }
+          return res.json();
+        })
         .then(res => {
           if(res.success && res.data) setUser(res.data);
+        })
+        .catch(err => {
+          console.warn("Failed to load superadmin profile", err);
         });
       }
     };

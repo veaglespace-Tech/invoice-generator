@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Hexagon, ArrowRight, Zap, Shield, Sparkles } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PricingPlans } from "@/components/public/PricingPlans";
 
 export default function Home() {
   return (
@@ -124,46 +125,7 @@ export default function Home() {
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light">Transparent, scalable plans designed for visionaries and industry leaders.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 max-w-4xl mx-auto gap-8 items-start">
-            {/* Starter Plan */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-shadow">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Starter</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">Perfect for freelancers and individuals.</p>
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-slate-900 dark:text-white">₹0</span>
-                <span className="text-slate-500 dark:text-slate-400 font-medium">/ forever</span>
-              </div>
-              <ul className="space-y-4 mb-8 text-slate-600 dark:text-slate-300">
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Up to 50 Invoices / Month</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-indigo-500" /> Basic PDF Export & GST</li>
-                <li className="flex items-center gap-3 text-slate-400 dark:text-slate-600"><Zap className="w-5 h-5" /> No Custom Branding</li>
-              </ul>
-              <Link href="/register?plan=starter" className="block w-full text-center bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-semibold transition-colors border border-indigo-100 dark:border-indigo-800/50">
-                Get Started
-              </Link>
-            </div>
-
-            {/* Professional Plan */}
-            <div className="bg-slate-900 dark:bg-black rounded-3xl p-8 border border-slate-800 shadow-2xl shadow-slate-900/20 transform md:-translate-y-4 relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-200 to-amber-400 text-amber-950 px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
-                The Elite Standard
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
-              <p className="text-indigo-200 mb-6">For growing agencies and small businesses.</p>
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-white">₹999</span>
-                <span className="text-indigo-200 font-medium">/ month</span>
-              </div>
-              <ul className="space-y-4 mb-8 text-slate-300">
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Unlimited Invoices & Customers</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Live QR Code on Invoices</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400" /> Custom Auto-Prefix (e.g. VEA-001)</li>
-              </ul>
-              <Link href="/register?plan=professional" className="block w-full text-center bg-white hover:bg-slate-200 text-slate-900 py-3.5 rounded-xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5">
-                Elevate Your Billing
-              </Link>
-            </div>
-          </div>
+          <PricingPlans />
         </div>
       </section>
       <Footer />

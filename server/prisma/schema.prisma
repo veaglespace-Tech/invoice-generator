@@ -13,6 +13,7 @@ model Organization {
   legal_name      String?
   email           String    @unique
   phone           String?
+  fax             String?
   address         String?
   city            String?
   state           String?
@@ -25,7 +26,8 @@ model Organization {
   currency        String    @default("INR")
   timezone        String    @default("Asia/Kolkata")
   status          OrgStatus @default(ACTIVE)
-  plan            PlanType  @default(FREE)
+  plan_id         String?
+  plan            Plan?     @relation(fields: [plan_id], references: [id])
   is_deleted      Boolean   @default(false)
   deleted_at      DateTime?
   
@@ -48,10 +50,21 @@ enum OrgStatus {
   SUSPENDED
 }
 
-enum PlanType {
-  FREE
-  BASIC
-  PRO
+model Plan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  currency    String   @default("INR")
+  interval    String   @default("month") // month, year, forever
+  features    Json     @default("[]")
+  is_popular  Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  organizations Organization[]
+  subscriptions Subscription[]
 }
 
 model User {
@@ -181,6 +194,11 @@ model Invoice {
   customer        Customer  @relation(fields: [customer_id], references: [id])
   invoice_date    DateTime
   due_date        DateTime
+  document_ref_no String?
+  document_date   DateTime?
+  category        String?
+  document_type_code String?
+  irn             String?
   
   subtotal        Decimal   @db.Decimal(10, 2)
   discount        Decimal   @default(0) @db.Decimal(10, 2)
@@ -272,6 +290,7 @@ model InvoiceSetting {
   hsn_code              String?
   signature_name        String?
   signature_location    String?
+  field_visibility      Json?     @default("{}")
 }
 
 model AuditLog {
@@ -297,7 +316,8 @@ model Subscription {
   id              String    @id @default(uuid())
   organization_id String
   organization    Organization @relation(fields: [organization_id], references: [id])
-  plan            PlanType
+  plan_id         String
+  plan            Plan         @relation(fields: [plan_id], references: [id])
   amount          Decimal   @db.Decimal(10, 2)
   status          SubscriptionStatus @default(PENDING)
   txnid           String    @unique

@@ -11,7 +11,9 @@ interface OrgProfile {
   id: string;
   name: string;
   legal_name: string | null;
+  email: string | null;
   phone: string | null;
+  fax: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
@@ -30,6 +32,7 @@ interface OrgProfile {
     signature_location: string | null;
     terms_conditions: string | null;
     prefix: string | null;
+    field_visibility?: Record<string, boolean>;
   } | null;
 }
 
@@ -83,6 +86,22 @@ export default function SettingsPage() {
         }), 
         [name]: value 
       } 
+    });
+  };
+
+  const handleFieldVisibilityChange = (field: string, checked: boolean) => {
+    if (!profile) return;
+    const currentSettings = profile.settings || {} as any;
+    const visibility = currentSettings.field_visibility || {};
+    setProfile({
+      ...profile,
+      settings: {
+        ...currentSettings,
+        field_visibility: {
+          ...visibility,
+          [field]: checked
+        }
+      }
     });
   };
 
@@ -245,8 +264,16 @@ export default function SettingsPage() {
                     <input type="text" name="legal_name" value={profile.legal_name || ''} onChange={handleInputChange} className="input input-bordered w-full" />
                   </div>
                   <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
+                    <input type="email" name="email" value={profile.email || ''} onChange={handleInputChange} className="input input-bordered w-full" />
+                  </div>
+                  <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</label>
                     <input type="text" name="phone" value={profile.phone || ''} onChange={handleInputChange} className="input input-bordered w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fax</label>
+                    <input type="text" name="fax" value={profile.fax || ''} onChange={handleInputChange} className="input input-bordered w-full" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Website</label>
@@ -300,7 +327,6 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-
       {activeTab === 'invoice' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <Card>
@@ -335,6 +361,37 @@ export default function SettingsPage() {
           </Card>
 
           <Card>
+            <CardHeader>
+              <CardTitle>Visible Fields</CardTitle>
+              <CardDescription>Select which fields should be visible and fillable when creating invoices.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { id: 'documentRef', label: 'Document Ref No' },
+                  { id: 'documentDate', label: 'Document Date' },
+                  { id: 'category', label: 'Category' },
+                  { id: 'documentType', label: 'Document Type Code' },
+                  { id: 'irn', label: 'IRN' },
+                  { id: 'supplierPan', label: 'Supplier PAN' },
+                  { id: 'supplierStateCode', label: 'Supplier State Code' },
+                  { id: 'customerPan', label: 'Customer PAN' },
+                ].map((field) => (
+                  <label key={field.id} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm checkbox-primary"
+                      checked={profile.settings?.field_visibility?.[field.id] ?? false}
+                      onChange={(e) => handleFieldVisibilityChange(field.id, e.target.checked)}
+                    />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">Show {field.label}</span>
+                  </label>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Signature & Terms</CardTitle>
               <CardDescription>Configure your authorized signature details and standard terms.</CardDescription>

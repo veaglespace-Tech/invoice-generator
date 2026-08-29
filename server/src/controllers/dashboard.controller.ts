@@ -83,6 +83,7 @@ export const getOrganizationDashboard = async (req: Request, res: Response, next
     let totalInvoiceValue = 0;
     let totalPaidAmount = 0;
     let totalPendingAmount = 0;
+    let totalPaidInvoices = 0;
 
     invoices.forEach(inv => {
       const amount = Number(inv.grand_total);
@@ -90,6 +91,7 @@ export const getOrganizationDashboard = async (req: Request, res: Response, next
       
       if (inv.status === 'PAID') {
         totalPaidAmount += amount;
+        totalPaidInvoices += 1;
       } else if (inv.status !== 'CANCELLED' && inv.status !== 'DRAFT') {
         totalPendingAmount += amount;
       }
@@ -118,6 +120,7 @@ export const getOrganizationDashboard = async (req: Request, res: Response, next
         cards: {
           totalCustomers,
           totalInvoices,
+          totalPaidInvoices,
           totalInvoiceValue,
           totalPaidAmount,
           totalPendingAmount

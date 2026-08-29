@@ -1,210 +1,339 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit2, Trash2, Search, AlertCircle, CreditCard, Loader2, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Loader2, Users, IndianRupee, ShieldAlert } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
 
-interface Organization {
+interface Plan {
   id: string;
   name: string;
-  email: string;
-  plan: 'FREE' | 'BASIC' | 'PRO';
-  status: string;
-  created_at: string;
+  description: string | null;
+  price: string | number;
+  interval: string;
+  features: string[];
+  is_popular: boolean;
+  is_active: boolean;
 }
 
-export default function PlansPage() {
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function PlansAdminPage() {
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    interval: 'month',
+    features: [''],
+    is_popular: false,
+    is_active: true
+  });
+
+  const loadPlans = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchApi<{ success: boolean; data: Plan[] }>('/plans/admin');
+      if (res.success) {
+        setPlans(res.data);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load plans');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    loadOrganizations();
+    loadPlans();
   }, []);
 
-  const loadOrganizations = async () => {
-    try {
-      const res = await fetchApi<{ success: boolean; data: Organization[] }>('/organizations?limit=100');
-      if (res.success && res.data) {
-        setOrganizations(res.data);
-      }
-    } catch (error) {
-      console.error("Failed to load organizations", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getPlanBadgeVariant = (plan: string) => {
-    switch (plan) {
-      case 'PRO':
-        return 'success';
-      case 'BASIC':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
-
-  const handlePlanChange = async (orgId: string, newPlan: string) => {
-    try {
-      // Optimistic update
-      setOrganizations(orgs => orgs.map(o => o.id === orgId ? { ...o, plan: newPlan as any } : o));
-      
-      const res = await fetchApi<{ success: boolean }>(`/organizations/${orgId}`, {
-        method: 'PUT',
-        data: { plan: newPlan }
+  const handleOpenModal = (plan?: Plan) => {
+    if (plan) {
+      setEditingPlan(plan);
+      setFormData({
+        name: plan.name,
+        description: plan.description || '',
+        price: Number(plan.price),
+        interval: plan.interval,
+        features: plan.features.length > 0 ? plan.features : [''],
+        is_popular: plan.is_popular,
+        is_active: plan.is_active
       });
-      
-      if (!res.success) {
-        loadOrganizations(); // Revert on failure
+    } else {
+      setEditingPlan(null);
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        interval: 'month',
+        features: [''],
+        is_popular: false,
+        is_active: true
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleFeatureChange = (index: number, value: string) => {
+    const newFeatures = [...formData.features];
+    newFeatures[index] = value;
+    setFormData({ ...formData, features: newFeatures });
+  };
+
+  const addFeatureRow = () => {
+    setFormData({ ...formData, features: [...formData.features, ''] });
+  };
+
+  const removeFeatureRow = (index: number) => {
+    const newFeatures = formData.features.filter((_, i) => i !== index);
+    setFormData({ ...formData, features: newFeatures.length ? newFeatures : [''] });
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        ...formData,
+        features: formData.features.filter(f => f.trim() !== '')
+      };
+
+      if (editingPlan) {
+        await fetchApi(`/plans/${editingPlan.id}`, {
+          method: 'PUT',
+          data: payload
+        });
+      } else {
+        await fetchApi('/plans', {
+          method: 'POST',
+          data: payload
+        });
       }
-    } catch (error) {
-      console.error("Failed to update plan", error);
-      loadOrganizations();
+      setIsModalOpen(false);
+      loadPlans();
+    } catch (err: any) {
+      alert(err.message || 'Failed to save plan');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const stats = {
-    total: organizations.length,
-    free: organizations.filter(o => o.plan === 'FREE').length,
-    basic: organizations.filter(o => o.plan === 'BASIC').length,
-    pro: organizations.filter(o => o.plan === 'PRO').length,
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this plan? If it is in use, it will be deactivated instead.')) return;
+    try {
+      await fetchApi(`/plans/${id}`, { method: 'DELETE' });
+      loadPlans();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete plan');
+    }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-red-500" />
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Plans & Subscriptions</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of organization subscriptions and revenue.</p>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <CreditCard className="w-6 h-6 text-indigo-500" />
+            Subscription Plans
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage public plans and their features.</p>
+        </div>
+        <button 
+          onClick={() => handleOpenModal()}
+          className="btn btn-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg"
+        >
+          <Plus className="w-4 h-4" /> Add New Plan
+        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Organizations</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stats.total}</h3>
+      {loading ? (
+        <div className="flex justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3">
+          <AlertCircle className="w-5 h-5" />
+          <p>{error}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {plans.map((plan) => (
+            <div key={plan.id} className={`bg-white dark:bg-slate-900 rounded-3xl p-6 border ${plan.is_popular ? 'border-indigo-500 shadow-indigo-500/10' : 'border-slate-200 dark:border-slate-800'} shadow-sm relative`}>
+              {!plan.is_active && (
+                <div className="absolute top-0 right-0 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-bl-xl rounded-tr-3xl font-semibold">
+                  Inactive
+                </div>
+              )}
+              {plan.is_popular && (
+                <div className="absolute top-0 right-0 bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-bl-xl rounded-tr-3xl font-semibold">
+                  Popular
+                </div>
+              )}
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 h-10 line-clamp-2">{plan.description}</p>
+              
+              <div className="mb-4">
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-white">₹{plan.price}</span>
+                <span className="text-slate-500 dark:text-slate-400">/{plan.interval}</span>
               </div>
-              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-slate-700 dark:text-slate-300" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pro Subscriptions</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stats.pro}</h3>
-              </div>
-              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center">
-                <ShieldAlert className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Basic Subscriptions</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stats.basic}</h3>
-              </div>
-              <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 border-none shadow-lg shadow-indigo-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-indigo-100">Estimated MRR</p>
-                <h3 className="text-2xl font-bold text-white mt-1">₹ {stats.pro * 1999 + stats.basic * 999}</h3>
-              </div>
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <IndianRupee className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Subscription List */}
-      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-        <CardHeader className="border-b border-slate-200 dark:border-slate-800">
-          <CardTitle>Organization Plans</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-              <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-300">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Organization</th>
-                  <th className="px-6 py-4 font-semibold">Current Plan</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                  <th className="px-6 py-4 font-semibold text-right">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {organizations.map((org) => (
-                  <tr key={org.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-900 dark:text-white">{org.name}</div>
-                      <div className="text-xs text-slate-500">{org.email}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <select 
-                        value={org.plan}
-                        onChange={(e) => handlePlanChange(org.id, e.target.value)}
-                        className={`text-xs font-semibold rounded-full px-2.5 py-1 border outline-none cursor-pointer transition-colors ${
-                          org.plan === 'PRO' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/20' :
-                          org.plan === 'BASIC' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/20' :
-                          'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
-                        }`}
-                      >
-                        <option value="FREE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">FREE</option>
-                        <option value="BASIC" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">BASIC</option>
-                        <option value="PRO" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">PRO</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant={org.status === 'ACTIVE' ? 'success' : 'error'}>{org.status}</Badge>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {new Date(org.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
+              
+              <ul className="space-y-2 mb-6 h-40 overflow-y-auto">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <span>{feature}</span>
+                  </li>
                 ))}
-                {organizations.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
-                      No organizations found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+              </ul>
+              
+              <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button 
+                  onClick={() => handleOpenModal(plan)}
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" /> Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(plan.id)}
+                  className="p-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 rounded-xl transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {plans.length === 0 && (
+            <div className="col-span-full text-center py-12 text-slate-500 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+              No plans found. Create your first plan!
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {editingPlan ? 'Edit Plan' : 'Add New Plan'}
+              </h2>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <form id="plan-form" onSubmit={handleSave} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Plan Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                      placeholder="e.g. Starter"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Price (₹) *</label>
+                    <input 
+                      type="number" 
+                      required
+                      min="0"
+                      value={formData.price}
+                      onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                  <input 
+                    type="text" 
+                    value={formData.description}
+                    onChange={e => setFormData({...formData, description: e.target.value})}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 flex justify-between">
+                    <span>Features (Contents)</span>
+                    <button type="button" onClick={addFeatureRow} className="text-indigo-600 text-xs flex items-center gap-1">
+                      <Plus className="w-3 h-3" /> Add Feature
+                    </button>
+                  </label>
+                  <div className="space-y-2">
+                    {formData.features.map((feat, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={feat}
+                          onChange={e => handleFeatureChange(index, e.target.value)}
+                          className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm"
+                          placeholder="e.g. Up to 50 Invoices / Month"
+                        />
+                        <button type="button" onClick={() => removeFeatureRow(index)} className="p-2 text-slate-400 hover:text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-6 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.is_popular}
+                      onChange={e => setFormData({...formData, is_popular: e.target.checked})}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Mark as Popular</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.is_active}
+                      onChange={e => setFormData({...formData, is_active: e.target.checked})}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Active</span>
+                  </label>
+                </div>
+              </form>
+            </div>
+            
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 shrink-0">
+              <button 
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                form="plan-form"
+                type="submit"
+                disabled={saving}
+                className="btn btn-primary text-white px-6 py-2 rounded-xl font-medium flex items-center gap-2"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {editingPlan ? 'Update Plan' : 'Create Plan'}
+              </button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }

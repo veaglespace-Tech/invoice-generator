@@ -37,7 +37,8 @@ export async function fetchApi<T>(endpoint: string, options: RequestOptions = {}
 
     return result as T;
   } catch (error) {
-    console.error('API Error:', error);
+    // Use warn instead of error to prevent Next.js dev overlay from popping up on caught errors
+    console.warn('API Warning:', error);
     throw error;
   }
 }

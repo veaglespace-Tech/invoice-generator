@@ -97,7 +97,7 @@ export const updateOrganization = async (req: Request, res: Response, next: Next
     }
 
     if (req.user?.role !== Role.SUPER_ADMIN) {
-      delete (orgData as any).plan; // Normal admins cannot change plan directly
+      delete (orgData as any).plan_id; // Normal admins cannot change plan directly
     }
 
     const org = await prisma.organization.update({

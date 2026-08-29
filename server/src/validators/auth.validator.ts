@@ -19,7 +19,8 @@ export const registerOrgSchema = z.object({
   country: z.string().optional(),
   pincode: z.string().optional(),
   GSTIN: z.string().optional(),
-  PAN: z.string().optional()
+  PAN: z.string().optional(),
+  plan_id: z.string().optional()
 });
 
 export const refreshTokenSchema = z.object({

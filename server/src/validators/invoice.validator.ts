@@ -18,6 +18,11 @@ export const createInvoiceSchema = z.object({
   notes: z.string().optional().nullable(),
   terms: z.string().optional().nullable(),
   payment_details: z.string().optional().nullable(),
+  document_ref_no: z.string().optional().nullable(),
+  document_date: z.string().optional().nullable(),
+  category: z.string().optional().nullable(),
+  document_type_code: z.string().optional().nullable(),
+  irn: z.string().optional().nullable(),
   items: z.array(createInvoiceItemSchema).min(1, 'At least one item is required')
 });
 

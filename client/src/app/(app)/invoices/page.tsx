@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, MoreHorizontal, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, MoreHorizontal, Loader2, Download } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
@@ -49,13 +49,34 @@ export default function InvoicesList() {
     loadInvoices();
   }, []);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'PAID': return <Badge variant="success">Paid</Badge>;
-      case 'PENDING': return <Badge variant="warning">Pending</Badge>;
-      case 'OVERDUE': return <Badge variant="danger">Overdue</Badge>;
-      case 'DRAFT': return <Badge variant="default">Draft</Badge>;
-      default: return <Badge variant="default">{status}</Badge>;
+      case 'PAID': return 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800';
+      case 'PARTIALLY_PAID': return 'text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800';
+      case 'SENT': return 'text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800';
+      case 'VIEWED': return 'text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800';
+      case 'GENERATED': return 'text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800';
+      case 'OVERDUE': return 'text-red-600 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
+      case 'CANCELLED': return 'text-red-600 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
+      case 'DRAFT': return 'text-slate-600 border-slate-200 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
+      default: return 'text-slate-600 border-slate-200 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
+    }
+  };
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetchApi<{ success: boolean; message: string }>(`/invoices/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.success) {
+        setInvoices(invoices.map(inv => inv.id === id ? { ...inv, status: newStatus } : inv));
+        toast.success('Status updated successfully');
+      } else {
+        toast.error('Failed to update status');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error updating status');
     }
   };
 
@@ -77,6 +98,40 @@ export default function InvoicesList() {
     }
   };
 
+  const handleDownloadReport = () => {
+    if (!filteredInvoices || filteredInvoices.length === 0) {
+      toast.error('No data available to download');
+      return;
+    }
+    const headers = ['Invoice Number', 'Client', 'Amount', 'Invoice Date', 'Due Date', 'Status'];
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    filteredInvoices.forEach(inv => {
+      const clientName = inv.customer.company_name || inv.customer.customer_name;
+      const row = [
+        inv.invoice_number,
+        `"${clientName}"`,
+        `"${inv.grand_total}"`,
+        new Date(inv.invoice_date).toLocaleDateString(),
+        new Date(inv.due_date).toLocaleDateString(),
+        inv.status
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `invoices_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Invoices downloaded successfully');
+  };
+
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           inv.customer.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,10 +147,16 @@ export default function InvoicesList() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Invoices</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage and track your invoices.</p>
         </div>
-        <Link href="/invoices/new" className="btn btn-primary text-white hover:scale-105 transition-all shadow-md flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          Create Invoice
-        </Link>
+        <div className="flex gap-3">
+          <button onClick={handleDownloadReport} className="btn btn-outline hover:scale-105 transition-all shadow-sm flex items-center gap-2">
+            <Download className="w-5 h-5" />
+            Export to Excel
+          </button>
+          <Link href="/invoices/new" className="btn btn-primary text-white hover:scale-105 transition-all shadow-md flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            Create Invoice
+          </Link>
+        </div>
       </div>
 
       <Card>
@@ -117,10 +178,11 @@ export default function InvoicesList() {
             </div>
             <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-52 mt-2 border border-slate-200 dark:border-slate-700">
               <li><a onClick={() => setStatusFilter('ALL')}>All</a></li>
-              <li><a onClick={() => setStatusFilter('PAID')}>Paid</a></li>
-              <li><a onClick={() => setStatusFilter('PENDING')}>Pending</a></li>
-              <li><a onClick={() => setStatusFilter('OVERDUE')}>Overdue</a></li>
               <li><a onClick={() => setStatusFilter('DRAFT')}>Draft</a></li>
+              <li><a onClick={() => setStatusFilter('GENERATED')}>Generated</a></li>
+              <li><a onClick={() => setStatusFilter('SENT')}>Sent</a></li>
+              <li><a onClick={() => setStatusFilter('PAID')}>Paid</a></li>
+              <li><a onClick={() => setStatusFilter('CANCELLED')}>Cancelled</a></li>
             </ul>
           </div>
         </div>
@@ -167,8 +229,18 @@ export default function InvoicesList() {
                     <td className="font-semibold text-base-content">₹{Number(invoice.grand_total).toLocaleString()}</td>
                     <td className="text-base-content/70">{new Date(invoice.invoice_date).toLocaleDateString()}</td>
                     <td className="text-base-content/70">{new Date(invoice.due_date).toLocaleDateString()}</td>
-                    <td>
-                      {getStatusBadge(invoice.status)}
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <select 
+                        value={invoice.status}
+                        onChange={(e) => handleStatusChange(invoice.id, e.target.value)}
+                        className={`select select-sm border outline-none font-medium ${getStatusBadgeClass(invoice.status)}`}
+                      >
+                        <option value="DRAFT">Draft</option>
+                        <option value="GENERATED">Generated</option>
+                        <option value="SENT">Sent</option>
+                        <option value="PAID">Paid</option>
+                        <option value="CANCELLED">Cancelled</option>
+                      </select>
                     </td>
                     <td className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="dropdown dropdown-end">

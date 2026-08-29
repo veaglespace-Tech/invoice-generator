@@ -19,6 +19,11 @@ export default function AdminProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,6 +73,7 @@ export default function AdminProfile() {
         method: 'PUT',
         data: {
           name: profile.name,
+          email: profile.email,
           avatar: profile.avatar
         }
       });
@@ -81,6 +87,48 @@ export default function AdminProfile() {
       alert("Failed to save profile. Check console for details.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswords({ ...passwords, [e.target.name]: e.target.value });
+  };
+
+  const handleSavePassword = async () => {
+    if (!profile) return;
+    if (passwords.new !== passwords.confirm) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    if (passwords.new.length < 6) {
+      setPasswordError("New password must be at least 6 characters.");
+      return;
+    }
+    
+    setIsSavingPassword(true);
+    setPasswordError('');
+    setPasswordMessage('');
+    
+    try {
+      const res = await fetchApi<{ success: boolean; message: string }>(`/users/${profile.id}/password`, {
+        method: 'PUT',
+        data: {
+          currentPassword: passwords.current,
+          newPassword: passwords.new
+        }
+      });
+      if (res.success) {
+        setPasswordMessage('Password changed successfully!');
+        setPasswords({ current: '', new: '', confirm: '' });
+        setTimeout(() => setPasswordMessage(''), 5000);
+      } else {
+        setPasswordError(res.message || 'Failed to change password');
+      }
+    } catch (error: any) {
+      console.error("Failed to change password", error);
+      setPasswordError(error.message || 'Failed to change password.');
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -173,13 +221,48 @@ export default function AdminProfile() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
-                  <input type="email" value={profile.email || ''} readOnly className="input input-bordered w-full bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed" title="Email cannot be changed" />
+                  <input type="email" name="email" value={profile.email || ''} onChange={handleInputChange} className="input input-bordered w-full" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Role</label>
                   <input type="text" value={profile.role || ''} readOnly className="input input-bordered w-full bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed uppercase" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Security</CardTitle>
+              <CardDescription>Update your password to keep your account secure.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {passwordError && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+                  {passwordError}
+                </div>
+              )}
+              {passwordMessage && (
+                <div className="p-3 text-sm text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-md">
+                  {passwordMessage}
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Current Password</label>
+                <input type="password" name="current" value={passwords.current} onChange={handlePasswordChange} className="input input-bordered w-full max-w-md" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">New Password</label>
+                <input type="password" name="new" value={passwords.new} onChange={handlePasswordChange} className="input input-bordered w-full max-w-md" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Confirm New Password</label>
+                <input type="password" name="confirm" value={passwords.confirm} onChange={handlePasswordChange} className="input input-bordered w-full max-w-md" />
+              </div>
+              <Button onClick={handleSavePassword} disabled={isSavingPassword || !passwords.current || !passwords.new || !passwords.confirm} className="mt-4 gap-2">
+                {isSavingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Change Password
+              </Button>
             </CardContent>
           </Card>
         </div>

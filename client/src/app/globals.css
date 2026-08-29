@@ -56,8 +56,8 @@ body {
 }
 
 /* Explicit borders for DaisyUI inputs */
-.input-bordered, .textarea-bordered {
-  border: 1px solid var(--border) !important;
+.input-bordered, .textarea-bordered, .select-bordered {
+  border: 1px solid #94a3b8 !important; /* Darker border for better visibility */
   background-color: var(--muted) !important;
 }
 

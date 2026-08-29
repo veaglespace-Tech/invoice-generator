@@ -25,7 +25,9 @@ interface OrgProfile {
   pincode: string | null;
   country: string | null;
   logo: string | null;
+  email: string | null;
   phone: string | null;
+  fax: string | null;
   GSTIN: string | null;
   PAN: string | null;
   website: string | null;
@@ -39,6 +41,27 @@ interface OrgProfile {
     terms_conditions: string | null;
   } | null;
 }
+
+const numberToWords = (num: number): string => {
+  if (num === 0) return 'Zero';
+  const a = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+  const numStr = Math.floor(num).toString();
+  if (numStr.length > 9) return 'Overflow';
+  
+  const n = ('000000000' + numStr).slice(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return ''; 
+  
+  let str = '';
+  str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[Number(n[1][0])] + ' ' + a[Number(n[1][1])]) + ' crore ' : '';
+  str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[Number(n[2][0])] + ' ' + a[Number(n[2][1])]) + ' lakh ' : '';
+  str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[Number(n[3][0])] + ' ' + a[Number(n[3][1])]) + ' thousand ' : '';
+  str += (Number(n[4]) != 0) ? (a[Number(n[4])] || b[Number(n[4][0])] + ' ' + a[Number(n[4][1])]) + ' hundred ' : '';
+  str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[Number(n[5][0])] + ' ' + a[Number(n[5][1])]) : '';
+  
+  return str.trim().replace(/\s+/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
 
 export default function InvoiceGenerator() {
   const [orgProfile, setOrgProfile] = useState<OrgProfile | null>(null);
@@ -115,6 +138,11 @@ export default function InvoiceGenerator() {
     signatureName: '',
     signatureLocation: '',
     termsConditions: '',
+    documentRef: '',
+    documentDate: '',
+    category: 'B2B',
+    documentType: 'INV',
+    irn: '',
   });
 
   const [items, setItems] = useState<LineItem[]>([
@@ -187,58 +215,75 @@ export default function InvoiceGenerator() {
   };
 
   const handleShare = async () => {
+    if (!invoiceData.clientEmail) {
+      alert("Please enter a customer email address first.");
+      return;
+    }
+    
     setIsDownloading(true);
     try {
-      const element = document.getElementById('invoice-print-area');
-      if (!element) return;
-
-      const dataUrl = await htmlToImage.toPng(element, {
-        quality: 1,
-        pixelRatio: 2,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
+      // 1. Create Customer silently
+      const customerRes = await fetchApi<{ success: boolean; data: { id: string } }>('/customers', {
+        method: 'POST',
+        data: {
+          customer_name: invoiceData.clientName || 'Unknown Client',
+          email: invoiceData.clientEmail,
+          billing_address: invoiceData.clientAddress
         }
       });
 
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
-
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
-      const pdfBlob = pdf.output('blob');
-      const file = new File([pdfBlob], `${invoiceData.invoiceNumber || 'Invoice'}.pdf`, { type: 'application/pdf' });
-
-      let shared = false;
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `Invoice ${invoiceData.invoiceNumber}`,
-            text: 'Please find the attached invoice.',
-          });
-          shared = true;
-        } catch (shareErr: any) {
-          console.warn('Native share failed or was cancelled by user:', shareErr);
-          // If the error is NotAllowedError (user gesture timeout), we fall through to download
-        }
+      if (!customerRes.success || !customerRes.data) {
+        throw new Error('Failed to create customer record for invoice');
       }
 
-      if (!shared) {
-        // Fallback: Download PDF automatically
-        pdf.save(`${invoiceData.invoiceNumber || 'Invoice'}.pdf`);
-        alert("Direct sharing is not supported on your current browser/device (or it timed out). The PDF has been downloaded automatically so you can attach it to WhatsApp.");
+      // 2. Format Items
+      const formattedItems = items.map(item => ({
+        description: item.description || 'Item',
+        quantity: item.qty,
+        rate: item.rate,
+        tax_rate: invoiceData.taxRate,
+        discount: invoiceData.discount / (items.length || 1)
+      }));
+
+      // 3. Create Invoice
+      const invoiceRes = await fetchApi<{ success: boolean; data: any }>('/invoices', {
+        method: 'POST',
+        data: {
+          customer_id: customerRes.data.id,
+          invoice_number: invoiceData.invoiceNumber,
+          invoice_date: invoiceData.issueDate,
+          due_date: invoiceData.dueDate,
+          notes: invoiceData.notes,
+          terms: 'Thank you for your business.',
+          document_ref_no: invoiceData.documentRef || null,
+          document_date: invoiceData.documentDate || null,
+          category: invoiceData.category || null,
+          document_type_code: invoiceData.documentType || null,
+          irn: invoiceData.irn || null,
+          items: formattedItems
+        }
+      });
+
+      if (invoiceRes.success && invoiceRes.data?.id) {
+        // 4. Send Email
+        const sendRes = await fetchApi<{ success: boolean; message: string }>(`/invoices/${invoiceRes.data.id}/send`, {
+          method: 'POST'
+        });
+
+        if (sendRes.success) {
+          alert('Invoice saved and sent successfully to the registered email!');
+          window.location.href = '/invoices';
+        } else {
+          alert('Invoice saved, but failed to send email: ' + sendRes.message);
+          window.location.href = '/invoices';
+        }
+      } else {
+        throw new Error('Failed to create invoice');
       }
       
     } catch (err) {
-      console.error("Failed to process share/download", err);
-      alert("Failed to generate PDF. Please use the Print button as a fallback.");
+      console.error("Failed to process share", err);
+      alert("Failed to share invoice via email. Please check console for details.");
     } finally {
       setIsDownloading(false);
     }
@@ -280,6 +325,11 @@ export default function InvoiceGenerator() {
           due_date: invoiceData.dueDate,
           notes: invoiceData.notes,
           terms: 'Thank you for your business.',
+          document_ref_no: invoiceData.documentRef || null,
+          document_date: invoiceData.documentDate || null,
+          category: invoiceData.category || null,
+          document_type_code: invoiceData.documentType || null,
+          irn: invoiceData.irn || null,
           items: formattedItems
         }
       });
@@ -347,20 +397,50 @@ export default function InvoiceGenerator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Invoice No.</label>
-                    <input type="text" value={invoiceData.invoiceNumber} onChange={e => updateData('invoiceNumber', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="text" value={invoiceData.invoiceNumber} onChange={e => updateData('invoiceNumber', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Currency Symbol</label>
-                    <input type="text" value={invoiceData.currency} onChange={e => updateData('currency', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="text" value={invoiceData.currency} onChange={e => updateData('currency', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Issue Date</label>
-                    <input type="date" value={invoiceData.issueDate} onChange={e => updateData('issueDate', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="date" value={invoiceData.issueDate} onChange={e => updateData('issueDate', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Due Date</label>
-                    <input type="date" value={invoiceData.dueDate} onChange={e => updateData('dueDate', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="date" value={invoiceData.dueDate} onChange={e => updateData('dueDate', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
+                  {orgProfile?.settings?.field_visibility?.documentRef && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-500">Document Ref No.</label>
+                      <input type="text" value={invoiceData.documentRef} onChange={e => updateData('documentRef', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    </div>
+                  )}
+                  {orgProfile?.settings?.field_visibility?.documentDate && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-500">Document Date</label>
+                      <input type="date" value={invoiceData.documentDate} onChange={e => updateData('documentDate', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    </div>
+                  )}
+                  {orgProfile?.settings?.field_visibility?.category && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-500">Category</label>
+                      <input type="text" value={invoiceData.category} onChange={e => updateData('category', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    </div>
+                  )}
+                  {orgProfile?.settings?.field_visibility?.documentType && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-500">Document Type Code</label>
+                      <input type="text" value={invoiceData.documentType} onChange={e => updateData('documentType', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    </div>
+                  )}
+                  {orgProfile?.settings?.field_visibility?.irn && (
+                    <div className="space-y-1.5 col-span-2">
+                      <label className="text-xs font-medium text-slate-500">IRN</label>
+                      <input type="text" value={invoiceData.irn} onChange={e => updateData('irn', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -397,7 +477,7 @@ export default function InvoiceGenerator() {
                         value={invoiceData.clientName} 
                         onChange={e => updateData('clientName', e.target.value)} 
                         placeholder="Enter new customer name"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
                       />
                     ) : (
                       <div className="relative">
@@ -411,10 +491,10 @@ export default function InvoiceGenerator() {
                           onFocus={() => setShowCustomerDropdown(true)}
                           onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)}
                           placeholder="Type to search existing customers..."
-                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
                         />
                         {showCustomerDropdown && customers.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded shadow-lg max-h-48 overflow-y-auto">
                             {customers
                               .filter(c => c.customer_name.toLowerCase().includes(invoiceData.clientName.toLowerCase()))
                               .map(c => (
@@ -452,34 +532,34 @@ export default function InvoiceGenerator() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Email</label>
-                    <input type="email" value={invoiceData.clientEmail} onChange={e => updateData('clientEmail', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="email" value={invoiceData.clientEmail} onChange={e => updateData('clientEmail', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Address</label>
-                    <textarea rows={2} value={invoiceData.clientAddress} onChange={e => updateData('clientAddress', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"></textarea>
+                    <textarea rows={2} value={invoiceData.clientAddress} onChange={e => updateData('clientAddress', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"></textarea>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-slate-500">City</label>
-                      <input type="text" value={invoiceData.clientCity} onChange={e => updateData('clientCity', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                      <input type="text" value={invoiceData.clientCity} onChange={e => updateData('clientCity', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-slate-500">State / POS</label>
-                      <input type="text" value={invoiceData.clientState} onChange={e => updateData('clientState', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                      <input type="text" value={invoiceData.clientState} onChange={e => updateData('clientState', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-slate-500">Pincode</label>
-                      <input type="text" value={invoiceData.clientPincode} onChange={e => updateData('clientPincode', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                      <input type="text" value={invoiceData.clientPincode} onChange={e => updateData('clientPincode', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-slate-500">GSTIN</label>
-                      <input type="text" value={invoiceData.clientGst} onChange={e => updateData('clientGst', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white uppercase" />
+                      <input type="text" value={invoiceData.clientGst} onChange={e => updateData('clientGst', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white uppercase" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-slate-500">PAN</label>
-                      <input type="text" value={invoiceData.clientPan} onChange={e => updateData('clientPan', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white uppercase" />
+                      <input type="text" value={invoiceData.clientPan} onChange={e => updateData('clientPan', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white uppercase" />
                     </div>
                   </div>
                 </div>
@@ -507,10 +587,10 @@ export default function InvoiceGenerator() {
                           onFocus={() => setFocusedItemId(item.id)}
                           onBlur={() => setTimeout(() => setFocusedItemId(null), 200)}
                           placeholder="Search product by Name or SKU..." 
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
+                          className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" 
                         />
                         {focusedItemId === item.id && products.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-lg max-h-48 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded shadow-lg max-h-48 overflow-y-auto">
                             {products
                               .filter(p => p.name.toLowerCase().includes(item.description.toLowerCase()) || (p.sku && p.sku.toLowerCase().includes(item.description.toLowerCase())))
                               .map(p => (
@@ -538,11 +618,11 @@ export default function InvoiceGenerator() {
                       <div className="flex gap-2">
                         <div className="flex-1 flex items-center gap-2">
                           <span className="text-xs text-slate-500">Qty</span>
-                          <input type="number" value={item.qty} onChange={e => updateItem(item.id, 'qty', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                          <input type="number" value={item.qty} onChange={e => updateItem(item.id, 'qty', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                         </div>
                         <div className="flex-1 flex items-center gap-2">
                           <span className="text-xs text-slate-500 whitespace-nowrap">Unit Price (₹)</span>
-                          <input type="number" value={item.rate} onChange={e => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                          <input type="number" value={item.rate} onChange={e => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                         </div>
                       </div>
                     </div>
@@ -555,16 +635,16 @@ export default function InvoiceGenerator() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Discount ({invoiceData.currency})</label>
-                    <input type="number" value={invoiceData.discount} onChange={e => updateData('discount', Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="number" value={invoiceData.discount} onChange={e => updateData('discount', Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">Tax Rate (%)</label>
-                    <input type="number" value={invoiceData.taxRate} onChange={e => updateData('taxRate', Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
+                    <input type="number" value={invoiceData.taxRate} onChange={e => updateData('taxRate', Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-slate-500">Notes (Visible on Invoice)</label>
-                  <textarea rows={2} value={invoiceData.notes} onChange={e => updateData('notes', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"></textarea>
+                  <textarea rows={2} value={invoiceData.notes} onChange={e => updateData('notes', e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"></textarea>
                 </div>
               </div>
 
@@ -586,12 +666,12 @@ export default function InvoiceGenerator() {
                   {orgProfile?.logo ? (
                     <img src={orgProfile.logo} alt="Logo" className="max-h-20 max-w-full object-contain" />
                   ) : (
-                    <span className="font-extrabold text-4xl tracking-tighter">payU</span>
+                    <span className="font-extrabold text-3xl tracking-tight">{orgProfile?.name || 'Company Name'}</span>
                   )}
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <div className="text-base mb-1">{orgProfile?.legal_name || orgProfile?.name}</div>
-                  <div className="text-[11px] leading-tight max-w-[80%] mx-auto whitespace-pre-wrap">{orgProfile?.address}</div>
+                  <div className="text-base mb-1 font-bold">{orgProfile?.legal_name || orgProfile?.name || 'Company Name'}</div>
+                  <div className="text-[11px] leading-tight max-w-[80%] mx-auto whitespace-pre-wrap">{orgProfile?.address || 'Address not provided'}</div>
                 </div>
               </div>
               <div className="w-[25%] p-2 flex items-center justify-center font-bold text-base tracking-wide">
@@ -601,35 +681,64 @@ export default function InvoiceGenerator() {
 
             {/* Supplier Details */}
             <div className="flex border-b border-black text-[10px]">
-              <div className="w-[37.5%] p-1.5 border-r border-black flex"><span className="w-24">Supplier GSTIN:</span> <span>{orgProfile?.GSTIN}</span></div>
-              <div className="w-[37.5%] p-1.5 border-r border-black flex"><span className="w-12">PAN:</span> <span>{orgProfile?.PAN}</span></div>
-              <div className="w-[25%] p-1.5 flex"><span className="w-32">Supplier State Code:</span> <span>{orgProfile?.state ? orgProfile.state.substring(0, 2).toUpperCase() : '06'}</span></div>
+              <div className="flex-1 p-1.5 border-r border-black flex"><span className="w-24">Supplier GSTIN:</span> <span>{orgProfile?.GSTIN || 'Not Provided'}</span></div>
+              {(orgProfile?.settings?.field_visibility?.supplierPan ?? true) && (
+                <div className="flex-1 p-1.5 border-r border-black flex"><span className="w-12">PAN:</span> <span>{orgProfile?.PAN || 'Not Provided'}</span></div>
+              )}
+              {(orgProfile?.settings?.field_visibility?.supplierStateCode ?? true) && (
+                <div className="flex-1 p-1.5 flex"><span className="w-32">Supplier State Code:</span> <span>{invoiceData.supplierStateCode || (orgProfile?.state ? orgProfile.state.substring(0, 2).toUpperCase() : '06')}</span></div>
+              )}
             </div>
 
             {/* Main Details & QR Code */}
             <div className="flex">
               <div className="flex-1 flex flex-col">
                 <div className="flex border-b border-black text-[10px]">
-                  <div className="w-1/2 p-1.5 border-r border-black flex gap-2"><span className="text-gray-900">Document No:</span> <span>{invoiceData.invoiceNumber}</span></div>
-                  <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">Invoice Date:</span> <span>{new Date(invoiceData.issueDate).toLocaleDateString('en-GB')}</span></div>
+                  <div className={(orgProfile?.settings?.field_visibility?.documentDate || orgProfile?.settings?.field_visibility?.documentRef) ? "w-1/2 p-1.5 border-r border-black flex gap-2" : "w-full p-1.5 flex gap-2"}>
+                    <span className="text-gray-900">Document No:</span> <span>{invoiceData.invoiceNumber}</span>
+                  </div>
+                  {(orgProfile?.settings?.field_visibility?.documentDate || orgProfile?.settings?.field_visibility?.documentRef) && (
+                    <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">Invoice Date:</span> <span>{new Date(invoiceData.issueDate).toLocaleDateString('en-GB')}</span></div>
+                  )}
                 </div>
+                
+                {(!orgProfile?.settings?.field_visibility?.documentDate && !orgProfile?.settings?.field_visibility?.documentRef) && (
+                  <div className="flex border-b border-black text-[10px]">
+                    <div className="w-full p-1.5 flex gap-2"><span className="text-gray-900">Invoice Date:</span> <span>{new Date(invoiceData.issueDate).toLocaleDateString('en-GB')}</span></div>
+                  </div>
+                )}
+
+                {(orgProfile?.settings?.field_visibility?.documentRef || orgProfile?.settings?.field_visibility?.documentDate) && (
+                  <div className="flex border-b border-black text-[10px]">
+                    {orgProfile?.settings?.field_visibility?.documentRef ? (
+                      <div className={orgProfile?.settings?.field_visibility?.documentDate ? "w-1/2 p-1.5 border-r border-black flex gap-2" : "w-full p-1.5 flex gap-2"}><span className="text-gray-900">Document Ref No:</span> <span>{invoiceData.documentRef}</span></div>
+                    ) : null}
+                    {orgProfile?.settings?.field_visibility?.documentDate ? (
+                      <div className={orgProfile?.settings?.field_visibility?.documentRef ? "w-1/2 p-1.5 flex gap-2" : "w-full p-1.5 flex gap-2"}><span className="text-gray-900">Document Date:</span> <span>{invoiceData.documentDate ? new Date(invoiceData.documentDate).toLocaleDateString('en-GB') : ''}</span></div>
+                    ) : null}
+                  </div>
+                )}
                 <div className="flex border-b border-black text-[10px]">
-                  <div className="w-1/2 p-1.5 border-r border-black flex gap-2"><span className="text-gray-900">Document Ref No:</span> <span></span></div>
-                  <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">Document Date:</span> <span></span></div>
+                  <div className={orgProfile?.settings?.field_visibility?.category ? "w-1/2 p-1.5 border-r border-black flex gap-2" : "w-full p-1.5 flex gap-2"}><span className="text-gray-900">Due Date:</span> <span>{new Date(invoiceData.dueDate).toLocaleDateString('en-GB')}</span></div>
+                  {orgProfile?.settings?.field_visibility?.category && (
+                    <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">Category:</span> <span>{invoiceData.category}</span></div>
+                  )}
                 </div>
+                {orgProfile?.settings?.field_visibility?.documentType && (
+                  <div className="flex border-b border-black text-[10px]">
+                    <div className="w-full p-1.5 flex gap-2"><span className="text-gray-900 w-[120px]">Document Type Code:</span> <span>{invoiceData.documentType}</span></div>
+                  </div>
+                )}
+                {orgProfile?.settings?.field_visibility?.irn && (
+                  <div className="flex border-b border-black text-[10px]">
+                    <div className="w-full p-1.5 flex gap-2"><span className="text-gray-900 w-[120px]">IRN:</span> <span>{invoiceData.irn}</span></div>
+                  </div>
+                )}
                 <div className="flex border-b border-black text-[10px]">
-                  <div className="w-1/2 p-1.5 border-r border-black flex gap-2"><span className="text-gray-900">Due Date:</span> <span>{new Date(invoiceData.dueDate).toLocaleDateString('en-GB')}</span></div>
-                  <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">Category:</span> <span>B2B</span></div>
-                </div>
-                <div className="flex border-b border-black text-[10px]">
-                  <div className="w-full p-1.5 flex gap-2"><span className="text-gray-900 w-[120px]">Document Type Code:</span> <span>INV</span></div>
-                </div>
-                <div className="flex border-b border-black text-[10px]">
-                  <div className="w-full p-1.5 flex gap-2"><span className="text-gray-900 w-[120px]">IRN:</span> <span></span></div>
-                </div>
-                <div className="flex border-b border-black text-[10px]">
-                  <div className="w-1/2 p-1.5 border-r border-black flex gap-2"><span className="text-gray-900">Details of customer(Billed to):</span></div>
-                  <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">PAN:</span> <span>{invoiceData.clientPan}</span></div>
+                  <div className={(orgProfile?.settings?.field_visibility?.customerPan ?? true) ? "w-1/2 p-1.5 border-r border-black flex gap-2" : "w-full p-1.5 flex gap-2"}><span className="text-gray-900">Details of customer(Billed to):</span></div>
+                  {(orgProfile?.settings?.field_visibility?.customerPan ?? true) && (
+                    <div className="w-1/2 p-1.5 flex gap-2"><span className="text-gray-900">PAN:</span> <span>{invoiceData.clientPan}</span></div>
+                  )}
                 </div>
               </div>
               {/* QR Code */}
@@ -724,10 +833,16 @@ export default function InvoiceGenerator() {
               {/* Explanation & Taxes */}
               <div className="flex border-b border-black text-[10px]">
                 <div className="flex-1 p-1.5 border-r border-black leading-[1.3] pr-2">
-                  <div className="mb-1">Explanation:</div>
-                  <div className="mb-1">1.The service fee is inclusive of technology fee, bank charges and or<br/>fee for any other value-added services as may be specifically agreed to<br/>be provided by PayU India.</div>
-                  <div className="mb-1">2.The Service fee charged by PayU India on rupay debit cards & UPI are<br/>reflective of non-levy of MDR by acquiring banks and only represent the<br/>amount payable by you to PayU India for providing PayU services.</div>
-                  <div>3. Weather the tax payable on reverse charge basis: No</div>
+                  <div className="mb-1 font-bold">Terms & Conditions / Explanation:</div>
+                  {invoiceData.termsConditions ? (
+                    <div className="whitespace-pre-wrap">{invoiceData.termsConditions}</div>
+                  ) : (
+                    <>
+                      <div className="mb-1">1. The service fee is inclusive of technology fee, bank charges and or fee for any other value-added services as may be specifically agreed to be provided by {orgProfile?.legal_name || orgProfile?.name}.</div>
+                      <div className="mb-1">2. The Service fee charged by {orgProfile?.legal_name || orgProfile?.name} on debit cards & UPI are reflective of non-levy of MDR by acquiring banks and only represent the amount payable by you to {orgProfile?.legal_name || orgProfile?.name} for providing services.</div>
+                      <div>3. Whether the tax payable on reverse charge basis: No</div>
+                    </>
+                  )}
                 </div>
                 <div className="w-[280px] flex flex-col">
                   <div className="flex border-b border-black">
@@ -771,7 +886,7 @@ export default function InvoiceGenerator() {
 
               {/* Words */}
               <div className="border-b border-black p-2 text-[10px]">
-                Total invoice value in words: Rupees --- Only
+                Total invoice value in words: Rupees {numberToWords(Number(total))} Only
               </div>
 
               {/* Digital Signature */}
@@ -787,8 +902,8 @@ export default function InvoiceGenerator() {
               {/* Footer */}
               <div className="flex text-[9px] mt-auto border-t border-black">
                 <div className="flex-1 p-1 border-r border-black pl-2">Phone: {orgProfile?.phone}</div>
-                <div className="flex-1 p-1 border-r border-black pl-2">Fax:</div>
-                <div className="flex-1 p-1 border-r border-black pl-2">Email:</div>
+                <div className="flex-1 p-1 border-r border-black pl-2">Fax: {orgProfile?.fax}</div>
+                <div className="flex-1 p-1 border-r border-black pl-2">Email: {orgProfile?.email}</div>
                 <div className="flex-1 p-1 text-blue-600 pl-2">Website: {orgProfile?.website}</div>
               </div>
 

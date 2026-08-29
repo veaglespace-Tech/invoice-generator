@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, PlanType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 
 const prisma = new PrismaClient();
@@ -12,7 +12,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export const initiateSubscription = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { plan } = req.body; // 'BASIC' or 'PRO'
+    const { plan_id } = req.body;
     const organizationId = req.user?.organization_id;
 
     if (!organizationId) {
@@ -20,8 +20,17 @@ export const initiateSubscription = async (req: Request, res: Response): Promise
       return;
     }
 
-    if (!plan || (plan !== 'BASIC' && plan !== 'PRO')) {
+    if (!plan_id) {
       res.status(400).json({ success: false, error: 'Invalid plan selected.' });
+      return;
+    }
+
+    const planObj = await prisma.plan.findUnique({
+      where: { id: plan_id }
+    });
+
+    if (!planObj) {
+      res.status(404).json({ success: false, error: 'Plan not found.' });
       return;
     }
 
@@ -35,9 +44,9 @@ export const initiateSubscription = async (req: Request, res: Response): Promise
       return;
     }
 
-    const amount = plan === 'BASIC' ? '999.00' : '1999.00';
+    const amount = planObj.price.toString();
     const txnid = `TXN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    const productinfo = `${plan} Subscription`;
+    const productinfo = `${planObj.name} Subscription`;
     const firstname = org.name;
     const email = org.email;
     const phone = org.phone || '9999999999';
@@ -54,8 +63,8 @@ export const initiateSubscription = async (req: Request, res: Response): Promise
     await prisma.subscription.create({
       data: {
         organization_id: org.id,
-        plan: plan as PlanType,
-        amount: parseFloat(amount),
+        plan_id: planObj.id,
+        amount: planObj.price,
         status: 'PENDING',
         txnid
       }
@@ -125,7 +134,7 @@ export const handlePaymentSuccess = async (req: Request, res: Response): Promise
       // Update Org plan
       await prisma.organization.update({
         where: { id: subscription.organization_id },
-        data: { plan: subscription.plan }
+        data: { plan_id: subscription.plan_id }
       });
     }
 

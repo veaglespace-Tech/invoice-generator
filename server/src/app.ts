@@ -14,6 +14,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import auditLogRoutes from './routes/auditLog.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import contactRoutes from './routes/contact.routes';
+import planRoutes from './routes/plan.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 const app: Application = express();
@@ -50,6 +51,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/audit-logs', auditLogRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/plans', planRoutes);
 
 // Base Route
 app.get('/', (req: Request, res: Response) => {

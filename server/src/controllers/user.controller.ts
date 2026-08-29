@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
 import { Prisma, Role } from '@prisma/client';
-import { createUserSchema, updateUserSchema } from '../validators/user.validator';
-import { hashPassword } from '../utils/hash';
+import { createUserSchema, updateUserSchema, changePasswordSchema } from '../validators/user.validator';
+import { hashPassword, comparePassword } from '../utils/hash';
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -133,11 +133,19 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
+    if (data.email && data.email !== user.email) {
+      const existingEmail = await prisma.user.findUnique({ where: { email: data.email } });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email already exists' });
+      }
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
         where: { id },
         data: {
           name: data.name,
+          email: data.email,
           role: data.role,
           status: data.status as any,
           avatar: data.avatar,
@@ -188,6 +196,39 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
     });
 
     res.status(200).json({ success: true, message: 'User deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const data = changePasswordSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Only allow users to change their own password
+    if (req.user?.id !== id) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only change your own password' });
+    }
+
+    const isMatch = await comparePassword(data.currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await hashPassword(data.newPassword);
+
+    await prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword }
+    });
+
+    res.status(200).json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
     next(error);
   }

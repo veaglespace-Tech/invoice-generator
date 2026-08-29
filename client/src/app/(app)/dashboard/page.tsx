@@ -12,6 +12,7 @@ interface DashboardData {
   cards: {
     totalCustomers: number;
     totalInvoices: number;
+    totalPaidInvoices: number;
     totalInvoiceValue: number;
     totalPaidAmount: number;
     totalPendingAmount: number;
@@ -82,7 +83,7 @@ export default function Dashboard() {
       csvRows.push(row.join(','));
     });
 
-    const csvContent = csvRows.join('\n');
+    const csvContent = '\uFEFF' + csvRows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -111,7 +112,7 @@ export default function Dashboard() {
     },
     { 
       name: 'Paid Invoices', 
-      value: cards.totalInvoices.toString(), // Ideally count of paid, but we use total for now
+      value: cards.totalPaidInvoices?.toString() || '0', 
       change: '0.0%', 
       trend: 'up',
       icon: CheckCircle2 

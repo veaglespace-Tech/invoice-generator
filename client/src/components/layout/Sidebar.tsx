@@ -14,10 +14,10 @@ import {
   Menu,
   X,
   ChevronLeft,
-  Moon,
-  Sun
+  Shield,
+  CreditCard
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { fetchApi } from '@/lib/api';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -31,11 +31,23 @@ export function Sidebar() {
   const pathname = usePathname();
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   React.useEffect(() => {
-    setMounted(true);
+    const checkRole = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+      
+      try {
+        const res = await fetchApi<{ success: boolean; data: { role: string } }>('/auth/me');
+        if (res.success && res.data && res.data.role === 'SUPER_ADMIN') {
+          setIsSuperAdmin(true);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch user role");
+      }
+    };
+    checkRole();
   }, []);
 
   const handleLogout = () => {
@@ -107,26 +119,45 @@ export function Sidebar() {
             </li>
           );
         })}
+        
+        {isSuperAdmin && (
+          <>
+            <li>
+              <Link
+                href="/super-admin/organizations"
+                onClick={() => setIsOpenMobile(false)}
+                className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${
+                  isCollapsed ? 'justify-center px-0' : 'px-4'
+                } ${
+                  pathname === '/super-admin/organizations' ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
+                }`}
+                title={isCollapsed ? "Organizations (Admin)" : undefined}
+              >
+                <Shield className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/organizations' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                {!isCollapsed && <span className="whitespace-nowrap">Organizations (Admin)</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/super-admin/plans"
+                onClick={() => setIsOpenMobile(false)}
+                className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${
+                  isCollapsed ? 'justify-center px-0' : 'px-4'
+                } ${
+                  pathname === '/super-admin/plans' ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'
+                }`}
+                title={isCollapsed ? "Plans (Admin)" : undefined}
+              >
+                <CreditCard className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/plans' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                {!isCollapsed && <span className="whitespace-nowrap">Plans (Admin)</span>}
+              </Link>
+            </li>
+          </>
+        )}
       </ul>
 
       <div className="p-4 border-t border-slate-800 bg-slate-950">
         <ul className="menu p-0 space-y-1">
-          <li>
-            <button 
-              onClick={() => setTheme(theme === 'corporate' ? 'business' : 'corporate')}
-              className={`flex items-center gap-3 py-3 text-slate-400 hover:bg-slate-900 hover:text-slate-100 rounded-xl transition-colors duration-200 font-medium group w-full ${
-                isCollapsed ? 'justify-center px-0' : 'px-4'
-              }`}
-              title={isCollapsed ? "Toggle Theme" : undefined}
-            >
-              {mounted && theme === 'corporate' ? (
-                <Moon className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors" />
-              ) : mounted ? (
-                <Sun className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors" />
-              ) : <div className="w-5 h-5 flex-shrink-0"></div>}
-              {!isCollapsed && <span className="whitespace-nowrap">Toggle Theme</span>}
-            </button>
-          </li>
           <li>
             <button 
               onClick={handleLogout}

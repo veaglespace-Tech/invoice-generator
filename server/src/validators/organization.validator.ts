@@ -10,7 +10,9 @@ export const createOrganizationSchema = z.object({
 export const updateOrganizationSchema = z.object({
   name: z.string().min(2).optional(),
   legal_name: z.string().optional().nullable(),
+  email: z.string().email('Invalid email format').optional(),
   phone: z.string().optional().nullable(),
+  fax: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
   state: z.string().optional().nullable(),
@@ -22,7 +24,7 @@ export const updateOrganizationSchema = z.object({
   website: z.string().optional().nullable(),
   currency: z.string().optional(),
   timezone: z.string().optional(),
-  plan: z.enum(['FREE', 'BASIC', 'PRO']).optional(),
+  plan_id: z.string().uuid('Invalid Plan ID').optional(),
   settings: z.object({
     supplier_state_code: z.string().optional().nullable(),
     transaction_type: z.string().optional().nullable(),
@@ -31,6 +33,7 @@ export const updateOrganizationSchema = z.object({
     signature_name: z.string().optional().nullable(),
     signature_location: z.string().optional().nullable(),
     terms_conditions: z.string().optional().nullable(),
+    field_visibility: z.any().optional().nullable(),
   }).optional().nullable()
 });
 

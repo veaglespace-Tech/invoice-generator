@@ -150,8 +150,8 @@ export default function SuperAdminSettings() {
                 <input 
                   type="email" 
                   value={profile?.email || ''} 
-                  disabled 
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-500 cursor-not-allowed" 
+                  onChange={(e) => setProfile(prev => prev ? { ...prev, email: e.target.value } : null)}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all" 
                 />
               </div>
             </div>
