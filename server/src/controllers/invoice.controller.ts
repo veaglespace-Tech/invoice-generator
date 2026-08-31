@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
 import { Prisma, Role } from '@prisma/client';
-import { createInvoiceSchema, updateInvoiceStatusSchema } from '../validators/invoice.validator';
+import { createInvoiceSchema, updateInvoiceStatusSchema, updateInvoiceSchema } from '../validators/invoice.validator';
 import { calculateInvoice, generateInvoiceNumber } from '../services/invoice.service';
 
 export const getNextInvoiceNumber = async (req: Request, res: Response, next: NextFunction) => {
