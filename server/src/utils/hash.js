@@ -1,17 +1,19 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.comparePassword = exports.hashPassword = void 0;
-const bcrypt_1 = __importDefault(require("bcrypt"));
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.hashPassword = exports.comparePassword = void 0;
+var _bcrypt = _interopRequireDefault(require('bcrypt'));
+function _interopRequireDefault(e) {
+  return e && e.__esModule ? e : { default: e };
+}
 const SALT_ROUNDS = 10;
 const hashPassword = async (password) => {
-    return bcrypt_1.default.hash(password, SALT_ROUNDS);
+  return _bcrypt.default.hash(password, SALT_ROUNDS);
 };
 exports.hashPassword = hashPassword;
 const comparePassword = async (password, hash) => {
-    return bcrypt_1.default.compare(password, hash);
+  return _bcrypt.default.compare(password, hash);
 };
 exports.comparePassword = comparePassword;
-//# sourceMappingURL=hash.js.map

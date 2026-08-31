@@ -1,23 +1,31 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 exports.updateCustomerSchema = exports.createCustomerSchema = void 0;
-const zod_1 = require("zod");
-exports.createCustomerSchema = zod_1.z.object({
-    customer_name: zod_1.z.string().min(2, 'Customer name is required'),
-    company_name: zod_1.z.string().optional().nullable(),
-    email: zod_1.z.string().email('Invalid email').optional().nullable().or(zod_1.z.literal('')),
-    phone: zod_1.z.string().optional().nullable(),
-    billing_address: zod_1.z.string().optional().nullable(),
-    shipping_address: zod_1.z.string().optional().nullable(),
-    city: zod_1.z.string().optional().nullable(),
-    state: zod_1.z.string().optional().nullable(),
-    country: zod_1.z.string().optional().nullable(),
-    pincode: zod_1.z.string().optional().nullable(),
-    GSTIN: zod_1.z.string().optional().nullable(),
-    PAN: zod_1.z.string().optional().nullable(),
-    notes: zod_1.z.string().optional().nullable()
-});
-exports.updateCustomerSchema = exports.createCustomerSchema.partial().extend({
-    status: zod_1.z.enum(['ACTIVE', 'INACTIVE']).optional()
-});
-//# sourceMappingURL=customer.validator.js.map
+var _zod = require('zod');
+const createCustomerSchema = (exports.createCustomerSchema = _zod.z.object({
+  customer_name: _zod.z.string().min(2, 'Customer name is required'),
+  company_name: _zod.z.string().optional().nullable(),
+  email: _zod.z
+    .string()
+    .email('Invalid email')
+    .optional()
+    .nullable()
+    .or(_zod.z.literal('')),
+  phone: _zod.z.string().optional().nullable(),
+  billing_address: _zod.z.string().optional().nullable(),
+  shipping_address: _zod.z.string().optional().nullable(),
+  city: _zod.z.string().optional().nullable(),
+  state: _zod.z.string().optional().nullable(),
+  country: _zod.z.string().optional().nullable(),
+  pincode: _zod.z.string().optional().nullable(),
+  GSTIN: _zod.z.string().optional().nullable(),
+  PAN: _zod.z.string().optional().nullable(),
+  notes: _zod.z.string().optional().nullable()
+}));
+const updateCustomerSchema = (exports.updateCustomerSchema =
+  createCustomerSchema.partial().extend({
+    status: _zod.z.enum(['ACTIVE', 'INACTIVE']).optional()
+  }));

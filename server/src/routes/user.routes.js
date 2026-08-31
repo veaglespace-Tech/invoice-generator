@@ -1,17 +1,43 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const user_controller_1 = require("../controllers/user.controller");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
-const rbac_middleware_1 = require("../middlewares/rbac.middleware");
-const router = (0, express_1.Router)();
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = void 0;
+var _express = require('express');
+var _user = require('../controllers/user.controller');
+var _auth = require('../middlewares/auth.middleware');
+var _rbac = require('../middlewares/rbac.middleware');
+const router = (0, _express.Router)();
+
 // All routes require authentication
-router.use(auth_middleware_1.authenticate);
+router.use(_auth.authenticate);
+
 // Super Admin or Organization Admin can manage users
-router.get('/', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), user_controller_1.getAllUsers);
-router.post('/', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), user_controller_1.createUser);
-router.get('/:id', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), user_controller_1.getUserById);
-router.put('/:id', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), user_controller_1.updateUser);
-router.delete('/:id', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), user_controller_1.deleteUser);
-exports.default = router;
-//# sourceMappingURL=user.routes.js.map
+router.get(
+  '/',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _user.getAllUsers
+);
+router.post(
+  '/',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _user.createUser
+);
+router.get(
+  '/:id',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _user.getUserById
+);
+router.put(
+  '/:id',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _user.updateUser
+);
+router.put('/:id/password', _user.changePassword);
+router.delete(
+  '/:id',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _user.deleteUser
+);
+var _default = (exports.default = router);

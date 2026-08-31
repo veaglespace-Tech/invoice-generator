@@ -1,21 +1,35 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserSchema = exports.createUserSchema = void 0;
-const zod_1 = require("zod");
-const client_1 = require("@prisma/client");
-exports.createUserSchema = zod_1.z.object({
-    name: zod_1.z.string().min(2, 'Name is required'),
-    email: zod_1.z.string().email('Invalid email format'),
-    password: zod_1.z.string().min(6, 'Password must be at least 6 characters long'),
-    role: zod_1.z.nativeEnum(client_1.Role),
-    organization_id: zod_1.z.string().uuid('Invalid organization ID').optional(),
-    permissions: zod_1.z.array(zod_1.z.string()).optional()
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
 });
-exports.updateUserSchema = zod_1.z.object({
-    name: zod_1.z.string().min(2).optional(),
-    role: zod_1.z.nativeEnum(client_1.Role).optional(),
-    status: zod_1.z.enum(['ACTIVE', 'INACTIVE']).optional(),
-    avatar: zod_1.z.string().optional(),
-    permissions: zod_1.z.array(zod_1.z.string()).optional()
-});
-//# sourceMappingURL=user.validator.js.map
+exports.updateUserSchema =
+  exports.createUserSchema =
+  exports.changePasswordSchema =
+    void 0;
+var _zod = require('zod');
+var _client = require('@prisma/client');
+const createUserSchema = (exports.createUserSchema = _zod.z.object({
+  name: _zod.z.string().min(2, 'Name is required'),
+  email: _zod.z.string().email('Invalid email format'),
+  password: _zod.z
+    .string()
+    .min(6, 'Password must be at least 6 characters long'),
+  role: _zod.z.nativeEnum(_client.Role),
+  organization_id: _zod.z.string().uuid('Invalid organization ID').optional(),
+  permissions: _zod.z.array(_zod.z.string()).optional()
+}));
+const updateUserSchema = (exports.updateUserSchema = _zod.z.object({
+  name: _zod.z.string().min(2).optional(),
+  email: _zod.z.string().email('Invalid email format').optional(),
+  role: _zod.z.nativeEnum(_client.Role).optional(),
+  status: _zod.z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  avatar: _zod.z.string().optional(),
+  permissions: _zod.z.array(_zod.z.string()).optional()
+}));
+const changePasswordSchema = (exports.changePasswordSchema = _zod.z.object({
+  currentPassword: _zod.z.string().min(1, 'Current password is required'),
+  newPassword: _zod.z
+    .string()
+    .min(6, 'New password must be at least 6 characters long')
+}));

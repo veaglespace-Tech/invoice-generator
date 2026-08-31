@@ -1,36 +1,36 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const prisma = new client_1.PrismaClient();
+'use strict';
+
+var _client = require('@prisma/client');
+var _bcrypt = _interopRequireDefault(require('bcrypt'));
+function _interopRequireDefault(e) {
+  return e && e.__esModule ? e : { default: e };
+}
+const prisma = new _client.PrismaClient();
 async function main() {
-    const email = 'superadmin@invoice.com';
-    // Check if exists
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-        console.log('Superadmin already exists!');
-        return;
+  const email = 'veaglespaceritesh@gmail.com';
+  const hashedPassword = await _bcrypt.default.hash('Veagle@123', 10);
+  const user = await prisma.user.upsert({
+    where: {
+      email
+    },
+    update: {
+      password: hashedPassword,
+      role: 'SUPER_ADMIN'
+    },
+    create: {
+      name: 'Super Admin',
+      email,
+      password: hashedPassword,
+      role: 'SUPER_ADMIN'
     }
-    const hashedPassword = await bcrypt_1.default.hash('superadmin123', 10);
-    const user = await prisma.user.create({
-        data: {
-            name: 'Super Admin',
-            email,
-            password: hashedPassword,
-            role: 'SUPER_ADMIN',
-        },
-    });
-    console.log('Created superadmin user:', user.email, 'password: superadmin123');
+  });
+  console.log('Upserted superadmin user:', user.email, 'with new password');
 }
 main()
-    .catch((e) => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
-})
-    .finally(async () => {
+  })
+  .finally(async () => {
     await prisma.$disconnect();
-});
-//# sourceMappingURL=seed-superadmin.js.map
+  });

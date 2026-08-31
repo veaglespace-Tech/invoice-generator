@@ -1,11 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const auditLog_controller_1 = require("../controllers/auditLog.controller");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
-const rbac_middleware_1 = require("../middlewares/rbac.middleware");
-const router = (0, express_1.Router)();
-router.use(auth_middleware_1.authenticate);
-router.get('/', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']), auditLog_controller_1.getAuditLogs);
-exports.default = router;
-//# sourceMappingURL=auditLog.routes.js.map
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = void 0;
+var _express = require('express');
+var _auditLog = require('../controllers/auditLog.controller');
+var _auth = require('../middlewares/auth.middleware');
+var _rbac = require('../middlewares/rbac.middleware');
+const router = (0, _express.Router)();
+router.use(_auth.authenticate);
+router.get(
+  '/',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN']),
+  _auditLog.getAuditLogs
+);
+var _default = (exports.default = router);

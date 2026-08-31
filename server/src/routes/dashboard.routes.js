@@ -1,12 +1,23 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const dashboard_controller_1 = require("../controllers/dashboard.controller");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
-const rbac_middleware_1 = require("../middlewares/rbac.middleware");
-const router = (0, express_1.Router)();
-router.use(auth_middleware_1.authenticate);
-router.get('/super-admin', (0, rbac_middleware_1.requireRole)(['SUPER_ADMIN']), dashboard_controller_1.getSuperAdminDashboard);
-router.get('/org', (0, rbac_middleware_1.requireRole)(['ORGANIZATION_ADMIN', 'STAFF']), dashboard_controller_1.getOrganizationDashboard);
-exports.default = router;
-//# sourceMappingURL=dashboard.routes.js.map
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = void 0;
+var _express = require('express');
+var _dashboard = require('../controllers/dashboard.controller');
+var _auth = require('../middlewares/auth.middleware');
+var _rbac = require('../middlewares/rbac.middleware');
+const router = (0, _express.Router)();
+router.use(_auth.authenticate);
+router.get(
+  '/super-admin',
+  (0, _rbac.requireRole)(['SUPER_ADMIN']),
+  _dashboard.getSuperAdminDashboard
+);
+router.get(
+  '/org',
+  (0, _rbac.requireRole)(['ORGANIZATION_ADMIN', 'STAFF']),
+  _dashboard.getOrganizationDashboard
+);
+var _default = (exports.default = router);

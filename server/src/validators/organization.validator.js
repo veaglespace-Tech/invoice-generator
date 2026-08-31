@@ -1,40 +1,55 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrgStatusSchema = exports.updateOrganizationSchema = exports.createOrganizationSchema = void 0;
-const zod_1 = require("zod");
-exports.createOrganizationSchema = zod_1.z.object({
-    name: zod_1.z.string().min(2, 'Name is required'),
-    email: zod_1.z.string().email('Invalid email format'),
-    adminName: zod_1.z.string().min(2, 'Admin user name is required'),
-    adminPassword: zod_1.z.string().min(6, 'Password must be at least 6 characters long')
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
 });
-exports.updateOrganizationSchema = zod_1.z.object({
-    name: zod_1.z.string().min(2).optional(),
-    legal_name: zod_1.z.string().optional().nullable(),
-    phone: zod_1.z.string().optional().nullable(),
-    address: zod_1.z.string().optional().nullable(),
-    city: zod_1.z.string().optional().nullable(),
-    state: zod_1.z.string().optional().nullable(),
-    country: zod_1.z.string().optional().nullable(),
-    pincode: zod_1.z.string().optional().nullable(),
-    GSTIN: zod_1.z.string().optional().nullable(),
-    PAN: zod_1.z.string().optional().nullable(),
-    logo: zod_1.z.string().optional().nullable(),
-    website: zod_1.z.string().optional().nullable(),
-    currency: zod_1.z.string().optional(),
-    timezone: zod_1.z.string().optional(),
-    plan: zod_1.z.enum(['FREE', 'BASIC', 'PRO']).optional(),
-    settings: zod_1.z.object({
-        supplier_state_code: zod_1.z.string().optional().nullable(),
-        transaction_type: zod_1.z.string().optional().nullable(),
-        merchant_id: zod_1.z.string().optional().nullable(),
-        hsn_code: zod_1.z.string().optional().nullable(),
-        signature_name: zod_1.z.string().optional().nullable(),
-        signature_location: zod_1.z.string().optional().nullable(),
-        terms_conditions: zod_1.z.string().optional().nullable(),
-    }).optional().nullable()
-});
-exports.updateOrgStatusSchema = zod_1.z.object({
-    status: zod_1.z.enum(['ACTIVE', 'SUSPENDED'])
-});
-//# sourceMappingURL=organization.validator.js.map
+exports.updateOrganizationSchema =
+  exports.updateOrgStatusSchema =
+  exports.createOrganizationSchema =
+    void 0;
+var _zod = require('zod');
+const createOrganizationSchema = (exports.createOrganizationSchema =
+  _zod.z.object({
+    name: _zod.z.string().min(2, 'Name is required'),
+    email: _zod.z.string().email('Invalid email format'),
+    adminName: _zod.z.string().min(2, 'Admin user name is required'),
+    adminPassword: _zod.z
+      .string()
+      .min(6, 'Password must be at least 6 characters long')
+  }));
+const updateOrganizationSchema = (exports.updateOrganizationSchema =
+  _zod.z.object({
+    name: _zod.z.string().min(2).optional(),
+    legal_name: _zod.z.string().optional().nullable(),
+    email: _zod.z.string().email('Invalid email format').optional(),
+    phone: _zod.z.string().optional().nullable(),
+    fax: _zod.z.string().optional().nullable(),
+    address: _zod.z.string().optional().nullable(),
+    city: _zod.z.string().optional().nullable(),
+    state: _zod.z.string().optional().nullable(),
+    country: _zod.z.string().optional().nullable(),
+    pincode: _zod.z.string().optional().nullable(),
+    GSTIN: _zod.z.string().optional().nullable(),
+    PAN: _zod.z.string().optional().nullable(),
+    logo: _zod.z.string().optional().nullable(),
+    website: _zod.z.string().optional().nullable(),
+    currency: _zod.z.string().optional(),
+    timezone: _zod.z.string().optional(),
+    plan_id: _zod.z.string().uuid('Invalid Plan ID').optional(),
+    settings: _zod.z
+      .object({
+        supplier_state_code: _zod.z.string().optional().nullable(),
+        transaction_type: _zod.z.string().optional().nullable(),
+        merchant_id: _zod.z.string().optional().nullable(),
+        hsn_code: _zod.z.string().optional().nullable(),
+        signature_name: _zod.z.string().optional().nullable(),
+        signature_location: _zod.z.string().optional().nullable(),
+        terms_conditions: _zod.z.string().optional().nullable(),
+        field_visibility: _zod.z.any().optional().nullable()
+      })
+      .optional()
+      .nullable()
+  }));
+const updateOrgStatusSchema = (exports.updateOrgStatusSchema = _zod.z.object({
+  status: _zod.z.enum(['ACTIVE', 'SUSPENDED'])
+}));
