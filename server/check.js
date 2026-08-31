@@ -1,1 +1,7 @@
-const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { const invoices = await prisma.invoice.findMany(); console.log(invoices.map(i => ({ num: i.invoice_number, status: i.status, grand_total: i.grand_total }))); } main().finally(() => prisma.$disconnect());
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+async function main() {
+  const user = await prisma.user.findUnique({where: {email: 'riteshpote0603@gmail.com'}});
+  console.log(user);
+}
+main().finally(() => prisma.$disconnect());

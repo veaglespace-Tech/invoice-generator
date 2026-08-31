@@ -199,36 +199,6 @@ export default function RegisterPage() {
           setTimeout(() => {
             router.push('/login');
           }, 3500);
-              form.method = 'POST';
-              form.action = payuData.action;
-
-              const addField = (name: string, value: string) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-              };
-
-              addField('key', payuData.key);
-              addField('txnid', payuData.txnid);
-              addField('amount', payuData.amount);
-              addField('productinfo', payuData.productinfo);
-              addField('firstname', payuData.firstname);
-              addField('email', payuData.email);
-              addField('phone', payuData.phone);
-              addField('surl', payuData.surl);
-              addField('furl', payuData.furl);
-              addField('hash', payuData.hash);
-              addField('service_provider', 'payu_paisa');
-
-              document.body.appendChild(form);
-              form.submit();
-            } else {
-              setError('Account created! But payment initiation failed. Please login and go to Settings > Billing.');
-              setIsLoading(false);
-            }
-          }
         }
       }
     } catch (err: any) {

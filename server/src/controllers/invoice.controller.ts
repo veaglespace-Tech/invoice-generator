@@ -153,6 +153,80 @@ export const createInvoice = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const updateInvoice = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const data = updateInvoiceSchema.parse(req.body);
+
+    const filter: Prisma.InvoiceWhereInput = { id };
+    if (req.user?.role !== Role.SUPER_ADMIN) {
+      filter.organization_id = req.user?.organization_id;
+    }
+
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: filter
+    });
+
+    if (!existingInvoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found or unauthorized' });
+    }
+
+    const targetOrgId = existingInvoice.organization_id;
+
+    // Backend-side calculation engine
+    const { calculatedItems, totals } = await calculateInvoice(targetOrgId, data.customer_id, data.items);
+    
+    // Use provided Invoice Number or keep existing
+    const invoiceNumber = data.invoice_number || existingInvoice.invoice_number;
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete existing line items
+      await tx.invoiceItem.deleteMany({
+        where: { invoice_id: id }
+      });
+
+      // Update invoice and insert new items
+      const invoice = await tx.invoice.update({
+        where: { id },
+        data: {
+          invoice_number: invoiceNumber,
+          customer_id: data.customer_id,
+          invoice_date: new Date(data.invoice_date),
+          due_date: new Date(data.due_date),
+          ...totals,
+          notes: data.notes,
+          terms: data.terms,
+          payment_details: data.payment_details,
+          items: {
+            create: calculatedItems
+          }
+        },
+        include: { items: true }
+      });
+
+      // Audit Log
+      if (req.user) {
+        await tx.auditLog.create({
+          data: {
+            organization_id: targetOrgId,
+            user_id: req.user.id,
+            action: 'INVOICE_UPDATED',
+            entity_type: 'INVOICE',
+            entity_id: invoice.id,
+            description: `Invoice ${invoiceNumber} updated`
+          }
+        });
+      }
+
+      return invoice;
+    });
+
+    res.status(200).json({ success: true, message: 'Invoice updated successfully', data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateInvoiceStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;

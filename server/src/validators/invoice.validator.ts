@@ -26,6 +26,8 @@ export const createInvoiceSchema = z.object({
   items: z.array(createInvoiceItemSchema).min(1, 'At least one item is required')
 });
 
+export const updateInvoiceSchema = createInvoiceSchema;
+
 export const updateInvoiceStatusSchema = z.object({
   status: z.enum([
     'DRAFT', 'GENERATED', 'SENT', 'VIEWED', 'PAID', 'PARTIALLY_PAID', 'OVERDUE', 'CANCELLED'

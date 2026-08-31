@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: z.string().email('Invalid email format').trim().toLowerCase(),
   password: z.string().min(6, 'Password must be at least 6 characters long')
 });
 
 export const registerOrgSchema = z.object({
   orgName: z.string().min(2, 'Organization name is required'),
   userName: z.string().min(2, 'User name is required'),
-  email: z.string().email('Invalid email format'),
+  email: z.string().email('Invalid email format').trim().toLowerCase(),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
   // Additional organization details
   legalName: z.string().optional(),
