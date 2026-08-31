@@ -39,6 +39,7 @@ interface OrgProfile {
     signature_name: string | null;
     signature_location: string | null;
     terms_conditions: string | null;
+    field_visibility: Record<string, boolean> | null;
   } | null;
 }
 

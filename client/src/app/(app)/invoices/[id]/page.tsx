@@ -38,6 +38,7 @@ interface InvoiceData {
     logo: string;
     phone: string;
     email: string;
+    fax?: string;
     website: string;
     settings?: {
       field_visibility?: Record<string, boolean>;
@@ -53,6 +54,7 @@ interface InvoiceData {
     billing_country: string;
     GSTIN: string;
     PAN?: string;
+    email?: string;
   };
   items: {
     id: string;
