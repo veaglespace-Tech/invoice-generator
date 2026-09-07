@@ -169,7 +169,7 @@ export default function CustomersPage() {
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="btn btn-primary text-white hover:scale-105 transition-all shadow-md"
+          className="btn btn-primary text-white hover:scale-105 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Add Customer

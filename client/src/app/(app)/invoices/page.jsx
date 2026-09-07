@@ -191,14 +191,14 @@ export default function InvoicesList() {
         <div className="flex gap-3">
           <button
             onClick={handleDownloadReport}
-            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2"
+            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
           >
             <Download className="w-5 h-5" />
             Export to Excel
           </button>
           <Link
             href="/invoices/new"
-            className="btn btn-primary text-white hover:scale-105 transition-all shadow-md flex items-center gap-2"
+            className="btn btn-primary text-white hover:scale-105 transition-all shadow-md flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
             Create Invoice
