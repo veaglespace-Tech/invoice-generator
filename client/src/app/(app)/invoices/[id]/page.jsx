@@ -128,23 +128,31 @@ export default function InvoicePrintView() {
       const htmlToImage = await import('html-to-image');
       const { jsPDF } = await import('jspdf');
 
+      // Use scrollWidth and scrollHeight to capture the full content, even if it overflows
+      const captureWidth = element.scrollWidth;
+      const captureHeight = element.scrollHeight;
+
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
         pixelRatio: 2,
+        width: captureWidth,
+        height: captureHeight,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left'
         }
       });
 
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = (captureHeight * pdfWidth) / captureWidth;
+      const finalPdfHeight = Math.max(297, pdfHeight); // At least A4 height
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: [pdfWidth, finalPdfHeight]
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
       pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
       
       const pdfDataUri = pdf.output('datauristring');
