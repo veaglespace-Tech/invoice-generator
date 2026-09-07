@@ -83,13 +83,13 @@ app.use('/api', apiLimiter);
 // Body Parsers
 app.use(
   _express.default.json({
-    limit: '10mb'
+    limit: '50mb'
   })
 );
 app.use(
   _express.default.urlencoded({
     extended: true,
-    limit: '10mb'
+    limit: '50mb'
   })
 );
 
