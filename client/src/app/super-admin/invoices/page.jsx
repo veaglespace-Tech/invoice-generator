@@ -9,6 +9,7 @@ import { fetchApi, API_BASE_URL } from '@/lib/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function SuperAdminInvoices() {
   const router = useRouter();
@@ -18,22 +19,33 @@ export default function SuperAdminInvoices() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const loadInvoices = async () => {
-      try {
-        const response = await fetchApi('/invoices');
-        if (response.success) {
-          setInvoices(response.data);
-        } else {
-          setError('Failed to fetch invoices');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const loadInvoices = async (page = 1) => {
+    setLoading(true);
+    try {
+      const response = await fetchApi(`/invoices?page=${page}&limit=10`);
+      if (response.success) {
+        setInvoices(response.data);
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.total);
+          setCurrentPage(page);
         }
-      } catch (err) {
-        setError(err.message || 'Error loading invoices');
-      } finally {
-        setLoading(false);
+      } else {
+        setError('Failed to fetch invoices');
       }
-    };
-    loadInvoices();
+    } catch (err) {
+      setError(err.message || 'Error loading invoices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInvoices(1);
   }, []);
 
   const getStatusBadgeClass = (status) => {
@@ -226,6 +238,18 @@ export default function SuperAdminInvoices() {
             </tbody>
           </table>
         </div>
+        {!loading && !error && (
+          <div className="flex flex-col mt-4">
+            <div className="p-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+              <span>Showing {filteredInvoices.length} of {totalItems || invoices.length} result(s)</span>
+            </div>
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={loadInvoices} 
+            />
+          </div>
+        )}
       </Card>
     </div>
   );

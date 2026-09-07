@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Pagination } from '@/components/ui/Pagination';
 export default function InvoicesList() {
   const router = useRouter();
   const [invoices, setInvoices] = useState([]);
@@ -22,22 +23,33 @@ export default function InvoicesList() {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  useEffect(() => {
-    const loadInvoices = async () => {
-      try {
-        const response = await fetchApi('/invoices');
-        if (response.success) {
-          setInvoices(response.data);
-        } else {
-          setError('Failed to fetch invoices');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const loadInvoices = async (page = 1) => {
+    setLoading(true);
+    try {
+      const response = await fetchApi(`/invoices?page=${page}&limit=10`);
+      if (response.success) {
+        setInvoices(response.data);
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.total);
+          setCurrentPage(page);
         }
-      } catch (err) {
-        setError(err.message || 'Error loading invoices');
-      } finally {
-        setLoading(false);
+      } else {
+        setError('Failed to fetch invoices');
       }
-    };
-    loadInvoices();
+    } catch (err) {
+      setError(err.message || 'Error loading invoices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInvoices(1);
   }, []);
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -347,17 +359,16 @@ export default function InvoicesList() {
           )}
         </div>
 
-        {!loading && !error && invoices.length > 0 && (
-          <div className="p-4 border-t border-slate-300 dark:border-slate-700 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-            <span>Showing {filteredInvoices.length} result(s)</span>
-            <div className="flex gap-2">
-              <button className="btn btn-outline btn-sm" disabled>
-                Previous
-              </button>
-              <button className="btn btn-outline btn-sm" disabled>
-                Next
-              </button>
+        {!loading && !error && (
+          <div className="flex flex-col mt-4">
+            <div className="p-4 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+              <span>Showing {filteredInvoices.length} of {totalItems || invoices.length} result(s)</span>
             </div>
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={loadInvoices} 
+            />
           </div>
         )}
       </Card>

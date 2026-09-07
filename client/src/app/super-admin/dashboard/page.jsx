@@ -8,6 +8,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { fetchApi } from '@/lib/api';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function SuperAdminDashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
@@ -29,15 +30,25 @@ export default function SuperAdminDashboard() {
   const [customMaxCustomers, setCustomMaxCustomers] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
 
-  const loadData = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const loadData = async (page = 1) => {
     try {
       const [orgsRes, plansRes] = await Promise.all([
-        fetchApi('/organizations'),
+        fetchApi(`/organizations?page=${page}&limit=10`),
         fetchApi('/plans')
       ]);
 
       if (orgsRes.success && orgsRes.data) {
         setOrganizations(orgsRes.data);
+        
+        if (orgsRes.pagination) {
+          setTotalPages(orgsRes.pagination.totalPages);
+          setTotalItems(orgsRes.pagination.total);
+          setCurrentPage(page);
+        }
         
         let users = 0;
         let invoices = 0;
@@ -46,8 +57,10 @@ export default function SuperAdminDashboard() {
           invoices += org._count?.invoices || 0;
         });
         
+        // Let's preserve totalOrgs logic since we might only get a paginated list now.
+        // Actually totalItems is the true totalOrgs
         setStats({
-          totalOrgs: orgsRes.data.length,
+          totalOrgs: orgsRes.pagination?.total || orgsRes.data.length,
           totalUsers: users,
           totalInvoices: invoices
         });
@@ -278,6 +291,19 @@ export default function SuperAdminDashboard() {
               </tbody>
             </table>
           </div>
+          
+          {!loadingOrgs && organizations.length > 0 && (
+            <div className="flex flex-col mt-4">
+              <div className="p-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                <span>Showing {filteredOrgs.length} of {totalItems || organizations.length} result(s)</span>
+              </div>
+              <Pagination 
+                currentPage={currentPage} 
+                totalPages={totalPages} 
+                onPageChange={loadData} 
+              />
+            </div>
+          )}
         </Card>
       </div>
 

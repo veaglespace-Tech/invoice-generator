@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { Pagination } from '@/components/ui/Pagination';
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,18 +39,29 @@ export default function CustomersPage() {
     GSTIN: '',
     PAN: ''
   });
-  const loadCustomers = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const loadCustomers = async (page = 1) => {
+    setLoading(true);
     try {
-      const response = await fetchApi('/customers');
+      const response = await fetchApi(`/customers?page=${page}&limit=10`);
       setCustomers(response.data);
+      if (response.pagination) {
+        setTotalPages(response.pagination.totalPages);
+        setTotalItems(response.pagination.total);
+        setCurrentPage(page);
+      }
     } catch (err) {
       setError(err.message || 'Failed to load customers');
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    loadCustomers();
+    loadCustomers(1);
   }, []);
 
   // Edit Modal State
@@ -284,23 +296,16 @@ export default function CustomersPage() {
           )}
         </div>
 
-        {!loading && !error && customers.length > 0 && (
-          <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-            <span>Showing {customers.length} result(s)</span>
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Previous
-              </button>
-              <button
-                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Next
-              </button>
+        {!loading && !error && (
+          <div className="flex flex-col mt-4">
+            <div className="p-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+              <span>Showing {customers.length} of {totalItems || customers.length} result(s)</span>
             </div>
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={loadCustomers} 
+            />
           </div>
         )}
       </Card>
