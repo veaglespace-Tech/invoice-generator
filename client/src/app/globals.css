@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
-/* Force class-based dark mode (since .dark is not present, it forces Light Mode everywhere) */
-@custom-variant dark (&:is(.dark *));
+/* Force class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-primary: #2563EB;
@@ -14,8 +14,7 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
-  --font-sans: var(--font-outfit);
+  --font-sans: var(--font-montserrat);
 }
 
 html {
@@ -77,12 +76,12 @@ body {
 }
 
 .btn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .btn:active {
-  transform: translateY(0) !important;
+  transform: translateY(0) scale(0.98) !important;
   box-shadow: none !important;
 }
 

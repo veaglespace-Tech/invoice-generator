@@ -36,6 +36,11 @@ const createInvoiceSchema = (exports.createInvoiceSchema = _zod.z.object({
   category: _zod.z.string().optional().nullable(),
   document_type_code: _zod.z.string().optional().nullable(),
   irn: _zod.z.string().optional().nullable(),
+  tax_type: _zod.z
+    .enum(['AUTO', 'IGST', 'CGST_SGST'])
+    .optional()
+    .nullable()
+    .default('AUTO'),
   items: _zod.z
     .array(createInvoiceItemSchema)
     .min(1, 'At least one item is required')

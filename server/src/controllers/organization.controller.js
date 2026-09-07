@@ -26,7 +26,8 @@ const getAllOrganizations = async (req, res, next) => {
             customers: true,
             invoices: true
           }
-        }
+        },
+        plan: true
       }
     });
     res.status(200).json({

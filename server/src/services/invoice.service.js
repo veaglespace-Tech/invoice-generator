@@ -10,7 +10,7 @@ var _server = require('../server');
 function _interopRequireDefault(e) {
   return e && e.__esModule ? e : { default: e };
 }
-const calculateInvoice = async (organizationId, customerId, items) => {
+const calculateInvoice = async (organizationId, customerId, items, taxType = 'AUTO') => {
   // Fetch org and customer to determine state for GST
   const [org, customer] = await Promise.all([
     _server.prisma.organization.findUnique({
@@ -27,8 +27,14 @@ const calculateInvoice = async (organizationId, customerId, items) => {
   if (!org || !customer) {
     throw new Error('Organization or Customer not found');
   }
-  const isInterState =
-    org.state?.toLowerCase() !== customer.state?.toLowerCase();
+  let isInterState = false;
+  if (taxType === 'IGST') {
+    isInterState = true;
+  } else if (taxType === 'CGST_SGST') {
+    isInterState = false;
+  } else {
+    isInterState = org.state?.toLowerCase() !== customer.state?.toLowerCase();
+  }
   let subtotal = new _decimal.default(0);
   let totalDiscount = new _decimal.default(0);
   let totalTaxableAmount = new _decimal.default(0);
@@ -63,6 +69,7 @@ const calculateInvoice = async (organizationId, customerId, items) => {
     return {
       product_id: item.product_id,
       description: item.description,
+      hsn_code: item.hsn_code || null,
       quantity: qty.toNumber(),
       unit: item.unit,
       rate: rate.toNumber(),

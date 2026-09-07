@@ -27,7 +27,11 @@ export async function fetchApi(endpoint, options = {}) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.message || 'API Request failed');
+      let errorMessage = result.message || 'API Request failed';
+      if (result.errors) {
+        errorMessage += ': ' + JSON.stringify(result.errors);
+      }
+      throw new Error(errorMessage);
     }
     return result;
   } catch (error) {

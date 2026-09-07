@@ -11,71 +11,48 @@ import {
   Shield
 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
-const plans = [
-  {
-    id: 'FREE',
-    name: 'Free Plan',
-    price: '0',
-    period: 'forever',
-    icon: Shield,
-    color: 'slate',
-    features: [
-      '1 User only',
-      'Up to 10 Invoices/month',
-      'Basic Invoicing',
-      'Community Support'
-    ],
-    recommended: false,
-    isFree: true
-  },
-  {
-    id: 'BASIC',
-    name: 'Basic Plan',
-    price: '999',
-    period: 'month',
-    icon: Zap,
-    color: 'indigo',
-    features: [
-      'Up to 5 Users',
-      'Unlimited Invoices',
-      'Standard Analytics',
-      'GST & Tax Ready',
-      'Email Support'
-    ],
-    recommended: false,
-    isFree: false
-  },
-  {
-    id: 'PRO',
-    name: 'Pro Plan',
-    price: '1999',
-    period: 'month',
-    icon: Star,
-    color: 'violet',
-    features: [
-      'Unlimited Users',
-      'Unlimited Invoices',
-      'Advanced Analytics',
-      'Custom Domain',
-      'Priority Support',
-      'PayU Payment Integration'
-    ],
-    recommended: true,
-    isFree: false
+// Map standard plan names to icons and colors
+const getPlanVisuals = (name) => {
+  const planName = name.toLowerCase();
+  if (planName.includes('free')) {
+    return { icon: Shield, color: 'slate' };
+  } else if (planName.includes('basic')) {
+    return { icon: Zap, color: 'indigo' };
+  } else {
+    return { icon: Star, color: 'violet' };
   }
-];
+};
 export default function BillingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState(null);
   const [currentPlan, setCurrentPlan] = useState('FREE');
+  const [plans, setPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+
   useEffect(() => {
+    loadPlans();
     loadCurrentPlan();
   }, []);
+
+  const loadPlans = async () => {
+    try {
+      const res = await fetchApi('/plans');
+      if (res.success && res.data) {
+        setPlans(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load plans:', err);
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
   const loadCurrentPlan = async () => {
     try {
       const res = await fetchApi('/auth/me');
-      if (res.success && res.data?.organization?.plan) {
-        setCurrentPlan(res.data.organization.plan);
+      if (res.success && res.data?.organization?.plan_id) {
+        setCurrentPlan(res.data.organization.plan_id);
+      } else if (res.success && res.data?.organization?.plan?.id) {
+        setCurrentPlan(res.data.organization.plan.id);
       }
     } catch {
       // silently fail
@@ -144,52 +121,53 @@ export default function BillingPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {plans.map((plan) => {
-          const isCurrentPlan = currentPlan === plan.id;
-          const PlanIcon = plan.icon;
+      {loadingPlans ? (
+        <div className="flex justify-center p-8">
+          <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {plans.map((plan) => {
+            const isCurrentPlan = currentPlan === plan.id;
+            const visuals = getPlanVisuals(plan.name);
+            const PlanIcon = visuals.icon;
           return (
             <Card
               key={plan.id}
-              className={`relative overflow-hidden transition-all duration-300 ${plan.recommended ? 'border-2 border-violet-500 shadow-2xl shadow-violet-100 dark:shadow-violet-900/20 scale-[1.02]' : 'border border-slate-200 dark:border-slate-800'}`}
+              className={`relative overflow-hidden transition-all duration-300 ${plan.is_popular ? 'border-violet-500 shadow-md shadow-violet-500/10' : 'border-slate-200 dark:border-slate-800'}`}
             >
-              {plan.recommended && (
-                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold py-1.5 text-center uppercase tracking-widest">
-                  ✦ Most Popular
+              {plan.is_popular && (
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                  Recommended
                 </div>
               )}
 
-              <div className={`p-6 ${plan.recommended ? 'pt-10' : 'pt-6'}`}>
+              <CardContent className="pt-6">
                 {/* Plan Icon + Name */}
                 <div className="flex items-center gap-3 mb-4">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.color === 'violet' ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400' : plan.color === 'indigo' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                    className={`w-10 h-10 rounded-xl bg-${visuals.color}-100 dark:bg-${visuals.color}-900/30 text-${visuals.color}-600 dark:text-${visuals.color}-400 flex items-center justify-center`}
                   >
                     <PlanIcon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  <h3 className="font-semibold text-lg text-slate-900 dark:text-white">
                     {plan.name}
                   </h3>
                 </div>
-
-                {/* Price */}
-                <div className="flex items-end gap-1 mb-1">
-                  <IndianRupee className="w-6 h-6 text-slate-900 dark:text-white mb-1" />
-                  <span className="text-4xl font-extrabold text-slate-900 dark:text-white">
-                    {plan.price}
-                  </span>
-                  <span className="text-slate-400 dark:text-slate-500 mb-1 ml-1 text-sm">
-                    / {plan.period}
-                  </span>
+                <div className="mb-4">
+                  <div className="flex items-baseline gap-1">
+                    <IndianRupee className="w-5 h-5 text-slate-900 dark:text-white" />
+                    <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                      {plan.price}
+                    </span>
+                    <span className="text-slate-500 text-sm font-medium">
+                      /{plan.interval}
+                    </span>
+                  </div>
                 </div>
                 {plan.isFree && (
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mb-4">
                     No credit card required
-                  </p>
-                )}
-                {!plan.isFree && (
-                  <p className="text-xs text-slate-400 mb-4">
-                    Billed monthly via PayU
                   </p>
                 )}
 
@@ -201,7 +179,7 @@ export default function BillingPage() {
                       className="flex items-center text-sm text-slate-700 dark:text-slate-300"
                     >
                       <CheckCircle2
-                        className={`w-4 h-4 mr-2.5 flex-shrink-0 ${plan.color === 'violet' ? 'text-violet-500' : plan.color === 'indigo' ? 'text-indigo-500' : 'text-slate-400'}`}
+                        className={`w-4 h-4 mr-2.5 flex-shrink-0 text-${visuals.color}-500`}
                       />
                       {feature}
                     </li>
@@ -213,34 +191,31 @@ export default function BillingPage() {
                   <div className="w-full py-3 rounded-xl font-semibold text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-sm">
                     ✓ Current Plan
                   </div>
-                ) : plan.isFree ? (
-                  <div className="w-full py-3 rounded-xl font-semibold text-center bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-sm cursor-default">
-                    Free – No Payment Needed
-                  </div>
                 ) : (
                   <button
                     onClick={() => handleSubscribe(plan)}
                     disabled={loadingPlan !== null}
-                    className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 ${plan.recommended ? 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-200 dark:shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
+                    className="w-full relative group overflow-hidden bg-slate-900 hover:bg-slate-800 text-white border-0 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70"
                   >
-                    {loadingPlan === plan.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Opening Payment...
-                      </>
-                    ) : (
-                      <>
-                        <IndianRupee className="w-4 h-4" />
-                        Pay ₹{plan.price} & Upgrade
-                      </>
-                    )}
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      {loadingPlan === plan.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Upgrade Plan'
+                      )}
+                    </span>
+                    <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                   </button>
                 )}
-              </div>
+              </CardContent>
             </Card>
           );
         })}
       </div>
+      )}
 
       <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
         Secured payment powered by <strong>PayU</strong>. Your data is safe and

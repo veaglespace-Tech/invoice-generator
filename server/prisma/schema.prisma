@@ -246,6 +246,7 @@ model InvoiceItem {
   invoice         Invoice   @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
   product_id      String?
   description     String
+  hsn_code        String?
   quantity        Decimal   @db.Decimal(10, 2)
   unit            String?
   rate            Decimal   @db.Decimal(10, 2)

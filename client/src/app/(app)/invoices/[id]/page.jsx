@@ -273,11 +273,7 @@ export default function InvoicePrintView() {
                   <div className="flex-1 p-1.5 flex">
                     <span className="w-32">Supplier State Code:</span>{' '}
                     <span>
-                      {invoice.organization.state
-                        ? invoice.organization.state
-                            .substring(0, 2)
-                            .toUpperCase()
-                        : '06'}
+                      {invoice.organization.settings?.supplier_state_code || ''}
                     </span>
                   </div>
                 )}
@@ -387,9 +383,11 @@ export default function InvoicePrintView() {
                       <span>
                         {invoice.status === 'PAID'
                           ? 'PAID'
-                          : new Date(invoice.due_date).toLocaleDateString(
-                              'en-GB'
-                            )}
+                          : invoice.due_date 
+                            ? new Date(invoice.due_date).toLocaleDateString(
+                                'en-GB'
+                              )
+                            : ''}
                       </span>
                     </div>
                     {invoice.organization.settings?.field_visibility
@@ -429,78 +427,91 @@ export default function InvoicePrintView() {
                       }
                     >
                       <span className="text-gray-900">
-                        Details of customer(Billed to):
+                        Transaction type: Services
                       </span>
                     </div>
                     {(invoice.organization.settings?.field_visibility
                       ?.customerPan ??
                       true) && (
                       <div className="w-1/2 p-1.5 flex gap-2">
-                        <span className="text-gray-900">PAN:</span>{' '}
-                        <span>{invoice.customer.PAN}</span>
+                        <span className="text-gray-900">Merchant Id:</span>{' '}
+                        <span>{invoice.organization.settings?.merchant_id || ''}</span>
                       </div>
                     )}
                   </div>
                 </div>
-                {/* QR Code */}
-                <div className="w-[25%] border-l border-b border-black flex items-center justify-center p-2 relative overflow-hidden">
-                  <QRCodeSVG
-                    value={`Invoice No: ${invoice.invoice_number}\nAmount: ₹${invoice.grand_total}\nDate: ${new Date(invoice.invoice_date).toLocaleDateString()}\nCustomer: ${invoice.customer.company_name || invoice.customer.customer_name || 'N/A'}`}
-                    size={120}
-                    level="M"
-                    includeMargin={false}
-                    className="w-full h-auto max-h-[140px]"
-                  />
-                </div>
               </div>
 
-              {/* Billed To Details */}
-              <div className="flex flex-col border-b border-black text-[10px]">
-                <div className="flex p-1.5">
-                  <div className="w-24">Legal Name:</div>
-                  <div className="flex-1 uppercase">
-                    {invoice.customer.company_name ||
-                      invoice.customer.customer_name}
+              {/* Billed By & Billed To Side-by-Side */}
+              <div className="flex border-b border-black text-[10px]">
+                {/* Billed By (Org Details) */}
+                <div className="w-1/2 border-r border-black flex flex-col p-1.5">
+                  <div className="font-bold mb-1">Details of Supplier (Billed By):</div>
+                  <div className="flex">
+                    <div className="w-24">Legal Name:</div>
+                    <div className="flex-1 uppercase font-semibold">
+                      {invoice.organization.legal_name || invoice.organization.name || ''}
+                    </div>
                   </div>
-                </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="w-24">Address:</div>
-                  <div className="flex-1 whitespace-pre-wrap">
-                    {invoice.customer.billing_address}
+                  <div className="flex">
+                    <div className="w-24">Address:</div>
+                    <div className="flex-1 whitespace-pre-wrap">
+                      {invoice.organization.address || ''}
+                    </div>
                   </div>
-                </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="flex flex-1">
+                  <div className="flex">
                     <div className="w-24">City:</div>
-                    <div className="flex-1">
-                      {invoice.customer.billing_city}
-                    </div>
+                    <div className="flex-1">{invoice.organization.city || ''}</div>
                   </div>
-                  <div className="flex flex-1">
-                    <div className="w-36">Place of supply (POS):</div>
-                    <div className="flex-1">
-                      {invoice.customer.billing_state}
-                    </div>
+                  <div className="flex">
+                    <div className="w-24">State:</div>
+                    <div className="flex-1">{invoice.organization.state || ''}</div>
                   </div>
-                  <div className="flex flex-1">
-                    <div className="w-16">Pin code:</div>
-                    <div className="flex-1">
-                      {invoice.customer.billing_pincode}
-                    </div>
+                  <div className="flex">
+                    <div className="w-24">Pin code:</div>
+                    <div className="flex-1">{invoice.organization.pincode || ''}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">GSTIN:</div>
+                    <div className="flex-1">{invoice.organization.GSTIN || ''}</div>
                   </div>
                 </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="flex flex-1">
-                    <div className="w-24">Gst No:</div>
+
+                {/* Billed To (Customer Details) */}
+                <div className="w-1/2 flex flex-col p-1.5">
+                  <div className="font-bold mb-1 flex justify-between">
+                    <span>Details of Customer (Billed To):</span>
+                    {invoice.organization.settings?.field_visibility?.customerPan !== false && (
+                      <span>PAN: {invoice.customer.PAN || ''}</span>
+                    )}
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Name:</div>
+                    <div className="flex-1 uppercase font-semibold">
+                      {invoice.customer.company_name || invoice.customer.customer_name}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Address:</div>
+                    <div className="flex-1 whitespace-pre-wrap">
+                      {invoice.customer.billing_address}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">City:</div>
+                    <div className="flex-1">{invoice.customer.billing_city}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Place of supply:</div>
+                    <div className="flex-1">{invoice.customer.billing_state}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Pin code:</div>
+                    <div className="flex-1">{invoice.customer.billing_pincode}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">GSTIN:</div>
                     <div className="flex-1">{invoice.customer.GSTIN}</div>
-                  </div>
-                  <div className="flex flex-1">
-                    <div className="w-36">Transaction type:</div>
-                    <div className="flex-1">Services</div>
-                  </div>
-                  <div className="flex flex-1">
-                    <div className="w-20">Merchant Id:</div>
-                    <div className="flex-1"></div>
                   </div>
                 </div>
               </div>
@@ -547,7 +558,7 @@ export default function InvoicePrintView() {
                         {item.description || '-'}
                       </td>
                       <td className="py-1 px-1 border-r border-black text-center align-top">
-                        997159
+                        {item.hsn_code || invoice.organization.settings?.hsn_code || ''}
                       </td>
                       <td className="py-1 px-1 border-r border-black text-center align-top">
                         {item.quantity}
@@ -627,10 +638,32 @@ export default function InvoicePrintView() {
                 <div className="w-[280px] flex flex-col">
                   <div className="flex border-b border-black">
                     <div className="w-1/2 p-1.5 border-r border-black">
-                      Taxable Value
+                      Gross Amount
                     </div>
                     <div className="w-1/2 p-1.5 text-right">
                       {Number(invoice.sub_total).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2
+                      })}
+                    </div>
+                  </div>
+                  {Number(invoice.discount) > 0 && (
+                    <div className="flex border-b border-black">
+                      <div className="w-1/2 p-1.5 border-r border-black">
+                        Discount
+                      </div>
+                      <div className="w-1/2 p-1.5 text-right">
+                        {Number(invoice.discount).toLocaleString('en-IN', {
+                          minimumFractionDigits: 2
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex border-b border-black">
+                    <div className="w-1/2 p-1.5 border-r border-black">
+                      Taxable Value
+                    </div>
+                    <div className="w-1/2 p-1.5 text-right">
+                      {(Number(invoice.sub_total) - Number(invoice.discount)).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </div>
@@ -682,12 +715,6 @@ export default function InvoicePrintView() {
                     </div>
                   </div>
                   <div className="flex border-b border-black">
-                    <div className="w-1/2 p-1 border-r border-black">
-                      TCS@0.1%
-                    </div>
-                    <div className="w-1/2 p-1 text-right">0.00</div>
-                  </div>
-                  <div className="flex border-b border-black">
                     <div className="w-1/2 p-1.5 border-r border-black">
                       Total Invoice value
                     </div>
@@ -720,18 +747,25 @@ export default function InvoicePrintView() {
 
               {/* Digital Signature */}
               <div className="flex min-h-[90px] text-[10px]">
-                <div className="flex-1 border-r border-black p-2"></div>
+                <div className="flex-1 border-r border-black p-2 flex flex-col gap-1">
+                  {invoice.organization.settings?.bank_details ? (
+                    <div className="whitespace-pre-wrap font-medium text-slate-800">
+                      <div className="font-bold underline mb-1">Bank Details:</div>
+                      {invoice.organization.settings.bank_details}
+                    </div>
+                  ) : null}
+                </div>
                 <div className="w-[300px] p-2 flex flex-col gap-0.5 pt-2">
                   <div>
                     Digitally signed by -{' '}
-                    {`DS ${invoice.organization.legal_name?.toUpperCase() || invoice.organization.name?.toUpperCase()}`}
+                    {invoice.organization.legal_name?.toUpperCase() || invoice.organization.name?.toUpperCase() || ''}
                   </div>
-                  <div>Location - {invoice.organization.city || 'Gurgaon'}</div>
+                  <div>Location - {invoice.organization.city || invoice.organization.settings?.signature_location || 'Gurgaon'}</div>
                   <div>
                     Date -{' '}
                     {new Date(
                       invoice.created_at || invoice.invoice_date
-                    ).toUTCString()}
+                    ).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
                   </div>
                 </div>
               </div>

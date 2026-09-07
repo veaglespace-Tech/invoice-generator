@@ -1,7 +1,7 @@
-import { Outfit } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import './globals.css';
-const outfit = Outfit({
-  variable: '--font-outfit',
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
   subsets: ['latin'],
   preload: false
 });
@@ -18,10 +18,11 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} h-full antialiased`}
+      className={`${montserrat.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-base-100 text-base-content">
+      <body className={`${montserrat.className} min-h-full flex flex-col bg-base-100 text-base-content`}>
         <Providers>{children}</Providers>
       </body>
     </html>

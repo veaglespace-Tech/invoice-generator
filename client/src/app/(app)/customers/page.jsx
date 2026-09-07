@@ -195,7 +195,7 @@ export default function CustomersPage() {
               <p>No customers found.</p>
             </div>
           ) : (
-            <table className="table table-zebra w-full text-sm text-left">
+            <table className="table w-full text-sm text-left">
               <thead>
                 <tr>
                   <th>Customer Details</th>
@@ -206,18 +206,18 @@ export default function CustomersPage() {
               </thead>
               <tbody>
                 {customers.map((customer) => (
-                  <tr key={customer.id} className="hover">
+                  <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800">
                     <td>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold uppercase">
                           {customer.customer_name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-base-content">
+                          <p className="font-semibold text-slate-900 dark:text-white">
                             {customer.customer_name}
                           </p>
                           {customer.company_name && (
-                            <p className="text-xs text-base-content/60 flex items-center gap-1 mt-0.5">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                               <Building2 className="w-3 h-3" />{' '}
                               {customer.company_name}
                             </p>
@@ -227,12 +227,12 @@ export default function CustomersPage() {
                     </td>
                     <td>
                       <div className="space-y-1">
-                        <p className="text-base-content/80 flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-base-content/50" />{' '}
+                        <p className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-slate-400" />{' '}
                           {customer.email || 'N/A'}
                         </p>
-                        <p className="text-base-content/60 flex items-center gap-2 text-xs">
-                          <Phone className="w-3.5 h-3.5 text-base-content/50" />{' '}
+                        <p className="text-slate-500 dark:text-slate-400 flex items-center gap-2 text-xs">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />{' '}
                           {customer.phone || 'N/A'}
                         </p>
                       </div>

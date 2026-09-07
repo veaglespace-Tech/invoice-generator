@@ -153,7 +153,8 @@ const createInvoice = async (req, res, next) => {
     const { calculatedItems, totals } = await (0, _invoice2.calculateInvoice)(
       targetOrgId,
       data.customer_id,
-      data.items
+      data.items,
+      data.tax_type
     );
 
     // Generate or Use provided Invoice Number
@@ -173,6 +174,11 @@ const createInvoice = async (req, res, next) => {
           notes: data.notes,
           terms: data.terms,
           payment_details: data.payment_details,
+          document_ref_no: data.document_ref_no || null,
+          document_date: data.document_date ? new Date(data.document_date) : null,
+          category: data.category || null,
+          document_type_code: data.document_type_code || null,
+          irn: data.irn || null,
           items: {
             create: calculatedItems
           }
@@ -203,7 +209,12 @@ const createInvoice = async (req, res, next) => {
       data: result
     });
   } catch (error) {
-    next(error);
+    console.error("CREATE INVOICE ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+      stack: error.stack
+    });
   }
 };
 exports.createInvoice = createInvoice;
@@ -232,7 +243,8 @@ const updateInvoice = async (req, res, next) => {
     const { calculatedItems, totals } = await (0, _invoice2.calculateInvoice)(
       targetOrgId,
       data.customer_id,
-      data.items
+      data.items,
+      data.tax_type
     );
 
     // Use provided Invoice Number or keep existing

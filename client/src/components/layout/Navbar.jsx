@@ -15,7 +15,7 @@ export function Navbar() {
     }
   }, []);
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-all">
+    <header className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-all">
       <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-2 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-1 flex items-center">
@@ -26,7 +26,7 @@ export function Navbar() {
             <img
               src="/logo.webp"
               alt="Veagle Space Technology"
-              className="h-[48px] md:h-[64px] w-auto object-contain transition-all coin-spin"
+              className="h-[40px] md:h-[56px] w-auto object-contain transition-all coin-spin"
             />
           </Link>
         </div>
@@ -37,46 +37,41 @@ export function Navbar() {
             <li>
               <Link
                 href="/"
-                className="relative px-2 py-1 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
               >
                 Home
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-indigo-600 dark:bg-indigo-400 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
               </Link>
             </li>
             <li>
               <Link
                 href="/#features"
-                className="relative px-2 py-1 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
               >
                 Features
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-indigo-600 dark:bg-indigo-400 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
               </Link>
             </li>
             <li>
               <Link
                 href="/#pricing"
-                className="relative px-2 py-1 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
               >
                 Pricing
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-indigo-600 dark:bg-indigo-400 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
               </Link>
             </li>
             <li>
               <Link
                 href="/about"
-                className="relative px-2 py-1 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
               >
                 About Us
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-indigo-600 dark:bg-indigo-400 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
               </Link>
             </li>
             <li>
               <Link
                 href="/contact"
-                className="relative px-2 py-1 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
               >
                 Contact Us
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-indigo-600 dark:bg-indigo-400 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
               </Link>
             </li>
           </ul>

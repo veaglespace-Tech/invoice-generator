@@ -93,7 +93,7 @@ export function Sidebar() {
 
       {/* Sidebar Content */}
       <div
-        className={`flex flex-col bg-slate-950 text-slate-300 border-r border-slate-800 h-screen transition-all duration-300 z-50 fixed md:relative top-0 left-0
+        className={`flex flex-col bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 h-screen transition-all duration-300 z-50 fixed md:relative top-0 left-0
           ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64
           ${isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
@@ -101,7 +101,7 @@ export function Sidebar() {
         {/* Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-8 bg-slate-800 text-slate-400 hover:text-white rounded-full p-1 border border-slate-700 shadow-lg z-10 hidden md:block"
+          className="absolute -right-3 top-8 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 rounded-full p-1 border border-indigo-700 dark:border-indigo-400 shadow-md shadow-indigo-500/30 z-10 hidden md:block transition-all duration-200"
         >
           <ChevronLeft
             className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
@@ -109,7 +109,7 @@ export function Sidebar() {
         </button>
 
         <div
-          className="flex items-center justify-center border-b border-slate-800 bg-slate-950"
+          className="flex items-center justify-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
           style={{
             minHeight: '64px',
             padding: '8px 16px'
@@ -136,7 +136,7 @@ export function Sidebar() {
           </Link>
         </div>
 
-        <ul className="menu flex-1 overflow-y-auto py-6 px-3 space-y-1 bg-slate-950">
+        <ul className="menu flex-1 overflow-y-auto py-6 px-3 space-y-1 bg-white dark:bg-slate-900">
           {navigation.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + '/');
@@ -145,11 +145,11 @@ export function Sidebar() {
                 <Link
                   href={item.href}
                   onClick={() => setIsOpenMobile(false)}
-                  className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}
+                  className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'}`}
                   title={isCollapsed ? item.name : undefined}
                 >
                   <item.icon
-                    className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}
+                    className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
                   />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">{item.name}</span>
@@ -165,11 +165,11 @@ export function Sidebar() {
                 <Link
                   href="/super-admin/organizations"
                   onClick={() => setIsOpenMobile(false)}
-                  className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${pathname === '/super-admin/organizations' ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}
+                  className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${pathname === '/super-admin/organizations' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'}`}
                   title={isCollapsed ? 'Organizations (Admin)' : undefined}
                 >
                   <Shield
-                    className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/organizations' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}
+                    className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/organizations' ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
                   />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">
@@ -182,11 +182,11 @@ export function Sidebar() {
                 <Link
                   href="/super-admin/plans"
                   onClick={() => setIsOpenMobile(false)}
-                  className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${pathname === '/super-admin/plans' ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}
+                  className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${pathname === '/super-admin/plans' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'}`}
                   title={isCollapsed ? 'Plans (Admin)' : undefined}
                 >
                   <CreditCard
-                    className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/plans' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}
+                    className={`w-5 h-5 flex-shrink-0 ${pathname === '/super-admin/plans' ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
                   />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">Plans (Admin)</span>
@@ -197,15 +197,15 @@ export function Sidebar() {
           )}
         </ul>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-950">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <ul className="menu p-0 space-y-1">
             <li>
               <button
                 onClick={handleLogout}
-                className={`flex items-center gap-3 py-3 text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-colors duration-200 font-medium group w-full ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
+                className={`flex items-center gap-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-colors duration-200 font-medium group w-full ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
                 title={isCollapsed ? 'Logout' : undefined}
               >
-                <LogOut className="w-5 h-5 flex-shrink-0 text-slate-500 group-hover:text-red-400 transition-colors" />
+                <LogOut className="w-5 h-5 flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
                 {!isCollapsed && (
                   <span className="whitespace-nowrap">Logout</span>
                 )}

@@ -258,42 +258,42 @@ export default function InvoicesList() {
               <p>No invoices found matching your criteria.</p>
             </div>
           ) : (
-            <table className="table table-zebra w-full text-sm text-left">
+            <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr>
-                  <th>Invoice Number</th>
-                  <th>Client</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th className="text-right">Actions</th>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                  <th className="py-3 px-4 font-semibold">Invoice Number</th>
+                  <th className="py-3 px-4 font-semibold">Client</th>
+                  <th className="py-3 px-4 font-semibold">Amount</th>
+                  <th className="py-3 px-4 font-semibold">Date</th>
+                  <th className="py-3 px-4 font-semibold">Due Date</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredInvoices.map((invoice) => (
                   <tr
                     key={invoice.id}
-                    className="hover cursor-pointer"
+                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/invoices/${invoice.id}`)}
                   >
-                    <td className="font-medium text-primary">
+                    <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
                       {invoice.invoice_number}
                     </td>
-                    <td className="font-medium text-base-content">
+                    <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">
                       {invoice.customer.company_name ||
                         invoice.customer.customer_name}
                     </td>
-                    <td className="font-semibold text-base-content">
+                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">
                       ₹{Number(invoice.grand_total).toLocaleString()}
                     </td>
-                    <td className="text-base-content/70">
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                       {new Date(invoice.invoice_date).toLocaleDateString()}
                     </td>
-                    <td className="text-base-content/70">
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                       {new Date(invoice.due_date).toLocaleDateString()}
                     </td>
-                    <td onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={invoice.status}
                         onChange={(e) =>
@@ -309,14 +309,14 @@ export default function InvoicesList() {
                       </select>
                     </td>
                     <td
-                      className="text-right"
+                      className="py-3 px-4 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="dropdown dropdown-end">
                         <div
                           tabIndex={0}
                           role="button"
-                          className="btn btn-ghost btn-sm btn-square"
+                          className="btn btn-ghost btn-sm btn-square text-slate-700 dark:text-slate-300"
                         >
                           <MoreHorizontal className="w-5 h-5" />
                         </div>

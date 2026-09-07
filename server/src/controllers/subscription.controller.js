@@ -15,10 +15,10 @@ function _interopRequireDefault(e) {
   return e && e.__esModule ? e : { default: e };
 }
 const prisma = new _client.PrismaClient();
-const PAYU_BASE_URL =
-  process.env.PAYU_BASE_URL || 'https://test.payu.in/_payment';
-const PAYU_TEST_KEY = process.env.PAYU_TEST_KEY || '';
-const PAYU_TEST_SALT = process.env.PAYU_TEST_SALT || '';
+const PAYU_BASE_URL = process.env.PAYU_BASE_URL || 'https://test.payu.in/_payment';
+const PAYU_MERCHANT_KEY = process.env.PAYU_MERCHANT_KEY || '';
+const PAYU_MERCHANT_SALT = process.env.PAYU_MERCHANT_SALT || '';
+
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api/v1';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const initiateSubscription = async (req, res) => {
@@ -78,7 +78,7 @@ const initiateSubscription = async (req, res) => {
     const furl = `${API_BASE_URL}/subscriptions/fail`;
 
     // Hash sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
-    const hashString = `${PAYU_TEST_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_TEST_SALT}`;
+    const hashString = `${PAYU_MERCHANT_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_MERCHANT_SALT}`;
     const hash = _crypto.default
       .createHash('sha512')
       .update(hashString)
@@ -97,7 +97,7 @@ const initiateSubscription = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        key: PAYU_TEST_KEY,
+        key: PAYU_MERCHANT_KEY,
         txnid,
         amount,
         productinfo,
@@ -138,7 +138,7 @@ const handlePaymentSuccess = async (req, res) => {
 
     // Verify Hash
     // Reverse Hash sequence: SALT|status|||||||||||email|firstname|productinfo|amount|txnid|key
-    const reverseHashString = `${PAYU_TEST_SALT}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${PAYU_TEST_KEY}`;
+    const reverseHashString = `${PAYU_MERCHANT_SALT}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${PAYU_MERCHANT_KEY}`;
     const calculatedHash = _crypto.default
       .createHash('sha512')
       .update(reverseHashString)

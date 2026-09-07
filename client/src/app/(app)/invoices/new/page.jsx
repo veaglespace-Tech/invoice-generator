@@ -145,6 +145,7 @@ export default function InvoiceGenerator() {
   }, []);
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: '',
+    customerId: null,
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -161,6 +162,8 @@ export default function InvoiceGenerator() {
     notes: '',
     taxRate: 18,
     discount: 0,
+    discountType: 'amount',
+    taxType: 'AUTO',
     supplierStateCode: '',
     transactionType: 'Services',
     merchantId: '',
@@ -178,6 +181,7 @@ export default function InvoiceGenerator() {
     {
       id: '1',
       description: '',
+      hsn: '',
       qty: 1,
       rate: 0
     }
@@ -194,6 +198,7 @@ export default function InvoiceGenerator() {
       {
         id: Math.random().toString(),
         description: '',
+        hsn: '',
         qty: 1,
         rate: 0
       }
@@ -266,33 +271,48 @@ export default function InvoiceGenerator() {
     }
     setIsDownloading(true);
     try {
-      // 1. Create Customer silently
-      const customerRes = await fetchApi('/customers', {
-        method: 'POST',
-        data: {
-          customer_name: invoiceData.clientName || 'Unknown Client',
-          email: invoiceData.clientEmail,
-          billing_address: invoiceData.clientAddress
+      let customerId = invoiceData.customerId;
+      
+      if (customerMode === 'new') {
+        const customerRes = await fetchApi('/customers', {
+          method: 'POST',
+          data: {
+            customer_name: invoiceData.clientName || 'Unknown Client',
+            email: invoiceData.clientEmail,
+            billing_address: invoiceData.clientAddress
+          }
+        });
+        if (!customerRes.success || !customerRes.data) {
+          throw new Error('Failed to create customer record for invoice');
         }
-      });
-      if (!customerRes.success || !customerRes.data) {
-        throw new Error('Failed to create customer record for invoice');
+        customerId = customerRes.data.id;
+      } else if (!customerId) {
+        alert('Please select an existing customer from the dropdown.');
+        setIsDownloading(false);
+        return;
       }
+
+      // Calculations
+      const subtotalCalc = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
+      const totalDiscountAmount = invoiceData.discountType === 'percentage'
+        ? (subtotalCalc * invoiceData.discount) / 100
+        : Number(invoiceData.discount);
 
       // 2. Format Items
       const formattedItems = items.map((item) => ({
         description: item.description || 'Item',
+        hsn_code: item.hsn || invoiceData.hsnCode || null,
         quantity: item.qty,
         rate: item.rate,
         tax_rate: invoiceData.taxRate,
-        discount: invoiceData.discount / (items.length || 1)
+        discount: totalDiscountAmount / (items.length || 1)
       }));
 
       // 3. Create Invoice
       const invoiceRes = await fetchApi('/invoices', {
         method: 'POST',
         data: {
-          customer_id: customerRes.data.id,
+          customer_id: customerId,
           invoice_number: invoiceData.invoiceNumber,
           invoice_date: invoiceData.issueDate,
           due_date: invoiceData.dueDate,
@@ -303,6 +323,7 @@ export default function InvoiceGenerator() {
           category: invoiceData.category || null,
           document_type_code: invoiceData.documentType || null,
           irn: invoiceData.irn || null,
+          tax_type: invoiceData.taxType,
           items: formattedItems
         }
       });
@@ -333,33 +354,48 @@ export default function InvoiceGenerator() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // 1. Create Customer silently
-      const customerRes = await fetchApi('/customers', {
-        method: 'POST',
-        data: {
-          customer_name: invoiceData.clientName || 'Unknown Client',
-          email: invoiceData.clientEmail,
-          billing_address: invoiceData.clientAddress
+      let customerId = invoiceData.customerId;
+      
+      if (customerMode === 'new') {
+        const customerRes = await fetchApi('/customers', {
+          method: 'POST',
+          data: {
+            customer_name: invoiceData.clientName || 'Unknown Client',
+            email: invoiceData.clientEmail,
+            billing_address: invoiceData.clientAddress
+          }
+        });
+        if (!customerRes.success || !customerRes.data) {
+          throw new Error('Failed to create customer record for invoice');
         }
-      });
-      if (!customerRes.success || !customerRes.data) {
-        throw new Error('Failed to create customer record for invoice');
+        customerId = customerRes.data.id;
+      } else if (!customerId) {
+        alert('Please select an existing customer from the dropdown.');
+        setIsSaving(false);
+        return;
       }
+
+      // Calculations
+      const subtotalCalc = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
+      const totalDiscountAmount = invoiceData.discountType === 'percentage'
+        ? (subtotalCalc * invoiceData.discount) / 100
+        : Number(invoiceData.discount);
 
       // 2. Format Items
       const formattedItems = items.map((item) => ({
         description: item.description || 'Item',
+        hsn_code: item.hsn || invoiceData.hsnCode || null,
         quantity: item.qty,
         rate: item.rate,
         tax_rate: invoiceData.taxRate,
-        discount: invoiceData.discount / (items.length || 1) // Distribute flat discount roughly
+        discount: totalDiscountAmount / (items.length || 1) // Distribute flat discount roughly
       }));
 
       // 3. Create Invoice
       const invoiceRes = await fetchApi('/invoices', {
         method: 'POST',
         data: {
-          customer_id: customerRes.data.id,
+          customer_id: customerId,
           invoice_number: invoiceData.invoiceNumber,
           invoice_date: invoiceData.issueDate,
           due_date: invoiceData.dueDate,
@@ -370,6 +406,7 @@ export default function InvoiceGenerator() {
           category: invoiceData.category || null,
           document_type_code: invoiceData.documentType || null,
           irn: invoiceData.irn || null,
+          tax_type: invoiceData.taxType,
           items: formattedItems
         }
       });
@@ -387,12 +424,22 @@ export default function InvoiceGenerator() {
 
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
-  const taxAmount =
-    (subtotal - invoiceData.discount) * (invoiceData.taxRate / 100);
-  const total = subtotal - invoiceData.discount + taxAmount;
-  const isInterstate =
-    (orgProfile?.state || '').trim().toLowerCase() !==
-    (invoiceData.clientState || '').trim().toLowerCase();
+  const totalDiscountAmount = invoiceData.discountType === 'percentage'
+    ? (subtotal * invoiceData.discount) / 100
+    : Number(invoiceData.discount);
+  
+  const taxAmount = (subtotal - totalDiscountAmount) * (invoiceData.taxRate / 100);
+  const total = subtotal - totalDiscountAmount + taxAmount;
+  
+  let isInterstate = false;
+  if (invoiceData.taxType === 'IGST') {
+    isInterstate = true;
+  } else if (invoiceData.taxType === 'CGST_SGST') {
+    isInterstate = false;
+  } else {
+    isInterstate = (orgProfile?.state || '').trim().toLowerCase() !== (invoiceData.clientState || '').trim().toLowerCase();
+  }
+  
   const cgstAmount = isInterstate ? 0 : taxAmount / 2;
   const sgstAmount = isInterstate ? 0 : taxAmount / 2;
   const igstAmount = isInterstate ? taxAmount : 0;
@@ -687,6 +734,7 @@ export default function InvoiceGenerator() {
                                   onClick={() => {
                                     setInvoiceData((prev) => ({
                                       ...prev,
+                                      customerId: c.id,
                                       clientName: c.customer_name,
                                       clientEmail: c.email || '',
                                       clientAddress: c.billing_address || '',
@@ -917,6 +965,17 @@ export default function InvoiceGenerator() {
                       </div>
                       <div className="flex gap-2">
                         <div className="flex-1 flex items-center gap-2">
+                          <span className="text-xs text-slate-500">HSN</span>
+                          <input
+                            type="text"
+                            value={item.hsn || ''}
+                            onChange={(e) =>
+                              updateItem(item.id, 'hsn', e.target.value)
+                            }
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                          />
+                        </div>
+                        <div className="flex-1 flex items-center gap-2">
                           <span className="text-xs text-slate-500">Qty</span>
                           <input
                             type="number"
@@ -956,9 +1015,27 @@ export default function InvoiceGenerator() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-500">
-                      Discount ({invoiceData.currency})
-                    </label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-medium text-slate-500">
+                        Discount
+                      </label>
+                      <div className="flex bg-slate-200 dark:bg-slate-700 rounded-md overflow-hidden text-xs">
+                        <button
+                          type="button"
+                          onClick={() => updateData('discountType', 'amount')}
+                          className={`px-2 py-0.5 ${invoiceData.discountType === 'amount' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
+                        >
+                          {invoiceData.currency}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateData('discountType', 'percentage')}
+                          className={`px-2 py-0.5 ${invoiceData.discountType === 'percentage' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
+                        >
+                          %
+                        </button>
+                      </div>
+                    </div>
                     <input
                       type="number"
                       value={invoiceData.discount}
@@ -969,17 +1046,28 @@ export default function InvoiceGenerator() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-500">
-                      Tax Rate (%)
+                    <label className="text-xs font-medium text-slate-500 flex justify-between">
+                      <span>Tax Rate (%)</span>
                     </label>
-                    <input
-                      type="number"
-                      value={invoiceData.taxRate}
-                      onChange={(e) =>
-                        updateData('taxRate', Number(e.target.value))
-                      }
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={invoiceData.taxRate}
+                        onChange={(e) =>
+                          updateData('taxRate', Number(e.target.value))
+                        }
+                        className="w-1/2 bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                      />
+                      <select
+                        value={invoiceData.taxType}
+                        onChange={(e) => updateData('taxType', e.target.value)}
+                        className="w-1/2 bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                      >
+                        <option value="AUTO">Auto (State)</option>
+                        <option value="IGST">Force IGST</option>
+                        <option value="CGST_SGST">Force CGST/SGST</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -1056,10 +1144,7 @@ export default function InvoiceGenerator() {
                   <div className="flex-1 p-1.5 flex">
                     <span className="w-32">Supplier State Code:</span>{' '}
                     <span>
-                      {invoiceData.supplierStateCode ||
-                        (orgProfile?.state
-                          ? orgProfile.state.substring(0, 2).toUpperCase()
-                          : '06')}
+                      {invoiceData.supplierStateCode || ''}
                     </span>
                   </div>
                 )}
@@ -1154,9 +1239,11 @@ export default function InvoiceGenerator() {
                     >
                       <span className="text-gray-900">Due Date:</span>{' '}
                       <span>
-                        {new Date(invoiceData.dueDate).toLocaleDateString(
-                          'en-GB'
-                        )}
+                        {invoiceData.dueDate
+                          ? new Date(invoiceData.dueDate).toLocaleDateString(
+                              'en-GB'
+                            )
+                          : ''}
                       </span>
                     </div>
                     {orgProfile?.settings?.field_visibility?.category && (
@@ -1194,70 +1281,90 @@ export default function InvoiceGenerator() {
                       }
                     >
                       <span className="text-gray-900">
-                        Details of customer(Billed to):
+                        Transaction type: Services
                       </span>
                     </div>
                     {(orgProfile?.settings?.field_visibility?.customerPan ??
                       true) && (
                       <div className="w-1/2 p-1.5 flex gap-2">
-                        <span className="text-gray-900">PAN:</span>{' '}
-                        <span>{invoiceData.clientPan}</span>
+                        <span className="text-gray-900">Merchant Id:</span>{' '}
+                        <span>{invoiceData.merchantId}</span>
                       </div>
                     )}
                   </div>
                 </div>
-                {/* QR Code */}
-                <div className="w-[25%] border-l border-b border-black flex items-center justify-center p-2 relative overflow-hidden">
-                  <QRCodeSVG
-                    value={`Invoice No: ${invoiceData.invoiceNumber}\nAmount: ₹${total}\nDate: ${invoiceData.issueDate}\nCustomer: ${invoiceData.clientName || 'N/A'}`}
-                    size={120}
-                    level="M"
-                    includeMargin={false}
-                    className="w-full h-auto max-h-[140px]"
-                  />
-                </div>
               </div>
 
-              {/* Billed To Details */}
-              <div className="flex flex-col border-b border-black text-[10px]">
-                <div className="flex p-1.5">
-                  <div className="w-24">Legal Name:</div>
-                  <div className="flex-1 uppercase">
-                    {invoiceData.clientName || 'Select a customer'}
+              {/* Billed By & Billed To Side-by-Side */}
+              <div className="flex border-b border-black text-[10px]">
+                {/* Billed By (Org Details) */}
+                <div className="w-1/2 border-r border-black flex flex-col p-1.5">
+                  <div className="font-bold mb-1">Details of Supplier (Billed By):</div>
+                  <div className="flex">
+                    <div className="w-24">Legal Name:</div>
+                    <div className="flex-1 uppercase font-semibold">
+                      {orgProfile?.legal_name || orgProfile?.name || ''}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Address:</div>
+                    <div className="flex-1 whitespace-pre-wrap">
+                      {orgProfile?.address || ''}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">City:</div>
+                    <div className="flex-1">{orgProfile?.city || ''}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">State:</div>
+                    <div className="flex-1">{orgProfile?.state || ''}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Pin code:</div>
+                    <div className="flex-1">{orgProfile?.pincode || ''}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">GSTIN:</div>
+                    <div className="flex-1">{orgProfile?.GSTIN || ''}</div>
                   </div>
                 </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="w-24">Address:</div>
-                  <div className="flex-1 whitespace-pre-wrap">
-                    {invoiceData.clientAddress}
+
+                {/* Billed To (Customer Details) */}
+                <div className="w-1/2 flex flex-col p-1.5">
+                  <div className="font-bold mb-1 flex justify-between">
+                    <span>Details of Customer (Billed To):</span>
+                    {orgProfile?.settings?.field_visibility?.customerPan !== false && (
+                      <span>PAN: {invoiceData.clientPan || ''}</span>
+                    )}
                   </div>
-                </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="flex flex-1">
+                  <div className="flex">
+                    <div className="w-24">Name:</div>
+                    <div className="flex-1 uppercase font-semibold">
+                      {invoiceData.clientName || 'Select a customer'}
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-24">Address:</div>
+                    <div className="flex-1 whitespace-pre-wrap">
+                      {invoiceData.clientAddress}
+                    </div>
+                  </div>
+                  <div className="flex">
                     <div className="w-24">City:</div>
                     <div className="flex-1">{invoiceData.clientCity}</div>
                   </div>
-                  <div className="flex flex-1">
-                    <div className="w-36">Place of supply (POS):</div>
+                  <div className="flex">
+                    <div className="w-24">Place of supply:</div>
                     <div className="flex-1">{invoiceData.clientState}</div>
                   </div>
-                  <div className="flex flex-1">
-                    <div className="w-16">Pin code:</div>
+                  <div className="flex">
+                    <div className="w-24">Pin code:</div>
                     <div className="flex-1">{invoiceData.clientPincode}</div>
                   </div>
-                </div>
-                <div className="flex p-1.5 pt-0">
-                  <div className="flex flex-1">
-                    <div className="w-24">Gst No:</div>
+                  <div className="flex">
+                    <div className="w-24">GSTIN:</div>
                     <div className="flex-1">{invoiceData.clientGst}</div>
-                  </div>
-                  <div className="flex flex-1">
-                    <div className="w-36">Transaction type:</div>
-                    <div className="flex-1">Services</div>
-                  </div>
-                  <div className="flex flex-1">
-                    <div className="w-20">Merchant Id:</div>
-                    <div className="flex-1">{invoiceData.merchantId}</div>
                   </div>
                 </div>
               </div>
@@ -1304,7 +1411,7 @@ export default function InvoiceGenerator() {
                         {item.description || '-'}
                       </td>
                       <td className="py-1 px-1 border-r border-black text-center align-top">
-                        {invoiceData.hsnCode || '997159'}
+                        {item.hsn || invoiceData.hsnCode || ''}
                       </td>
                       <td className="py-1 px-1 border-r border-black text-center align-top">
                         {item.qty}
@@ -1379,10 +1486,32 @@ export default function InvoiceGenerator() {
                 <div className="w-[280px] flex flex-col">
                   <div className="flex border-b border-black">
                     <div className="w-1/2 p-1.5 border-r border-black">
-                      Taxable Value
+                      Gross Amount
                     </div>
                     <div className="w-1/2 p-1.5 text-right">
                       {subtotal.toLocaleString('en-IN', {
+                        minimumFractionDigits: 2
+                      })}
+                    </div>
+                  </div>
+                  {invoiceData.discount > 0 && (
+                    <div className="flex border-b border-black">
+                      <div className="w-1/2 p-1.5 border-r border-black">
+                        Discount
+                      </div>
+                      <div className="w-1/2 p-1.5 text-right">
+                        {invoiceData.discount.toLocaleString('en-IN', {
+                          minimumFractionDigits: 2
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex border-b border-black">
+                    <div className="w-1/2 p-1.5 border-r border-black">
+                      Taxable Value
+                    </div>
+                    <div className="w-1/2 p-1.5 text-right">
+                      {(subtotal - invoiceData.discount).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </div>
@@ -1433,12 +1562,6 @@ export default function InvoiceGenerator() {
                       })}
                     </div>
                   </div>
-                  <div className="flex border-y border-black">
-                    <div className="w-1/2 p-1.5 border-r border-black">
-                      TCS@0.1%
-                    </div>
-                    <div className="w-1/2 p-1.5 text-right">0.00</div>
-                  </div>
                   <div className="flex border-b border-black">
                     <div className="w-1/2 p-1.5 border-r border-black">
                       Total Invoice value
@@ -1470,17 +1593,24 @@ export default function InvoiceGenerator() {
 
               {/* Digital Signature */}
               <div className="flex min-h-[90px] text-[10px]">
-                <div className="flex-1 border-r border-black p-2"></div>
+                <div className="flex-1 border-r border-black p-2 flex flex-col gap-1">
+                  {orgProfile?.settings?.bank_details ? (
+                    <div className="whitespace-pre-wrap font-medium text-slate-800">
+                      <div className="font-bold underline mb-1">Bank Details:</div>
+                      {orgProfile.settings.bank_details}
+                    </div>
+                  ) : null}
+                </div>
                 <div className="w-[300px] p-2 flex flex-col gap-0.5 pt-2">
                   <div>
                     Digitally signed by -{' '}
-                    {`DS ${orgProfile?.legal_name?.toUpperCase() || orgProfile?.name?.toUpperCase() || ''}`}
+                    {orgProfile?.legal_name?.toUpperCase() || orgProfile?.name?.toUpperCase() || ''}
                   </div>
                   <div>
                     Location -{' '}
                     {orgProfile?.city || invoiceData.signatureLocation}
                   </div>
-                  <div>Date - {new Date().toUTCString()}</div>
+                  <div>Date - {new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}</div>
                 </div>
               </div>
 

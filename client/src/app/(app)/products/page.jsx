@@ -188,7 +188,7 @@ export default function ProductsPage() {
               <p>No items found.</p>
             </div>
           ) : (
-            <table className="table table-zebra w-full text-sm text-left">
+            <table className="table  w-full text-sm text-left">
               <thead>
                 <tr>
                   <th>Item Name</th>

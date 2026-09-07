@@ -322,14 +322,14 @@ export default function Dashboard() {
             <CardTitle>Recent Invoices</CardTitle>
           </CardHeader>
           <div className="overflow-x-auto">
-            <table className="table table-zebra w-full text-sm text-left">
+            <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr>
-                  <th>Invoice ID</th>
-                  <th>Client</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th className="text-right">Status</th>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                  <th className="py-3 px-4 font-semibold">Invoice ID</th>
+                  <th className="py-3 px-4 font-semibold">Client</th>
+                  <th className="py-3 px-4 font-semibold">Amount</th>
+                  <th className="py-3 px-4 font-semibold">Date</th>
+                  <th className="py-3 px-4 font-semibold text-right">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -344,8 +344,8 @@ export default function Dashboard() {
                   </tr>
                 ) : (
                   recentInvoices.map((invoice, index) => (
-                    <tr key={invoice.id} className="hover">
-                      <td className="font-medium text-primary">
+                    <tr key={invoice.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
                         <Link
                           href={`/invoices/${invoice.id}`}
                           className="hover:underline"
@@ -353,10 +353,10 @@ export default function Dashboard() {
                           {invoice.id}
                         </Link>
                       </td>
-                      <td className="font-medium">{invoice.client}</td>
-                      <td>{invoice.amount}</td>
-                      <td className="text-base-content/70">{invoice.date}</td>
-                      <td className="text-right">
+                      <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{invoice.client}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">{invoice.amount}</td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{invoice.date}</td>
+                      <td className="py-3 px-4 text-right">
                         <Badge
                           variant={
                             invoice.status === 'Paid'

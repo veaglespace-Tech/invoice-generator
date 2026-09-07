@@ -7,49 +7,86 @@ exports.sendInvoiceEmail = void 0;
 var _nodemailer = _interopRequireDefault(require('nodemailer'));
 var _pdf = require('./pdf.service');
 var _server = require('../server');
+
 function _interopRequireDefault(e) {
   return e && e.__esModule ? e : { default: e };
 }
-const transporter = _nodemailer.default.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-  port: parseInt(process.env.SMTP_PORT || '2525'),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD
-  }
-});
+
+// Fallback SMTP accounts provided by the user
+const smtpAccounts = [
+  { user: 'invoice@info.veaglespace.com', pass: 'Veagle@12345' },
+  { user: 'invoice1@info.veaglespace.com', pass: 'Veagle@12345' },
+  { user: 'invoice2@info.veaglespace.com', pass: 'Veagle@12345' }
+];
+
+// Helper to create a transporter for a specific account
+const getTransporter = (account) => {
+  return _nodemailer.default.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: account.user,
+      pass: account.pass
+    }
+  });
+};
+
 const sendInvoiceEmail = async (invoice) => {
   const pdfBuffer = await (0, _pdf.generateInvoicePDF)(invoice);
   const subject = `Invoice #${invoice.invoice_number} from ${invoice.organization.name}`;
   const text = `Dear ${invoice.customer.customer_name},\n\nPlease find attached your invoice #${invoice.invoice_number} for the amount of ${invoice.organization.currency} ${invoice.grand_total}.\n\nThank you for your business!\n\nBest Regards,\n${invoice.organization.name}`;
-  const mailOptions = {
-    from: `"${invoice.organization.name}" <${invoice.organization.email}>`,
-    to: invoice.customer.email,
-    subject,
-    text,
-    attachments: [
-      {
-        filename: `invoice-${invoice.invoice_number}.pdf`,
-        content: pdfBuffer,
-        contentType: 'application/pdf'
-      }
-    ]
-  };
-  try {
-    const info = await transporter.sendMail(mailOptions);
+  
+  let lastError = null;
 
-    // Update invoice status
-    await _server.prisma.invoice.update({
-      where: {
-        id: invoice.id
-      },
-      data: {
-        status: 'SENT'
-      }
-    });
-    return info;
-  } catch (error) {
-    throw new Error(`Failed to send email: ${error.message}`);
+  // Loop through accounts and try sending. If one hits a limit, it fails and loops to the next.
+  for (let i = 0; i < smtpAccounts.length; i++) {
+    const account = smtpAccounts[i];
+    const transporter = getTransporter(account);
+
+    const mailOptions = {
+      // Must send FROM the authenticated user to avoid SMTP rejection, but use organization name
+      from: `"${invoice.organization.name}" <${account.user}>`,
+      // Replies go directly to the organization
+      replyTo: invoice.organization.email,
+      to: invoice.customer.email,
+      subject,
+      text,
+      attachments: [
+        {
+          filename: `invoice-${invoice.invoice_number}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }
+      ]
+    };
+
+    try {
+      console.log(`Attempting to send email via ${account.user}...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Email sent successfully via ${account.user}: ${info.messageId}`);
+      
+      // Update invoice status in database
+      await _server.prisma.invoice.update({
+        where: {
+          id: invoice.id
+        },
+        data: {
+          status: 'SENT'
+        }
+      });
+      
+      // Successfully sent, return info and exit function
+      return info;
+    } catch (error) {
+      console.error(`Failed to send email via ${account.user}: ${error.message}`);
+      lastError = error;
+      // Loop will continue and try the next account
+    }
   }
+
+  // If the loop finishes and we are here, ALL accounts failed
+  throw new Error(`Failed to send email after trying all ${smtpAccounts.length} accounts. Last error: ${lastError?.message}`);
 };
+
 exports.sendInvoiceEmail = sendInvoiceEmail;

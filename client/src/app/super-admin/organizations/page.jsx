@@ -18,26 +18,33 @@ export default function SuperAdminOrganizations() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editingOrg, setEditingOrg] = useState(null);
-  const [newPlan, setNewPlan] = useState('FREE');
+  const [plans, setPlans] = useState([]);
+  const [newPlan, setNewPlan] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
-  const loadOrganizations = async () => {
+  const loadOrganizationsAndPlans = async () => {
     try {
-      const res = await fetchApi('/organizations');
-      if (res.success && res.data) {
-        setOrganizations(res.data);
+      const [orgsRes, plansRes] = await Promise.all([
+        fetchApi('/organizations'),
+        fetchApi('/plans') // Changed from /plans/admin as normal plans endpoint is usually sufficient, or /plans if public. Let's assume /plans.
+      ]);
+      if (orgsRes.success && orgsRes.data) {
+        setOrganizations(orgsRes.data);
+      }
+      if (plansRes.success && plansRes.data) {
+        setPlans(plansRes.data);
       }
     } catch (err) {
-      console.error('Failed to load organizations', err);
+      console.error('Failed to load organizations or plans', err);
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
-    loadOrganizations();
+    loadOrganizationsAndPlans();
   }, []);
   const handleEditClick = (org) => {
     setEditingOrg(org);
-    setNewPlan(org.plan);
+    setNewPlan(org.plan_id || (plans.length > 0 ? plans[0].id : ''));
   };
   const handleSavePlan = async () => {
     if (!editingOrg) return;
@@ -46,13 +53,13 @@ export default function SuperAdminOrganizations() {
       const res = await fetchApi(`/organizations/${editingOrg.id}`, {
         method: 'PUT',
         data: {
-          plan: newPlan
+          plan_id: newPlan
         }
       });
       if (res.success) {
         alert('Plan updated successfully!');
         setEditingOrg(null);
-        loadOrganizations(); // Refresh the list
+        loadOrganizationsAndPlans(); // Refresh the list
       } else {
         alert('Failed to update plan: ' + res.message);
       }
@@ -155,9 +162,9 @@ export default function SuperAdminOrganizations() {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${org.plan === 'PRO' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : org.plan === 'BASIC' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'}`}
+                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${org.plan?.name === 'PRO' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : org.plan?.name === 'BASIC' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'}`}
                       >
-                        {org.plan}
+                        {org.plan?.name || '-'}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-300">
@@ -219,7 +226,7 @@ export default function SuperAdminOrganizations() {
                   </span>
                 </p>
                 <p className="text-sm text-slate-500">
-                  Current Plan: {editingOrg.plan}
+                  Current Plan: {editingOrg.plan?.name || 'None'}
                 </p>
               </div>
               <div className="space-y-2">
@@ -231,9 +238,12 @@ export default function SuperAdminOrganizations() {
                   onChange={(e) => setNewPlan(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100"
                 >
-                  <option value="FREE">FREE - Base tier</option>
-                  <option value="BASIC">BASIC - Starter features</option>
-                  <option value="PRO">PRO - Advanced features</option>
+                  <option value="">Select a plan</option>
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} - ₹{plan.price}/{plan.interval}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -243,7 +253,7 @@ export default function SuperAdminOrganizations() {
               </Button>
               <Button
                 onClick={handleSavePlan}
-                disabled={isSavingPlan || newPlan === editingOrg.plan}
+                disabled={isSavingPlan || newPlan === editingOrg.plan_id || !newPlan}
                 className="gap-2"
               >
                 {isSavingPlan && <Loader2 className="w-4 h-4 animate-spin" />}

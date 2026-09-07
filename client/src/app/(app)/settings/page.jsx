@@ -160,27 +160,27 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="tabs tabs-boxed mb-6 bg-base-200/50 p-1 w-fit">
+      <div className="flex gap-2 mb-8 w-full overflow-x-auto p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
         <button
-          className={`tab tab-lg transition-all ${activeTab === 'profile' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === 'profile' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'}`}
           onClick={() => setActiveTab('profile')}
         >
           Organization Profile
         </button>
         <button
-          className={`tab tab-lg transition-all ${activeTab === 'invoice' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === 'invoice' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'}`}
           onClick={() => setActiveTab('invoice')}
         >
           Invoice Settings
         </button>
         <button
-          className={`tab tab-lg transition-all ${activeTab === 'billing' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === 'billing' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'}`}
           onClick={() => setActiveTab('billing')}
         >
           Billing & Plans
         </button>
         <button
-          className={`tab tab-lg transition-all ${activeTab === 'admin' ? 'tab-active font-semibold shadow-sm' : ''}`}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === 'admin' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'}`}
           onClick={() => setActiveTab('admin')}
         >
           Admin Profile
@@ -253,7 +253,7 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Display Name
                     </label>
                     <input
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Legal Name
                     </label>
                     <input
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Email Address
                     </label>
                     <input
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Phone
                     </label>
                     <input
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Fax
                     </label>
                     <input
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Website
                     </label>
                     <input
@@ -335,7 +335,7 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       GSTIN
                     </label>
                     <input
@@ -347,7 +347,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       PAN
                     </label>
                     <input
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Full Address
                   </label>
                   <textarea
@@ -375,7 +375,7 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       City
                     </label>
                     <input
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       State
                     </label>
                     <input
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Pincode
                     </label>
                     <input
@@ -411,7 +411,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                       Country
                     </label>
                     <input
@@ -441,7 +441,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Supplier State Code
                   </label>
                   <input
@@ -454,7 +454,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Transaction Type
                   </label>
                   <input
@@ -467,7 +467,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Merchant ID
                   </label>
                   <input
@@ -479,7 +479,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Default HSN/SAC Code
                   </label>
                   <input
@@ -491,7 +491,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Invoice Number Prefix
                   </label>
                   <input
@@ -565,7 +565,7 @@ export default function SettingsPage() {
                         handleFieldVisibilityChange(field.id, e.target.checked)
                       }
                     />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-300 select-none">
                       Show {field.label}
                     </span>
                   </label>
@@ -584,7 +584,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Signature Name
                   </label>
                   <input
@@ -597,7 +597,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Signature Location
                   </label>
                   <input
@@ -611,7 +611,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                   Default Terms & Conditions
                 </label>
                 <textarea
