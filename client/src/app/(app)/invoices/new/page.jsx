@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { fetchApi } from '@/lib/api';
+import { toast } from 'sonner';
 import * as htmlToImage from 'html-to-image';
 import jsPDF from 'jspdf';
 import { QRCodeSVG } from 'qrcode.react';
@@ -268,7 +269,7 @@ export default function InvoiceGenerator() {
   };
   const handleShare = async () => {
     if (!invoiceData.clientEmail) {
-      alert('Please enter a customer email address first.');
+      toast.error('Please enter a customer email address first.');
       return;
     }
     setIsDownloading(true);
@@ -337,10 +338,10 @@ export default function InvoiceGenerator() {
           method: 'POST'
         });
         if (sendRes.success) {
-          alert('Invoice saved and sent successfully to the registered email!');
+          toast.success('Invoice saved and sent successfully to the registered email!');
           window.location.href = '/invoices';
         } else {
-          alert('Invoice saved, but failed to send email: ' + sendRes.message);
+          toast.error('Invoice saved, but failed to send email: ' + sendRes.message);
           window.location.href = '/invoices';
         }
       } else {
@@ -348,9 +349,7 @@ export default function InvoiceGenerator() {
       }
     } catch (err) {
       console.error('Failed to process share', err);
-      alert(
-        'Failed to share invoice via email. Please check console for details.'
-      );
+      toast.error('Failed to share invoice via email. Please check console for details.');
     } finally {
       setIsDownloading(false);
     }
@@ -372,11 +371,11 @@ export default function InvoiceGenerator() {
           }
         });
         if (!customerRes.success || !customerRes.data) {
-          throw new Error('Failed to create customer record for invoice');
+          throw new Error(customerRes.message || 'Failed to create customer record for invoice');
         }
         customerId = customerRes.data.id;
       } else if (!customerId) {
-        alert('Please select an existing customer from the dropdown.');
+        toast.error('Please select an existing customer from the dropdown.');
         setIsSaving(false);
         return;
       }
@@ -417,12 +416,12 @@ export default function InvoiceGenerator() {
         }
       });
       if (invoiceRes.success) {
-        alert('Invoice saved successfully!');
+        toast.success('Invoice saved successfully!');
         window.location.href = '/invoices';
       }
     } catch (error) {
       console.error('Save error', error);
-      alert('Failed to save invoice. Please check the console for details.');
+      toast.error(error.message || 'Failed to save invoice.');
     } finally {
       setIsSaving(false);
     }
