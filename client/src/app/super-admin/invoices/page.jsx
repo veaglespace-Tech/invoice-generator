@@ -8,8 +8,10 @@ import { Card } from '@/components/ui/Card';
 import { fetchApi, API_BASE_URL } from '@/lib/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
 
 export default function SuperAdminInvoices() {
+  const router = useRouter();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
