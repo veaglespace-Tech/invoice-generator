@@ -139,13 +139,13 @@ export default function Dashboard() {
         <div className="flex gap-3">
           <button
             onClick={handleDownloadReport}
-            className="btn btn-outline hover:scale-105 transition-all shadow-sm"
+            className="btn btn-outline hover:scale-105 transition-all shadow-sm text-black dark:text-white whitespace-nowrap flex items-center gap-2"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download Report
+            <Download className="w-4 h-4" />
+            Export to Excel
           </button>
           <Link href="/invoices/new">
-            <button className="btn btn-primary text-white hover:scale-105 transition-all shadow-md">
+            <button className="btn btn-primary text-white hover:scale-105 transition-all shadow-md whitespace-nowrap flex items-center gap-2">
               Create Invoice
             </button>
           </Link>
