@@ -604,13 +604,13 @@ export default function InvoicePrintView() {
                       </td>
                       <td className="py-1 px-1 border-r border-black text-center align-top"></td>
                       <td className="py-1 px-1 border-r border-black text-right align-top">
-                        {Number(item.unit_price).toLocaleString('en-IN', {
+                        {Number(item.rate).toLocaleString('en-IN', {
                           minimumFractionDigits: 2
                         })}
                       </td>
                       <td className="py-1 px-1 text-right align-top">
                         {(
-                          item.quantity * Number(item.unit_price)
+                          item.quantity * Number(item.rate)
                         ).toLocaleString('en-IN', {
                           minimumFractionDigits: 2
                         })}
@@ -631,7 +631,7 @@ export default function InvoicePrintView() {
                       Gross Amount
                     </td>
                     <td className="py-1 px-1 text-right">
-                      {Number(invoice.sub_total).toLocaleString('en-IN', {
+                      {Number(invoice.subtotal).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </td>
@@ -680,7 +680,7 @@ export default function InvoicePrintView() {
                       Gross Amount
                     </div>
                     <div className="w-1/2 p-1.5 text-right">
-                      {Number(invoice.sub_total).toLocaleString('en-IN', {
+                      {Number(invoice.subtotal).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </div>
@@ -688,7 +688,7 @@ export default function InvoicePrintView() {
                   {Number(invoice.discount) > 0 && (
                     <div className="flex border-b border-black">
                       <div className="w-1/2 p-1.5 border-r border-black">
-                        Discount {Number(invoice.sub_total) > 0 ? `(${((Number(invoice.discount) / Number(invoice.sub_total)) * 100).toFixed(2).replace(/\.00$/, '')}%)` : ''}
+                        Discount {Number(invoice.subtotal) > 0 ? `(${((Number(invoice.discount) / Number(invoice.subtotal)) * 100).toFixed(2).replace(/\.00$/, '')}%)` : ''}
                       </div>
                       <div className="w-1/2 p-1.5 text-right">
                         {Number(invoice.discount).toLocaleString('en-IN', {
@@ -702,7 +702,7 @@ export default function InvoicePrintView() {
                       Taxable Value
                     </div>
                     <div className="w-1/2 p-1.5 text-right">
-                      {(Number(invoice.sub_total) - Number(invoice.discount)).toLocaleString('en-IN', {
+                      {(Number(invoice.subtotal) - Number(invoice.discount)).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </div>
