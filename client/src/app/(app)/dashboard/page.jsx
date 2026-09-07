@@ -139,7 +139,7 @@ export default function Dashboard() {
         <div className="flex gap-3">
           <button
             onClick={handleDownloadReport}
-            className="btn btn-outline hover:scale-105 transition-all shadow-sm text-black dark:text-white whitespace-nowrap flex items-center gap-2"
+            className="btn btn-outline hover:scale-105 transition-all shadow-sm text-black dark:text-white hover:text-white whitespace-nowrap flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
             Export to Excel
