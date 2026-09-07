@@ -311,7 +311,7 @@ export default function InvoicesList() {
                         onChange={(e) =>
                           handleStatusChange(invoice.id, e.target.value)
                         }
-                        className={`select select-sm border outline-none font-medium ${getStatusBadgeClass(invoice.status)}`}
+                        className={`select select-sm border outline-none font-medium min-w-[130px] ${getStatusBadgeClass(invoice.status)}`}
                       >
                         <option value="DRAFT">Draft</option>
                         <option value="GENERATED">Generated</option>

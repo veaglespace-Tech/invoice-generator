@@ -1128,10 +1128,10 @@ export default function InvoiceGenerator() {
         </div>
 
         {/* BOTTOM PANEL: Live A4 Preview */}
-        <div className="w-full pb-12 flex justify-center items-start print:p-0 print:m-0 print:block bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl overflow-x-auto">
+        <div className="w-full pb-12 flex justify-start sm:justify-center items-start print:p-0 print:m-0 print:block bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl overflow-x-auto">
           <div
             id="invoice-preview"
-            className="w-[210mm] min-h-[297mm] bg-white text-black p-8 shadow-2xl relative flex flex-col print:shadow-none print:w-full print:min-h-0 font-sans text-[10px] leading-tight"
+            className="w-[210mm] min-w-[210mm] min-h-[297mm] bg-white text-black p-8 shadow-2xl relative flex flex-col print:shadow-none print:w-full print:min-h-0 font-sans text-[10px] leading-tight"
           >
             {/* Main Outer Border Container */}
             <div className="border border-black flex flex-col box-border">

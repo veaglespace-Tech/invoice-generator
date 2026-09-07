@@ -248,10 +248,10 @@ export default function InvoicePrintView() {
         </div>
       </div>{' '}
       {/* Printable Invoice Page */}
-      <div className="w-full pb-12 flex justify-center items-start print:p-0 print:m-0 print:block bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl overflow-x-auto">
+      <div className="w-full pb-12 flex justify-start sm:justify-center items-start print:p-0 print:m-0 print:block bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl overflow-x-auto">
         <div
           id="invoice-preview"
-          className="w-[210mm] min-h-[297mm] bg-white mx-auto shadow-lg relative print:shadow-none print:w-full print:h-auto print:min-h-0 flex flex-col box-border"
+          className="w-[210mm] min-w-[210mm] min-h-[297mm] bg-white mx-auto shadow-lg relative print:shadow-none print:w-full print:h-auto print:min-h-0 flex flex-col box-border"
         >
           {/* Background Image / Watermark */}
           <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">

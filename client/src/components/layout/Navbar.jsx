@@ -106,19 +106,19 @@ export function Navbar() {
         </div>
 
         {/* Mobile Menu Actions */}
-        <div className="flex md:hidden items-center gap-3">
+        <div className="flex md:hidden items-center gap-2 sm:gap-3">
           {isMounted &&
             (isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full font-medium text-sm shadow-sm transition-all flex items-center gap-1"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow-sm transition-all flex items-center gap-1"
               >
                 Dashboard
               </Link>
             ) : (
               <Link
                 href="/register"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full font-medium text-sm shadow-sm transition-all"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow-sm transition-all"
               >
                 Start
               </Link>
