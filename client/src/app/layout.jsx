@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className={`${montserrat.className} min-h-full flex flex-col bg-base-100 text-base-content`}>
+      <body className={`${montserrat.className} min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -24,6 +24,7 @@ export default function CustomersPage() {
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [formData, setFormData] = useState({
     customer_name: '',
     company_name: '',
@@ -56,6 +57,8 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const handleAddCustomer = async (e) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       await fetchApi('/customers', {
@@ -81,12 +84,14 @@ export default function CustomersPage() {
     } catch (err) {
       toast.error(err.message || 'Failed to add customer');
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
   const handleEditCustomer = async (e) => {
     e.preventDefault();
-    if (!editingCustomer) return;
+    if (!editingCustomer || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       await fetchApi(`/customers/${editingCustomer.id}`, {
@@ -100,6 +105,7 @@ export default function CustomersPage() {
     } catch (err) {
       toast.error(err.message || 'Failed to update customer');
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -159,9 +165,9 @@ export default function CustomersPage() {
       </div>
 
       <Card>
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search customers by name or company..."
@@ -196,7 +202,7 @@ export default function CustomersPage() {
             </div>
           ) : (
             <table className="table w-full text-sm text-left">
-              <thead>
+              <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                 <tr>
                   <th>Customer Details</th>
                   <th>Contact</th>
@@ -206,7 +212,7 @@ export default function CustomersPage() {
               </thead>
               <tbody>
                 {customers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800">
+                  <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-700">
                     <td>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold uppercase">
@@ -249,13 +255,13 @@ export default function CustomersPage() {
                         <div
                           tabIndex={0}
                           role="button"
-                          className="btn btn-ghost btn-sm btn-square"
+                          className="btn btn-ghost btn-sm btn-square text-slate-700 dark:text-slate-300"
                         >
                           <MoreHorizontal className="w-5 h-5" />
                         </div>
                         <ul
                           tabIndex={0}
-                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700"
+                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-300 dark:border-slate-700"
                         >
                           <li>
                             <a onClick={() => openEditModal(customer)}>Edit</a>
@@ -279,17 +285,17 @@ export default function CustomersPage() {
         </div>
 
         {!loading && !error && customers.length > 0 && (
-          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
             <span>Showing {customers.length} result(s)</span>
             <div className="flex gap-2">
               <button
-                className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                 disabled
               >
                 Previous
               </button>
               <button
-                className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                 disabled
               >
                 Next
@@ -303,7 +309,7 @@ export default function CustomersPage() {
       {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                 {isEditModalOpen ? 'Edit Customer' : 'Add New Customer'}
               </h2>
@@ -338,6 +344,11 @@ export default function CustomersPage() {
                 onSubmit={
                   isEditModalOpen ? handleEditCustomer : handleAddCustomer
                 }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                  }
+                }}
                 className="p-6 space-y-6"
               >
                 <div className="space-y-4">
@@ -548,7 +559,7 @@ export default function CustomersPage() {
               </form>
             </div>
 
-            <div className="flex justify-end gap-3 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex justify-end gap-3 p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
               <button
                 type="button"
                 onClick={() => {
@@ -569,9 +580,9 @@ export default function CustomersPage() {
                     PAN: ''
                   });
                 }}
-                className="btn btn-ghost"
-              >
-                Cancel
+                  className="btn btn-ghost text-slate-700 dark:text-slate-300"
+                >
+                  Cancel
               </button>
               <button
                 form="customer-form"

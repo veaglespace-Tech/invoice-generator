@@ -30,11 +30,7 @@ router.get(
   (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'STAFF']),
   _invoice.getInvoiceById
 );
-router.get(
-  '/:id/pdf',
-  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'STAFF']),
-  _invoice.downloadInvoicePDF
-);
+
 router.post(
   '/:id/send',
   (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'STAFF']),

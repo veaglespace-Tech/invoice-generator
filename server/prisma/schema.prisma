@@ -58,6 +58,8 @@ model Plan {
   currency    String   @default("INR")
   interval    String   @default("month") // month, year, forever
   features    Json     @default("[]")
+  max_invoices Int     @default(-1)
+  max_customers Int    @default(-1)
   is_popular  Boolean  @default(false)
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())

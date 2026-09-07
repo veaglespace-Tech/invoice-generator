@@ -9,7 +9,7 @@ import {
   CardDescription
 } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Loader2, UploadCloud, Save, CheckCircle2 } from 'lucide-react';
+import { Loader2, UploadCloud, Save, CheckCircle2, Check } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
 import BillingPage from './billing/page';
 import AdminProfile from './AdminProfile';
@@ -133,9 +133,9 @@ export default function SettingsPage() {
   }
   return (
     <div className="max-w-5xl mx-auto pb-12">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
             Organization Settings
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -518,58 +518,50 @@ export default function SettingsPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  {
-                    id: 'documentRef',
-                    label: 'Document Ref No'
-                  },
-                  {
-                    id: 'documentDate',
-                    label: 'Document Date'
-                  },
-                  {
-                    id: 'category',
-                    label: 'Category'
-                  },
-                  {
-                    id: 'documentType',
-                    label: 'Document Type Code'
-                  },
-                  {
-                    id: 'irn',
-                    label: 'IRN'
-                  },
-                  {
-                    id: 'supplierPan',
-                    label: 'Supplier PAN'
-                  },
-                  {
-                    id: 'supplierStateCode',
-                    label: 'Supplier State Code'
-                  },
-                  {
-                    id: 'customerPan',
-                    label: 'Customer PAN'
-                  }
-                ].map((field) => (
-                  <label
-                    key={field.id}
-                    className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
-                  >
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-sm checkbox-primary"
-                      checked={
-                        profile.settings?.field_visibility?.[field.id] ?? false
-                      }
-                      onChange={(e) =>
-                        handleFieldVisibilityChange(field.id, e.target.checked)
-                      }
-                    />
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-300 select-none">
-                      Show {field.label}
-                    </span>
-                  </label>
-                ))}
+                  { id: 'documentRef', label: 'Document Ref No' },
+                  { id: 'documentDate', label: 'Document Date' },
+                  { id: 'category', label: 'Category' },
+                  { id: 'documentType', label: 'Document Type Code' },
+                  { id: 'irn', label: 'IRN' },
+                  { id: 'supplierPan', label: 'Supplier PAN' },
+                  { id: 'supplierStateCode', label: 'Supplier State Code' },
+                  { id: 'customerPan', label: 'Customer PAN' }
+                ].map((field) => {
+                  const isChecked = profile.settings?.field_visibility?.[field.id] ?? false;
+                  return (
+                    <label
+                      key={field.id}
+                      className={`flex items-center space-x-3 cursor-pointer p-3 rounded-xl transition-all border-2 ${
+                        isChecked
+                          ? 'border-indigo-600 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-900/20'
+                          : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600'
+                      }`}
+                    >
+                      <div className={`relative flex items-center justify-center w-5 h-5 rounded border transition-colors ${
+                        isChecked
+                          ? 'bg-indigo-600 border-indigo-600 text-white'
+                          : 'border-slate-300 bg-transparent'
+                      }`}>
+                        <input
+                          type="checkbox"
+                          className="absolute opacity-0 w-full h-full cursor-pointer"
+                          checked={isChecked}
+                          onChange={(e) =>
+                            handleFieldVisibilityChange(field.id, e.target.checked)
+                          }
+                        />
+                        {isChecked && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+                      </div>
+                      <span className={`text-sm font-semibold select-none ${
+                        isChecked
+                          ? 'text-indigo-900 dark:text-indigo-300'
+                          : 'text-slate-700 dark:text-slate-300'
+                      }`}>
+                        Show {field.label}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

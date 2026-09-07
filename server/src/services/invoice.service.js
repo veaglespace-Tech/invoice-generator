@@ -105,22 +105,11 @@ const generateInvoiceNumber = async (organizationId) => {
       organization_id: organizationId
     }
   });
+
   let prefix = settings?.prefix;
   const formatLength = settings?.number_format?.length || 4;
-  if (!prefix || prefix === 'INV-') {
-    const org = await _server.prisma.organization.findUnique({
-      where: {
-        id: organizationId
-      }
-    });
-    const orgName = org?.legal_name || org?.name || 'INV';
-    // Clean and take first 3 letters uppercase
-    const cleanName = orgName.replace(/[^a-zA-Z]/g, '');
-    prefix =
-      (cleanName.length >= 3
-        ? cleanName.substring(0, 3)
-        : cleanName.padEnd(3, 'X')
-      ).toUpperCase() + '-';
+  if (!prefix) {
+    prefix = 'INV-';
   }
 
   // Find the highest sequence number for this prefix

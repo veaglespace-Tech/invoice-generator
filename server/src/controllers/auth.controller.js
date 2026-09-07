@@ -14,6 +14,7 @@ var _server = require('../server');
 var _hash = require('../utils/hash');
 var _jwt = require('../utils/jwt');
 var _auth = require('../validators/auth.validator');
+var _email = require('../services/email.service');
 const registerOrganization = async (req, res, next) => {
   try {
     const data = _auth.registerOrgSchema.parse(req.body);
@@ -80,6 +81,12 @@ const registerOrganization = async (req, res, next) => {
         user
       };
     });
+
+    // Send welcome email in the background (don't block the response on email success)
+    _email.sendWelcomeEmail(result.org, result.user).catch(err => {
+      console.error('Welcome email failed but registration succeeded', err);
+    });
+
     res.status(201).json({
       success: true,
       message: 'Organization registered successfully',
@@ -181,7 +188,9 @@ const getMe = async (req, res, next) => {
         created_at: true,
         organization: {
           select: {
-            name: true
+            name: true,
+            plan_id: true,
+            plan: true
           }
         }
       }

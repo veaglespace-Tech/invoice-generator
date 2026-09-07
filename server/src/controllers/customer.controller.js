@@ -97,6 +97,48 @@ const createCustomer = async (req, res, next) => {
         message: 'Organization ID is required'
       });
     }
+
+    // Subscription limits enforcement
+    const subscription = await _server.prisma.subscription.findFirst({
+      where: {
+        organization_id: targetOrgId,
+        status: 'ACTIVE'
+      },
+      include: { plan: true },
+      orderBy: { created_at: 'desc' }
+    });
+
+    if (subscription && subscription.plan.max_customers !== -1) {
+      const customerCount = await _server.prisma.customer.count({
+        where: {
+          organization_id: targetOrgId,
+          is_deleted: false
+        }
+      });
+      if (customerCount >= subscription.plan.max_customers) {
+        return res.status(403).json({
+          success: false,
+          message: `Customer limit reached. Your current plan allows up to ${subscription.plan.max_customers} active customers.`
+        });
+      }
+    }
+
+    if (data.email) {
+      const existingCustomer = await _server.prisma.customer.findFirst({
+        where: {
+          email: data.email,
+          organization_id: targetOrgId
+        }
+      });
+      
+      if (existingCustomer) {
+        return res.status(400).json({
+          success: false,
+          message: 'A customer with this email already exists in your organization'
+        });
+      }
+    }
+
     const customer = await _server.prisma.customer.create({
       data: {
         ...data,
@@ -132,6 +174,25 @@ const updateCustomer = async (req, res, next) => {
         message: 'Customer not found'
       });
     }
+
+    if (data.email && data.email !== existingCustomer.email) {
+      const emailExists = await _server.prisma.customer.findFirst({
+        where: {
+          email: data.email,
+          organization_id: existingCustomer.organization_id,
+          id: {
+            not: id
+          }
+        }
+      });
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'A customer with this email already exists in your organization'
+        });
+      }
+    }
+
     const updatedCustomer = await _server.prisma.customer.update({
       where: {
         id

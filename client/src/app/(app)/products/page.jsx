@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -48,6 +49,8 @@ export default function ProductsPage() {
   }, []);
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       const payload = {
@@ -74,12 +77,14 @@ export default function ProductsPage() {
     } catch (err) {
       toast.error(err.message || 'Failed to add item');
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
   const handleEditProduct = async (e) => {
     e.preventDefault();
-    if (!editingProduct) return;
+    if (!editingProduct || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       const payload = {
@@ -98,6 +103,7 @@ export default function ProductsPage() {
     } catch (err) {
       toast.error(err.message || 'Failed to update item');
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -152,9 +158,9 @@ export default function ProductsPage() {
       </div>
 
       <Card>
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search items by name or SKU..."
@@ -189,7 +195,7 @@ export default function ProductsPage() {
             </div>
           ) : (
             <table className="table  w-full text-sm text-left">
-              <thead>
+              <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                 <tr>
                   <th>Item Name</th>
                   <th>SKU</th>
@@ -207,18 +213,18 @@ export default function ProductsPage() {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                           <PackageOpen className="w-5 h-5" />
                         </div>
-                        <span className="font-medium text-base-content">
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
                           {item.name}
                         </span>
                       </div>
                     </td>
-                    <td className="text-base-content/70 font-mono text-xs">
+                    <td className="text-slate-600 dark:text-slate-300 font-mono text-xs">
                       {item.SKU || 'N/A'}
                     </td>
-                    <td className="text-base-content font-medium">
+                    <td className="text-slate-900 dark:text-slate-100 font-medium">
                       ₹{Number(item.price).toLocaleString()}
                     </td>
-                    <td className="text-base-content/70">{item.tax_rate}%</td>
+                    <td className="text-slate-600 dark:text-slate-300">{item.tax_rate}%</td>
                     <td>
                       {item.status === 'ACTIVE' ? (
                         <Badge variant="success">Active</Badge>
@@ -231,13 +237,13 @@ export default function ProductsPage() {
                         <div
                           tabIndex={0}
                           role="button"
-                          className="btn btn-ghost btn-sm btn-square"
+                          className="btn btn-ghost btn-sm btn-square text-slate-700 dark:text-slate-300"
                         >
                           <MoreHorizontal className="w-5 h-5" />
                         </div>
                         <ul
                           tabIndex={0}
-                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700"
+                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-300 dark:border-slate-700"
                         >
                           <li>
                             <a onClick={() => openEditModal(item)}>Edit</a>
@@ -261,17 +267,17 @@ export default function ProductsPage() {
         </div>
 
         {!loading && !error && products.length > 0 && (
-          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
             <span>Showing {products.length} result(s)</span>
             <div className="flex gap-2">
               <button
-                className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                 disabled
               >
                 Previous
               </button>
               <button
-                className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                 disabled
               >
                 Next
@@ -285,7 +291,7 @@ export default function ProductsPage() {
       {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                 {isEditModalOpen ? 'Edit Item' : 'Add New Item'}
               </h2>
@@ -312,6 +318,11 @@ export default function ProductsPage() {
 
             <form
               onSubmit={isEditModalOpen ? handleEditProduct : handleAddProduct}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                  e.preventDefault();
+                }
+              }}
               className="p-6 space-y-4"
             >
               <div className="grid grid-cols-2 gap-4">
@@ -336,7 +347,7 @@ export default function ProductsPage() {
 
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    SKU
+                    SKU (Stock Keeping Unit)
                   </label>
                   <input
                     type="text"
@@ -352,7 +363,7 @@ export default function ProductsPage() {
                   />
                 </div>
 
-                <div>
+                <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Unit Price *
                   </label>
@@ -370,26 +381,6 @@ export default function ProductsPage() {
                     }
                     className="input input-bordered w-full"
                     placeholder="0.00"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Tax Rate (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.tax_rate}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tax_rate: e.target.value
-                      })
-                    }
-                    className="input input-bordered w-full"
-                    placeholder="0"
                   />
                 </div>
 
@@ -412,7 +403,7 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-base-200">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-300 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -429,7 +420,7 @@ export default function ProductsPage() {
                       tax_rate: '0'
                     });
                   }}
-                  className="btn btn-ghost"
+                  className="btn btn-ghost text-slate-700 dark:text-slate-300"
                 >
                   Cancel
                 </button>

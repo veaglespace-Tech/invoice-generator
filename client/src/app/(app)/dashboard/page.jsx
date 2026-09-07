@@ -292,7 +292,7 @@ export default function Dashboard() {
           <CardContent className="space-y-4">
             <Link
               href="/invoices/new"
-              className="w-full flex items-center justify-between p-4 rounded-xl border border-base-200 hover:border-primary hover:bg-base-200 transition-all group shadow-sm hover:shadow-md hover:-translate-y-1"
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-primary hover:bg-slate-100 dark:bg-slate-800/50 transition-all group shadow-sm hover:shadow-md hover:-translate-y-1"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-primary/10 rounded-lg text-primary">
@@ -300,11 +300,11 @@ export default function Dashboard() {
                 </div>
                 <span className="font-medium">Create Invoice</span>
               </div>
-              <ArrowUpRight className="w-5 h-5 text-base-content/50 group-hover:text-primary transition-colors" />
+              <ArrowUpRight className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors" />
             </Link>
             <Link
               href="/customers"
-              className="w-full flex items-center justify-between p-4 rounded-xl border border-base-200 hover:border-success hover:bg-base-200 transition-all group shadow-sm hover:shadow-md hover:-translate-y-1"
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-success hover:bg-slate-100 dark:bg-slate-800/50 transition-all group shadow-sm hover:shadow-md hover:-translate-y-1"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-success/10 rounded-lg text-success">
@@ -312,7 +312,7 @@ export default function Dashboard() {
                 </div>
                 <span className="font-medium">Manage Customers</span>
               </div>
-              <ArrowUpRight className="w-5 h-5 text-base-content/50 group-hover:text-success transition-colors" />
+              <ArrowUpRight className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-success transition-colors" />
             </Link>
           </CardContent>
         </Card>
@@ -323,8 +323,8 @@ export default function Dashboard() {
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+              <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                   <th className="py-3 px-4 font-semibold">Invoice ID</th>
                   <th className="py-3 px-4 font-semibold">Client</th>
                   <th className="py-3 px-4 font-semibold">Amount</th>
@@ -344,7 +344,7 @@ export default function Dashboard() {
                   </tr>
                 ) : (
                   recentInvoices.map((invoice, index) => (
-                    <tr key={invoice.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr key={invoice.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
                         <Link
                           href={`/invoices/${invoice.id}`}

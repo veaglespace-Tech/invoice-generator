@@ -26,7 +26,7 @@ export function Navbar() {
             <img
               src="/logo.webp"
               alt="Veagle Space Technology"
-              className="h-[40px] md:h-[56px] w-auto object-contain transition-all coin-spin"
+              className="h-[40px] md:h-[56px] w-auto object-contain animate-coin-flip transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2"
             />
           </Link>
         </div>

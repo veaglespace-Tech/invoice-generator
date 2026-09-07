@@ -35,7 +35,7 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
     website: _zod.z.string().optional().nullable(),
     currency: _zod.z.string().optional(),
     timezone: _zod.z.string().optional(),
-    plan_id: _zod.z.string().uuid('Invalid Plan ID').optional(),
+    plan_id: _zod.z.string().uuid('Invalid Plan ID').optional().nullable(),
     settings: _zod.z
       .object({
         supplier_state_code: _zod.z.string().optional().nullable(),
@@ -45,6 +45,7 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
         signature_name: _zod.z.string().optional().nullable(),
         signature_location: _zod.z.string().optional().nullable(),
         terms_conditions: _zod.z.string().optional().nullable(),
+        prefix: _zod.z.string().optional().nullable(),
         field_visibility: _zod.z.any().optional().nullable()
       })
       .optional()

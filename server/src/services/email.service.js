@@ -5,7 +5,6 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.sendInvoiceEmail = void 0;
 var _nodemailer = _interopRequireDefault(require('nodemailer'));
-var _pdf = require('./pdf.service');
 var _server = require('../server');
 
 function _interopRequireDefault(e) {
@@ -32,8 +31,8 @@ const getTransporter = (account) => {
   });
 };
 
-const sendInvoiceEmail = async (invoice) => {
-  const pdfBuffer = await (0, _pdf.generateInvoicePDF)(invoice);
+const sendInvoiceEmail = async (invoice, pdfBase64) => {
+  const pdfBuffer = Buffer.from(pdfBase64, 'base64');
   const subject = `Invoice #${invoice.invoice_number} from ${invoice.organization.name}`;
   const text = `Dear ${invoice.customer.customer_name},\n\nPlease find attached your invoice #${invoice.invoice_number} for the amount of ${invoice.organization.currency} ${invoice.grand_total}.\n\nThank you for your business!\n\nBest Regards,\n${invoice.organization.name}`;
   
@@ -90,3 +89,36 @@ const sendInvoiceEmail = async (invoice) => {
 };
 
 exports.sendInvoiceEmail = sendInvoiceEmail;
+
+const sendWelcomeEmail = async (org, user) => {
+  const subject = `Welcome to Veagle Space Invoice Generator!`;
+  const text = `Dear ${user.name},\n\nWelcome to Veagle Space Invoice Generator! Your organization "${org.name}" has been successfully registered.\n\nYou can now log in and start generating professional invoices for your business.\n\nBest Regards,\nThe Veagle Space Team`;
+  
+  let lastError = null;
+
+  for (let i = 0; i < smtpAccounts.length; i++) {
+    const account = smtpAccounts[i];
+    const transporter = getTransporter(account);
+
+    const mailOptions = {
+      from: `"Veagle Space" <${account.user}>`,
+      to: user.email,
+      subject,
+      text,
+    };
+
+    try {
+      console.log(`Attempting to send welcome email via ${account.user}...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Welcome email sent successfully via ${account.user}: ${info.messageId}`);
+      return info;
+    } catch (error) {
+      console.error(`Failed to send welcome email via ${account.user}: ${error.message}`);
+      lastError = error;
+    }
+  }
+
+  console.error(`Failed to send welcome email after trying all accounts. Last error: ${lastError?.message}`);
+};
+
+exports.sendWelcomeEmail = sendWelcomeEmail;

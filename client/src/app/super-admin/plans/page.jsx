@@ -29,6 +29,8 @@ export default function PlansAdminPage() {
     price: 0,
     interval: 'month',
     features: [''],
+    max_invoices: -1,
+    max_customers: -1,
     is_popular: false,
     is_active: true
   });
@@ -57,6 +59,8 @@ export default function PlansAdminPage() {
         price: Number(plan.price),
         interval: plan.interval,
         features: plan.features.length > 0 ? plan.features : [''],
+        max_invoices: plan.max_invoices !== undefined ? plan.max_invoices : -1,
+        max_customers: plan.max_customers !== undefined ? plan.max_customers : -1,
         is_popular: plan.is_popular,
         is_active: plan.is_active
       });
@@ -68,6 +72,8 @@ export default function PlansAdminPage() {
         price: 0,
         interval: 'month',
         features: [''],
+        max_invoices: -1,
+        max_customers: -1,
         is_popular: false,
         is_active: true
       });
@@ -172,7 +178,7 @@ export default function PlansAdminPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`bg-white dark:bg-slate-900 rounded-3xl p-6 border ${plan.is_popular ? 'border-indigo-500 shadow-indigo-500/10' : 'border-slate-200 dark:border-slate-800'} shadow-sm relative`}
+              className={`bg-white dark:bg-slate-900 rounded-3xl p-6 flex flex-col h-full border ${plan.is_popular ? 'border-indigo-500 shadow-indigo-500/10' : 'border-slate-200 dark:border-slate-800'} shadow-sm relative`}
             >
               {!plan.is_active && (
                 <div className="absolute top-0 right-0 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-bl-xl rounded-tr-3xl font-semibold">
@@ -200,7 +206,7 @@ export default function PlansAdminPage() {
                 </span>
               </div>
 
-              <ul className="space-y-2 mb-6 h-40 overflow-y-auto">
+              <ul className="space-y-2 mb-6 flex-1 overflow-y-auto min-h-[10rem]">
                 {plan.features.map((feature, i) => (
                   <li
                     key={i}
@@ -212,16 +218,17 @@ export default function PlansAdminPage() {
                 ))}
               </ul>
 
-              <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
                 <button
                   onClick={() => handleOpenModal(plan)}
                   className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
-                  <Edit2 className="w-4 h-4" /> Edit
+                  <Edit2 className="w-4 h-4" /> Edit Plan
                 </button>
                 <button
                   onClick={() => handleDelete(plan.id)}
                   className="p-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 rounded-xl transition-colors"
+                  title="Delete Plan"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -306,6 +313,45 @@ export default function PlansAdminPage() {
                     }
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Max Invoices / Cycle (-1 for unlimited)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="-1"
+                      value={formData.max_invoices}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          max_invoices: Number(e.target.value)
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Max Customers (-1 for unlimited)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="-1"
+                      value={formData.max_customers}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          max_customers: Number(e.target.value)
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

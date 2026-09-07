@@ -46,6 +46,8 @@ export default function BillingPage() {
       setLoadingPlans(false);
     }
   };
+  const [usage, setUsage] = useState(null);
+
   const loadCurrentPlan = async () => {
     try {
       const res = await fetchApi('/auth/me');
@@ -53,6 +55,11 @@ export default function BillingPage() {
         setCurrentPlan(res.data.organization.plan_id);
       } else if (res.success && res.data?.organization?.plan?.id) {
         setCurrentPlan(res.data.organization.plan.id);
+      }
+
+      const subRes = await fetchApi('/subscriptions/current');
+      if (subRes.success && subRes.usage) {
+        setUsage(subRes.usage);
       }
     } catch {
       // silently fail
@@ -128,7 +135,7 @@ export default function BillingPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => {
-            const isCurrentPlan = currentPlan === plan.id;
+            const isCurrentPlan = currentPlan === plan.id || (currentPlan === 'FREE' && plan.price === 0);
             const visuals = getPlanVisuals(plan.name);
             const PlanIcon = visuals.icon;
           return (
@@ -186,10 +193,23 @@ export default function BillingPage() {
                   ))}
                 </ul>
 
-                {/* CTA Button */}
                 {isCurrentPlan ? (
-                  <div className="w-full py-3 rounded-xl font-semibold text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-sm">
-                    ✓ Current Plan
+                  <div className="w-full flex flex-col gap-2">
+                    <div className="w-full py-3 rounded-xl font-semibold text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-sm flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" /> Current Plan
+                    </div>
+                    {usage && (
+                      <div className="text-xs text-slate-500 dark:text-slate-400 text-center space-y-1 mt-2">
+                        <p>
+                          Invoices: <span className="font-medium text-slate-700 dark:text-slate-300">{usage.invoices}</span>
+                          {plan.max_invoices !== -1 ? ` / ${plan.max_invoices}` : ' (Unlimited)'}
+                        </p>
+                        <p>
+                          Customers: <span className="font-medium text-slate-700 dark:text-slate-300">{usage.customers}</span>
+                          {plan.max_customers !== -1 ? ` / ${plan.max_customers}` : ' (Unlimited)'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <button

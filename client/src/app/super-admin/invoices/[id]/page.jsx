@@ -211,7 +211,7 @@ export default function InvoicePrintView() {
       {/* Non-printable action bar */}
       <div className="flex justify-between items-center mb-8 print:hidden">
         <Link
-          href="/invoices"
+          href="/super-admin/invoices"
           className="flex items-center text-slate-500 hover:text-indigo-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

@@ -56,9 +56,9 @@ export default function InvoicesList() {
       case 'CANCELLED':
         return 'text-red-600 border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
       case 'DRAFT':
-        return 'text-slate-600 border-slate-200 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
+        return 'text-slate-600 border-slate-300 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
       default:
-        return 'text-slate-600 border-slate-200 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
+        return 'text-slate-600 border-slate-300 bg-slate-50 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700';
     }
   };
   const handleStatusChange = async (id, newStatus) => {
@@ -179,7 +179,7 @@ export default function InvoicesList() {
         <div className="flex gap-3">
           <button
             onClick={handleDownloadReport}
-            className="btn btn-outline hover:scale-105 transition-all shadow-sm flex items-center gap-2"
+            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2"
           >
             <Download className="w-5 h-5" />
             Export to Excel
@@ -195,9 +195,9 @@ export default function InvoicesList() {
       </div>
 
       <Card>
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 rounded-t-xl">
           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search invoices..."
@@ -213,7 +213,7 @@ export default function InvoicesList() {
             </div>
             <ul
               tabIndex={0}
-              className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-52 mt-2 border border-slate-200 dark:border-slate-700"
+              className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-52 mt-2 border border-slate-300 dark:border-slate-700"
             >
               <li>
                 <a onClick={() => setStatusFilter('ALL')}>All</a>
@@ -259,8 +259,8 @@ export default function InvoicesList() {
             </div>
           ) : (
             <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+              <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                   <th className="py-3 px-4 font-semibold">Invoice Number</th>
                   <th className="py-3 px-4 font-semibold">Client</th>
                   <th className="py-3 px-4 font-semibold">Amount</th>
@@ -274,7 +274,7 @@ export default function InvoicesList() {
                 {filteredInvoices.map((invoice) => (
                   <tr
                     key={invoice.id}
-                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                    className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/invoices/${invoice.id}`)}
                   >
                     <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
@@ -322,7 +322,7 @@ export default function InvoicesList() {
                         </div>
                         <ul
                           tabIndex={0}
-                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-200 dark:border-slate-700"
+                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-300 dark:border-slate-700"
                         >
                           <li>
                             <Link href={`/invoices/${invoice.id}`}>
@@ -348,7 +348,7 @@ export default function InvoicesList() {
         </div>
 
         {!loading && !error && invoices.length > 0 && (
-          <div className="p-4 border-t border-base-200 flex items-center justify-between text-sm text-base-content/70">
+          <div className="p-4 border-t border-slate-300 dark:border-slate-700 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
             <span>Showing {filteredInvoices.length} result(s)</span>
             <div className="flex gap-2">
               <button className="btn btn-outline btn-sm" disabled>

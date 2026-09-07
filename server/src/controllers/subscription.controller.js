@@ -151,20 +151,59 @@ const handlePaymentSuccess = async (req, res) => {
 
     // Hash is valid, update subscription
     const subscription = await prisma.subscription.findUnique({
-      where: {
-        txnid
-      }
+      where: { txnid },
+      include: { plan: true }
     });
     if (subscription) {
-      await prisma.subscription.update({
+      // Find existing active subscription to carry forward days
+      const currentActiveSub = await prisma.subscription.findFirst({
         where: {
-          id: subscription.id
+          organization_id: subscription.organization_id,
+          status: 'ACTIVE'
         },
+        orderBy: { created_at: 'desc' }
+      });
+
+      let additionalDays = 0;
+      if (currentActiveSub && currentActiveSub.end_date) {
+        const now = new Date();
+        if (currentActiveSub.end_date > now) {
+          const diffTime = Math.abs(currentActiveSub.end_date - now);
+          additionalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+        
+        // Deactivate old subscription
+        await prisma.subscription.update({
+          where: { id: currentActiveSub.id },
+          data: { status: 'EXPIRED' }
+        });
+      }
+
+      // Calculate new end date based on plan interval
+      const startDate = new Date();
+      const endDate = new Date();
+      if (subscription.plan.interval === 'year') {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+      } else if (subscription.plan.interval === 'month') {
+        endDate.setMonth(endDate.getMonth() + 1);
+      } else if (subscription.plan.interval === 'forever') {
+        endDate.setFullYear(endDate.getFullYear() + 100);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1); // fallback
+      }
+
+      // Add carried forward days
+      if (additionalDays > 0) {
+        endDate.setDate(endDate.getDate() + additionalDays);
+      }
+
+      await prisma.subscription.update({
+        where: { id: subscription.id },
         data: {
           status: 'ACTIVE',
           payu_mihpayid: mihpayid,
-          start_date: new Date(),
-          end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)) // 1 month validity
+          start_date: startDate,
+          end_date: endDate
         }
       });
 
@@ -220,13 +259,41 @@ const getCurrentSubscription = async (req, res) => {
         organization_id: organizationId,
         status: 'ACTIVE'
       },
+      include: {
+        plan: true
+      },
       orderBy: {
         created_at: 'desc'
       }
     });
+    
+    let usage = null;
+    if (subscription && subscription.plan) {
+      const invoiceCount = await prisma.invoice.count({
+        where: {
+          organization_id: organizationId,
+          created_at: {
+            gte: subscription.start_date || new Date(0),
+            lte: subscription.end_date || new Date('2099-12-31')
+          },
+          is_deleted: false
+        }
+      });
+      const customerCount = await prisma.customer.count({
+        where: {
+          organization_id: organizationId,
+          is_deleted: false
+        }
+      });
+      usage = {
+        invoices: invoiceCount,
+        customers: customerCount
+      };
+    }
     res.status(200).json({
       success: true,
-      data: subscription
+      data: subscription,
+      usage: usage
     });
   } catch (error) {
     console.error('Error fetching subscription:', error);

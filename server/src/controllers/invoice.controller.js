@@ -18,7 +18,6 @@ var _server = require('../server');
 var _client = require('@prisma/client');
 var _invoice = require('../validators/invoice.validator');
 var _invoice2 = require('../services/invoice.service');
-var _pdf = require('../services/pdf.service');
 var _email = require('../services/email.service');
 const getNextInvoiceNumber = async (req, res, next) => {
   try {
@@ -68,6 +67,11 @@ const getAllInvoices = async (req, res, next) => {
             select: {
               customer_name: true,
               company_name: true
+            }
+          },
+          organization: {
+            select: {
+              name: true
             }
           }
         },
@@ -147,6 +151,35 @@ const createInvoice = async (req, res, next) => {
         success: false,
         message: 'Organization ID is required'
       });
+    }
+
+    // Subscription limits enforcement
+    const subscription = await _server.prisma.subscription.findFirst({
+      where: {
+        organization_id: targetOrgId,
+        status: 'ACTIVE'
+      },
+      include: { plan: true },
+      orderBy: { created_at: 'desc' }
+    });
+
+    if (subscription && subscription.plan.max_invoices !== -1) {
+      const invoiceCount = await _server.prisma.invoice.count({
+        where: {
+          organization_id: targetOrgId,
+          created_at: {
+            gte: subscription.start_date || new Date(0),
+            lte: subscription.end_date || new Date('2099-12-31')
+          },
+          is_deleted: false
+        }
+      });
+      if (invoiceCount >= subscription.plan.max_invoices) {
+        return res.status(403).json({
+          success: false,
+          message: `Invoice limit reached. Your current plan allows up to ${subscription.plan.max_invoices} invoices per billing cycle.`
+        });
+      }
     }
 
     // Backend-side calculation engine
@@ -383,45 +416,6 @@ const deleteInvoice = async (req, res, next) => {
   }
 };
 exports.deleteInvoice = deleteInvoice;
-const downloadInvoicePDF = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const filter = {
-      id
-    };
-    if (req.user?.role !== _client.Role.SUPER_ADMIN) {
-      filter.organization_id = req.user?.organization_id;
-    }
-    const invoice = await _server.prisma.invoice.findFirst({
-      where: filter,
-      include: {
-        customer: true,
-        items: true,
-        organization: {
-          include: {
-            settings: true
-          }
-        }
-      }
-    });
-    if (!invoice) {
-      return res.status(404).json({
-        success: false,
-        message: 'Invoice not found'
-      });
-    }
-    const pdfBuffer = await (0, _pdf.generateInvoicePDF)(invoice);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=invoice-${invoice.invoice_number}.pdf`
-    );
-    res.status(200).send(pdfBuffer);
-  } catch (error) {
-    next(error);
-  }
-};
-exports.downloadInvoicePDF = downloadInvoicePDF;
 const sendInvoice = async (req, res, next) => {
   try {
     const { id } = req.params;

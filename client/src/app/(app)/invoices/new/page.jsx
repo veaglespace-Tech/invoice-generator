@@ -152,7 +152,9 @@ export default function InvoiceGenerator() {
       .split('T')[0],
     currency: '₹',
     clientName: '',
+    clientCompany: '',
     clientEmail: '',
+    clientPhone: '',
     clientAddress: '',
     clientCity: '',
     clientState: '',
@@ -278,7 +280,9 @@ export default function InvoiceGenerator() {
           method: 'POST',
           data: {
             customer_name: invoiceData.clientName || 'Unknown Client',
+            company_name: invoiceData.clientCompany,
             email: invoiceData.clientEmail,
+            phone: invoiceData.clientPhone,
             billing_address: invoiceData.clientAddress
           }
         });
@@ -361,7 +365,9 @@ export default function InvoiceGenerator() {
           method: 'POST',
           data: {
             customer_name: invoiceData.clientName || 'Unknown Client',
+            company_name: invoiceData.clientCompany,
             email: invoiceData.clientEmail,
+            phone: invoiceData.clientPhone,
             billing_address: invoiceData.clientAddress
           }
         });
@@ -648,7 +654,9 @@ export default function InvoiceGenerator() {
                         setInvoiceData((prev) => ({
                           ...prev,
                           clientName: '',
+                          clientCompany: '',
                           clientEmail: '',
+                          clientPhone: '',
                           clientAddress: '',
                           clientCity: '',
                           clientState: '',
@@ -667,7 +675,9 @@ export default function InvoiceGenerator() {
                         setInvoiceData((prev) => ({
                           ...prev,
                           clientName: '',
+                          clientCompany: '',
                           clientEmail: '',
+                          clientPhone: '',
                           clientAddress: '',
                           clientCity: '',
                           clientState: '',
@@ -736,7 +746,9 @@ export default function InvoiceGenerator() {
                                       ...prev,
                                       customerId: c.id,
                                       clientName: c.customer_name,
+                                      clientCompany: c.company_name || '',
                                       clientEmail: c.email || '',
+                                      clientPhone: c.phone || '',
                                       clientAddress: c.billing_address || '',
                                       clientCity: c.city || '',
                                       clientState: c.state || '',
@@ -774,6 +786,21 @@ export default function InvoiceGenerator() {
                       </div>
                     )}
                   </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      value={invoiceData.clientCompany}
+                      onChange={(e) =>
+                        updateData('clientCompany', e.target.value)
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                    />
+                  </div>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Email
@@ -787,6 +814,21 @@ export default function InvoiceGenerator() {
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                     />
                   </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={invoiceData.clientPhone}
+                      onChange={(e) =>
+                        updateData('clientPhone', e.target.value)
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                    />
+                  </div>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Address
@@ -1017,7 +1059,7 @@ export default function InvoiceGenerator() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
                       <label className="text-xs font-medium text-slate-500">
-                        Discount
+                        Discount {invoiceData.discountType === 'percentage' && invoiceData.discount > 0 ? `(${invoiceData.discount}% of ₹${subtotal.toLocaleString('en-IN')} = ₹${totalDiscountAmount.toLocaleString('en-IN')})` : ''}
                       </label>
                       <div className="flex bg-slate-200 dark:bg-slate-700 rounded-md overflow-hidden text-xs">
                         <button
@@ -1497,10 +1539,10 @@ export default function InvoiceGenerator() {
                   {invoiceData.discount > 0 && (
                     <div className="flex border-b border-black">
                       <div className="w-1/2 p-1.5 border-r border-black">
-                        Discount
+                        Discount {invoiceData.discountType === 'percentage' ? `(${invoiceData.discount}%)` : ''}
                       </div>
                       <div className="w-1/2 p-1.5 text-right">
-                        {invoiceData.discount.toLocaleString('en-IN', {
+                        {totalDiscountAmount.toLocaleString('en-IN', {
                           minimumFractionDigits: 2
                         })}
                       </div>
@@ -1511,7 +1553,7 @@ export default function InvoiceGenerator() {
                       Taxable Value
                     </div>
                     <div className="w-1/2 p-1.5 text-right">
-                      {(subtotal - invoiceData.discount).toLocaleString('en-IN', {
+                      {(subtotal - totalDiscountAmount).toLocaleString('en-IN', {
                         minimumFractionDigits: 2
                       })}
                     </div>

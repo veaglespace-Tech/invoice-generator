@@ -74,12 +74,10 @@ export function AuthGuard({ children, requireSuperAdmin = false }) {
     }
   }, [pathname, router, requireSuperAdmin]);
 
-  // While checking authentication status, show a full screen loader
+  // While checking authentication status, show a blank screen to avoid flashing
   if (isAuthenticated === null || (requireSuperAdmin && !isSuperAdmin)) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-600 mb-4" />
-        <p className="text-slate-500 font-medium">Verifying session...</p>
+      <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
       </div>
     );
   }

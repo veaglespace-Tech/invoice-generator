@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   LogOut,
   Settings,
+  Receipt,
   ChevronLeft,
   Menu,
   X
@@ -59,9 +60,9 @@ export function SuperAdminSidebar() {
       icon: LayoutDashboard
     },
     {
-      name: 'Organizations',
-      href: '/super-admin/organizations',
-      icon: Building2
+      name: 'All Invoices',
+      href: '/super-admin/invoices',
+      icon: Receipt
     },
     {
       name: 'Plans & Subs',
@@ -90,7 +91,7 @@ export function SuperAdminSidebar() {
             <img
               src="/logo.webp"
               alt="Veagle Space Technology"
-              className="h-[40px] w-auto object-contain coin-spin"
+              className="h-[40px] w-auto object-contain animate-coin-flip transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
           <span className="font-bold text-lg whitespace-nowrap hidden sm:block">
@@ -116,8 +117,8 @@ export function SuperAdminSidebar() {
 
       {/* Sidebar */}
       <div
-        className={`h-screen bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex flex-col transition-all duration-300 border-r border-slate-200 dark:border-slate-800
-          fixed md:relative top-0 left-0 z-50 md:z-auto pt-16 md:pt-0
+        className={`h-screen bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex flex-col transition-all duration-300 border-r border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none
+          fixed md:relative top-0 left-0 z-50 md:z-50 pt-16 md:pt-0
           ${isCollapsed ? 'md:w-20' : 'md:w-64'}
           w-64 
           ${isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -141,27 +142,24 @@ export function SuperAdminSidebar() {
             padding: '12px 16px'
           }}
         >
-          <div className="flex items-center gap-3 w-full overflow-hidden">
-            <Link href="/" className="flex items-center group">
+          <div className="flex items-center gap-3 w-full">
+            <Link href="/" className="flex items-center justify-center w-full group">
               {isCollapsed ? (
                 <img
                   src="/logo.webp"
                   alt="VS"
-                  className="h-9 w-9 object-contain rounded-lg coin-spin"
+                  className="h-10 w-10 object-contain animate-coin-flip rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                 />
               ) : (
-                <img
-                  src="/logo.webp"
-                  alt="Veagle Space Technology"
-                  className="h-14 w-auto max-w-[120px] object-contain coin-spin"
-                />
+                <div className="flex items-center gap-3 px-2 w-full">
+                  <img
+                    src="/logo.webp"
+                    alt="Veagle Space"
+                    className="h-12 w-auto max-w-[140px] object-contain animate-coin-flip flex-shrink-0 group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               )}
             </Link>
-            {!isCollapsed && (
-              <span className="font-bold text-base text-white whitespace-nowrap">
-                Admin Portal
-              </span>
-            )}
           </div>
         </div>
 
@@ -169,17 +167,24 @@ export function SuperAdminSidebar() {
         <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname?.startsWith(item.href);
-            const Icon = item.icon;
             return (
               <Link
-                key={item.name}
                 href={item.href}
+                className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-300 font-medium group relative
+                  ${
+                    isActive
+                      ? 'bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-900/30 dark:to-slate-900 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 dark:border-indigo-500 shadow-sm'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent hover:border-slate-300 dark:hover:border-slate-700'
+                  }
+                  ${isCollapsed ? 'justify-center px-0' : 'px-4'}
+                `}
+                title={isCollapsed ? item.name : undefined}
+                key={item.name}
                 onClick={() => setIsOpenMobile(false)}
-                className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'}`}
-                title={isCollapsed ? item.name : ''}
               >
-                <Icon
-                  className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
+                <item.icon
+                  className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} 
+                    transition-all duration-300 group-hover:scale-110 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-500'}`}
                 />
                 {!isCollapsed && (
                   <span className="font-medium whitespace-nowrap">
@@ -205,21 +210,22 @@ export function SuperAdminSidebar() {
             </div>
           )}
           <div
-            className={`flex ${isCollapsed ? 'flex-col items-center gap-2' : 'gap-2'}`}
+            className={`flex ${isCollapsed ? 'flex-col items-center gap-3' : 'gap-3'} w-full`}
           >
             <Link
               href="/super-admin/settings"
-              className={`p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors ${!isCollapsed && 'flex-1 flex justify-center'}`}
+              className={`p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 flex items-center justify-center group ${!isCollapsed ? 'w-14' : 'w-full'}`}
               title="Account Settings"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
             </Link>
             <button
               onClick={logout}
-              className={`flex items-center gap-3 py-3 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-colors duration-200 font-medium group w-full ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
+              className={`flex items-center justify-center gap-3 py-3 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-300 font-medium group flex-1 ${isCollapsed ? 'px-0 w-full' : 'px-4'}`}
               title="Logout"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-5 h-5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform duration-300" />
+              {!isCollapsed && <span>Logout</span>}
             </button>
           </div>
         </div>
