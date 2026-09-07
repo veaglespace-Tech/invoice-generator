@@ -458,7 +458,15 @@ const sendInvoice = async (req, res, next) => {
         message: 'Customer does not have an email address'
       });
     }
-    await (0, _email.sendInvoiceEmail)(invoice);
+    const { pdfBase64 } = req.body;
+    if (!pdfBase64) {
+      return res.status(400).json({
+        success: false,
+        message: 'PDF base64 data is required'
+      });
+    }
+
+    await (0, _email.sendInvoiceEmail)(invoice, pdfBase64);
     res.status(200).json({
       success: true,
       message: 'Invoice sent successfully via email'
