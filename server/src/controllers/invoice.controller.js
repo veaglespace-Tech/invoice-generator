@@ -159,26 +159,35 @@ const createInvoice = async (req, res, next) => {
         organization_id: targetOrgId,
         status: 'ACTIVE'
       },
-      include: { plan: true },
+      include: { 
+        plan: true,
+        organization: true 
+      },
       orderBy: { created_at: 'desc' }
     });
 
-    if (subscription && subscription.plan.max_invoices !== -1) {
-      const invoiceCount = await _server.prisma.invoice.count({
-        where: {
-          organization_id: targetOrgId,
-          created_at: {
-            gte: subscription.start_date || new Date(0),
-            lte: subscription.end_date || new Date('2099-12-31')
-          },
-          is_deleted: false
-        }
-      });
-      if (invoiceCount >= subscription.plan.max_invoices) {
-        return res.status(403).json({
-          success: false,
-          message: `Invoice limit reached. Your current plan allows up to ${subscription.plan.max_invoices} invoices per billing cycle.`
+    if (subscription) {
+      const allowedMaxInvoices = subscription.organization.custom_max_invoices !== null 
+        ? subscription.organization.custom_max_invoices 
+        : subscription.plan.max_invoices;
+        
+      if (allowedMaxInvoices !== -1) {
+        const invoiceCount = await _server.prisma.invoice.count({
+          where: {
+            organization_id: targetOrgId,
+            created_at: {
+              gte: subscription.start_date || new Date(0),
+              lte: subscription.end_date || new Date('2099-12-31')
+            },
+            is_deleted: false
+          }
         });
+        if (invoiceCount >= allowedMaxInvoices) {
+          return res.status(403).json({
+            success: false,
+            message: `Invoice limit reached. Your current plan allows up to ${allowedMaxInvoices} invoices per billing cycle.`
+          });
+        }
       }
     }
 

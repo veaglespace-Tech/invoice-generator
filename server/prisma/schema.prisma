@@ -28,6 +28,8 @@ model Organization {
   status          OrgStatus @default(ACTIVE)
   plan_id         String?
   plan            Plan?     @relation(fields: [plan_id], references: [id])
+  custom_max_invoices Int?
+  custom_max_customers Int?
   is_deleted      Boolean   @default(false)
   deleted_at      DateTime?
   
@@ -60,6 +62,7 @@ model Plan {
   features    Json     @default("[]")
   max_invoices Int     @default(-1)
   max_customers Int    @default(-1)
+  duration_months Int  @default(1)
   is_popular  Boolean  @default(false)
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())

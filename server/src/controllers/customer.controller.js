@@ -104,22 +104,31 @@ const createCustomer = async (req, res, next) => {
         organization_id: targetOrgId,
         status: 'ACTIVE'
       },
-      include: { plan: true },
+      include: { 
+        plan: true,
+        organization: true 
+      },
       orderBy: { created_at: 'desc' }
     });
 
-    if (subscription && subscription.plan.max_customers !== -1) {
-      const customerCount = await _server.prisma.customer.count({
-        where: {
-          organization_id: targetOrgId,
-          is_deleted: false
-        }
-      });
-      if (customerCount >= subscription.plan.max_customers) {
-        return res.status(403).json({
-          success: false,
-          message: `Customer limit reached. Your current plan allows up to ${subscription.plan.max_customers} active customers.`
+    if (subscription) {
+      const allowedMaxCustomers = subscription.organization.custom_max_customers !== null
+        ? subscription.organization.custom_max_customers
+        : subscription.plan.max_customers;
+
+      if (allowedMaxCustomers !== -1) {
+        const customerCount = await _server.prisma.customer.count({
+          where: {
+            organization_id: targetOrgId,
+            is_deleted: false
+          }
         });
+        if (customerCount >= allowedMaxCustomers) {
+          return res.status(403).json({
+            success: false,
+            message: `Customer limit reached. Your current plan allows up to ${allowedMaxCustomers} active customers.`
+          });
+        }
       }
     }
 

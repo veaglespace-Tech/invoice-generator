@@ -22,6 +22,7 @@ const planSchema = _zod.z.object({
   features: _zod.z.array(_zod.z.string()).optional(),
   max_invoices: _zod.z.number().optional().default(-1),
   max_customers: _zod.z.number().optional().default(-1),
+  duration_months: _zod.z.number().optional().default(1),
   is_popular: _zod.z.boolean().optional(),
   is_active: _zod.z.boolean().optional()
 });

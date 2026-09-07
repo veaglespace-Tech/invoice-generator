@@ -140,7 +140,14 @@ const updateOrganization = async (req, res, next) => {
     }
     if (req.user?.role !== _client.Role.SUPER_ADMIN) {
       delete orgData.plan_id; // Normal admins cannot change plan directly
+      delete orgData.custom_max_invoices;
+      delete orgData.custom_max_customers;
+      delete orgData.additional_months;
     }
+
+    const additionalMonths = orgData.additional_months;
+    delete orgData.additional_months; // Remove from orgData since it's not a DB field on Organization
+
     const org = await _server.prisma.organization.update({
       where: {
         id
@@ -160,6 +167,32 @@ const updateOrganization = async (req, res, next) => {
         settings: true
       }
     });
+
+    // Create a new subscription if a plan was assigned by SUPER_ADMIN
+    if (req.user?.role === _client.Role.SUPER_ADMIN && orgData.plan_id) {
+      const assignedPlan = await _server.prisma.plan.findUnique({
+        where: { id: orgData.plan_id }
+      });
+      if (assignedPlan) {
+        const startDate = new Date();
+        const endDate = new Date();
+        const monthsToAdd = additionalMonths || assignedPlan.duration_months || 1;
+        endDate.setMonth(endDate.getMonth() + monthsToAdd);
+
+        await _server.prisma.subscription.create({
+          data: {
+            organization_id: org.id,
+            plan_id: assignedPlan.id,
+            amount: assignedPlan.price,
+            status: 'ACTIVE',
+            txnid: `MANUAL_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+            start_date: startDate,
+            end_date: endDate
+          }
+        });
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: 'Organization updated',

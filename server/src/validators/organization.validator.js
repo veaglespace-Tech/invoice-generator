@@ -36,6 +36,9 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
     currency: _zod.z.string().optional(),
     timezone: _zod.z.string().optional(),
     plan_id: _zod.z.string().uuid('Invalid Plan ID').optional().nullable(),
+    custom_max_invoices: _zod.z.number().optional().nullable(),
+    custom_max_customers: _zod.z.number().optional().nullable(),
+    additional_months: _zod.z.number().optional().nullable(),
     settings: _zod.z
       .object({
         supplier_state_code: _zod.z.string().optional().nullable(),

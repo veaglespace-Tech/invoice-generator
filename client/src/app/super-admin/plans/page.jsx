@@ -31,6 +31,7 @@ export default function PlansAdminPage() {
     features: [''],
     max_invoices: -1,
     max_customers: -1,
+    duration_months: 1,
     is_popular: false,
     is_active: true
   });
@@ -61,6 +62,7 @@ export default function PlansAdminPage() {
         features: plan.features.length > 0 ? plan.features : [''],
         max_invoices: plan.max_invoices !== undefined ? plan.max_invoices : -1,
         max_customers: plan.max_customers !== undefined ? plan.max_customers : -1,
+        duration_months: plan.duration_months !== undefined ? plan.duration_months : 1,
         is_popular: plan.is_popular,
         is_active: plan.is_active
       });
@@ -74,6 +76,7 @@ export default function PlansAdminPage() {
         features: [''],
         max_invoices: -1,
         max_customers: -1,
+        duration_months: 1,
         is_popular: false,
         is_active: true
       });
@@ -347,6 +350,27 @@ export default function PlansAdminPage() {
                         setFormData({
                           ...formData,
                           max_customers: Number(e.target.value)
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Duration (Months) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={formData.duration_months}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          duration_months: Number(e.target.value)
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"

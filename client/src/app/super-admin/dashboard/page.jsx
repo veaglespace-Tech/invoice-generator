@@ -24,6 +24,9 @@ export default function SuperAdminDashboard() {
   const [editingOrg, setEditingOrg] = useState(null);
   const [plans, setPlans] = useState([]);
   const [newPlan, setNewPlan] = useState('');
+  const [additionalMonths, setAdditionalMonths] = useState('');
+  const [customMaxInvoices, setCustomMaxInvoices] = useState('');
+  const [customMaxCustomers, setCustomMaxCustomers] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
 
   const loadData = async () => {
@@ -68,17 +71,25 @@ export default function SuperAdminDashboard() {
   const handleEditClick = (org) => {
     setEditingOrg(org);
     setNewPlan(org.plan_id || (plans.length > 0 ? plans[0].id : ''));
+    setAdditionalMonths('');
+    setCustomMaxInvoices(org.custom_max_invoices !== null && org.custom_max_invoices !== undefined ? String(org.custom_max_invoices) : '');
+    setCustomMaxCustomers(org.custom_max_customers !== null && org.custom_max_customers !== undefined ? String(org.custom_max_customers) : '');
   };
 
   const handleSavePlan = async () => {
     if (!editingOrg) return;
     setIsSavingPlan(true);
     try {
+      const payload = {
+        plan_id: newPlan
+      };
+      if (additionalMonths) payload.additional_months = Number(additionalMonths);
+      if (customMaxInvoices) payload.custom_max_invoices = Number(customMaxInvoices);
+      if (customMaxCustomers) payload.custom_max_customers = Number(customMaxCustomers);
+
       const res = await fetchApi(`/organizations/${editingOrg.id}`, {
         method: 'PUT',
-        data: {
-          plan_id: newPlan
-        }
+        data: payload
       });
       if (res.success) {
         alert('Plan updated successfully!');
@@ -313,6 +324,51 @@ export default function SuperAdminDashboard() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Duration Override (Months)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 12"
+                    value={additionalMonths}
+                    onChange={(e) => setAdditionalMonths(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Max Invoices (-1 for unlmt)
+                  </label>
+                  <input
+                    type="number"
+                    min="-1"
+                    placeholder="Leave empty for default"
+                    value={customMaxInvoices}
+                    onChange={(e) => setCustomMaxInvoices(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Max Customers (-1 for unlmt)
+                  </label>
+                  <input
+                    type="number"
+                    min="-1"
+                    placeholder="Leave empty for default"
+                    value={customMaxCustomers}
+                    onChange={(e) => setCustomMaxCustomers(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100"
+                  />
+                </div>
               </div>
             </div>
             <div className="p-4 border-t border-slate-300 dark:border-slate-700 flex justify-end gap-3">
