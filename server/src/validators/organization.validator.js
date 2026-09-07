@@ -48,6 +48,7 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
         signature_name: _zod.z.string().optional().nullable(),
         signature_location: _zod.z.string().optional().nullable(),
         terms_conditions: _zod.z.string().optional().nullable(),
+        bank_details: _zod.z.string().optional().nullable(),
         prefix: _zod.z.string().optional().nullable(),
         field_visibility: _zod.z.any().optional().nullable()
       })

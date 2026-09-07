@@ -602,7 +602,20 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
+                <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
+                  Bank Details
+                </label>
+                <textarea
+                  name="bank_details"
+                  value={profile.settings?.bank_details || ''}
+                  onChange={handleSettingsChange}
+                  rows={4}
+                  className="textarea textarea-bordered w-full"
+                  placeholder={`Bank Name: \nAccount Number: \nIFSC Code: \nBranch: `}
+                ></textarea>
+              </div>
+              <div className="space-y-2 mt-4">
                 <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                   Default Terms & Conditions
                 </label>
