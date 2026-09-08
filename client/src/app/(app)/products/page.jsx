@@ -4,20 +4,29 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   Plus,
   Search,
-  Filter,
-  MoreHorizontal,
   PackageOpen,
   Loader2,
-  X
+  X,
+  Download,
+  Filter,
+  MoreHorizontal
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { Pagination } from '@/components/ui/Pagination';
+import * as XLSX from 'xlsx';
+
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -34,10 +43,16 @@ export default function ProductsPage() {
     price: '',
     tax_rate: '0'
   });
-  const loadProducts = async () => {
+  const loadProducts = async (page = 1) => {
+    setLoading(true);
     try {
-      const response = await fetchApi('/products');
+      const response = await fetchApi(`/products?page=${page}&limit=10`);
       setProducts(response.data);
+      if (response.pagination) {
+        setTotalPages(response.pagination.totalPages);
+        setTotalItems(response.pagination.total);
+        setCurrentPage(page);
+      }
     } catch (err) {
       setError(err.message || 'Failed to load products');
     } finally {
@@ -45,7 +60,7 @@ export default function ProductsPage() {
     }
   };
   useEffect(() => {
-    loadProducts();
+    loadProducts(1);
   }, []);
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -62,7 +77,7 @@ export default function ProductsPage() {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      await loadProducts();
+      await loadProducts(1);
       setIsAddModalOpen(false);
       setFormData({
         name: '',
@@ -96,7 +111,7 @@ export default function ProductsPage() {
         method: 'PUT',
         body: JSON.stringify(payload)
       });
-      await loadProducts();
+      await loadProducts(currentPage);
       setIsEditModalOpen(false);
       setEditingProduct(null);
       toast.success('Item updated successfully');
@@ -127,8 +142,8 @@ export default function ProductsPage() {
           method: 'DELETE'
         });
         if (response.success) {
-          setProducts(products.filter((p) => p.id !== id));
           toast.success('Item deleted successfully');
+          await loadProducts(currentPage);
         } else {
           toast.error('Failed to delete item');
         }
@@ -137,6 +152,61 @@ export default function ProductsPage() {
       }
     }
   };
+
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching data for export...', { id: 'export-toast' });
+      const res = await fetchApi('/products?limit=10000');
+      const allData = res.success ? res.data : products;
+      
+      const filteredForExport = allData.filter((p) => {
+        return p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+               p.SKU?.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+
+      if (!filteredForExport || filteredForExport.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download for selected filters');
+        return;
+      }
+
+      const exportData = filteredForExport.map((p) => ({
+        'Item Name': p.name,
+        'SKU': p.SKU || 'N/A',
+        'Description': p.description || 'N/A',
+        'Type': p.type || 'SERVICE',
+        'Price': Number(p.price).toFixed(2),
+        'Tax Rate (%)': Number(p.tax_rate).toFixed(2)
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      ws['!cols'] = [
+        { wch: 30 }, // Item Name
+        { wch: 15 }, // SKU
+        { wch: 40 }, // Description
+        { wch: 15 }, // Type
+        { wch: 15 }, // Price
+        { wch: 15 }  // Tax Rate
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Items');
+      XLSX.writeFile(wb, `items_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.dismiss('export-toast');
+      toast.success('Excel downloaded successfully');
+    } catch (err) {
+      console.error(err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to download Excel file');
+    }
+  };
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.SKU?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -148,13 +218,22 @@ export default function ProductsPage() {
             Manage your catalog of items for invoicing.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="btn btn-primary text-white hover:scale-105 transition-all shadow-md"
-        >
-          <Plus className="w-5 h-5" />
-          Add Item
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleDownloadReport}
+            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+          >
+            <Download className="w-5 h-5" />
+            Export to Excel
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn btn-primary text-white hover:scale-105 transition-all shadow-md flex items-center gap-2 whitespace-nowrap"
+          >
+            <Plus className="w-5 h-5" />
+            Add Item
+          </button>
+        </div>
       </div>
 
       <Card>
@@ -165,6 +244,8 @@ export default function ProductsPage() {
               type="text"
               placeholder="Search items by name or SKU..."
               className="input input-bordered w-full pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button className="btn btn-outline">
@@ -189,9 +270,9 @@ export default function ProductsPage() {
                 Try again
               </button>
             </div>
-          ) : products.length === 0 ? (
+          ) : filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-slate-500">
-              <p>No items found.</p>
+              <p>No items found matching search.</p>
             </div>
           ) : (
             <table className="table  w-full text-sm text-left">
@@ -206,7 +287,7 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((item) => (
+                {filteredProducts.map((item) => (
                   <tr key={item.id} className="hover">
                     <td>
                       <div className="flex items-center gap-3">
@@ -267,22 +348,12 @@ export default function ProductsPage() {
         </div>
 
         {!loading && !error && products.length > 0 && (
-          <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-            <span>Showing {products.length} result(s)</span>
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Previous
-              </button>
-              <button
-                className="px-3 py-1 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Next
-              </button>
-            </div>
+          <div className="p-4 border-t border-slate-100 dark:border-slate-700">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => loadProducts(page)}
+            />
           </div>
         )}
       </Card>

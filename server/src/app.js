@@ -24,6 +24,7 @@ var _subscription = _interopRequireDefault(
 );
 var _contact = _interopRequireDefault(require('./routes/contact.routes'));
 var _plan = _interopRequireDefault(require('./routes/plan.routes'));
+var _report = _interopRequireDefault(require('./routes/report.routes'));
 var _error = require('./middlewares/error.middleware');
 function _interopRequireDefault(e) {
   return e && e.__esModule ? e : { default: e };
@@ -106,6 +107,7 @@ app.use('/api/v1/audit-logs', _auditLog.default);
 app.use('/api/v1/subscriptions', _subscription.default);
 app.use('/api/v1/contact', _contact.default);
 app.use('/api/v1/plans', _plan.default);
+app.use('/api/v1/reports', _report.default);
 
 // Base Route
 app.get('/', (req, res) => {

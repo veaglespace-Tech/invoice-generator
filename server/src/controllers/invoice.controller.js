@@ -167,14 +167,21 @@ const createInvoice = async (req, res, next) => {
     });
 
     if (subscription) {
-      const allowedMaxInvoices = subscription.organization.custom_max_invoices !== null 
-        ? subscription.organization.custom_max_invoices 
-        : subscription.plan.max_invoices;
+      const isPurchase = data.type === 'PURCHASE';
+      
+      const allowedMax = isPurchase 
+        ? (subscription.organization.custom_max_purchase_invoices !== null && subscription.organization.custom_max_purchase_invoices !== undefined
+            ? subscription.organization.custom_max_purchase_invoices 
+            : subscription.plan.max_purchase_invoices)
+        : (subscription.organization.custom_max_sales_invoices !== null && subscription.organization.custom_max_sales_invoices !== undefined
+            ? subscription.organization.custom_max_sales_invoices 
+            : subscription.plan.max_sales_invoices);
         
-      if (allowedMaxInvoices !== -1) {
+      if (allowedMax !== -1) {
         const invoiceCount = await _server.prisma.invoice.count({
           where: {
             organization_id: targetOrgId,
+            type: isPurchase ? 'PURCHASE' : 'SALES',
             created_at: {
               gte: subscription.start_date || new Date(0),
               lte: subscription.end_date || new Date('2099-12-31')
@@ -182,10 +189,11 @@ const createInvoice = async (req, res, next) => {
             is_deleted: false
           }
         });
-        if (invoiceCount >= allowedMaxInvoices) {
+        if (invoiceCount >= allowedMax) {
+          const typeName = isPurchase ? 'Purchase Invoices' : 'Sales Invoices';
           return res.status(403).json({
             success: false,
-            message: `Invoice limit reached. Your current plan allows up to ${allowedMaxInvoices} invoices per billing cycle.`
+            message: `${typeName} limit reached. Your current plan allows up to ${allowedMax} ${typeName.toLowerCase()} per billing cycle.`
           });
         }
       }
@@ -209,6 +217,7 @@ const createInvoice = async (req, res, next) => {
         data: {
           organization_id: targetOrgId,
           invoice_number: invoiceNumber,
+          type: data.type || 'SALES',
           customer_id: data.customer_id,
           invoice_date: new Date(data.invoice_date),
           due_date: new Date(data.due_date),
@@ -306,6 +315,7 @@ const updateInvoice = async (req, res, next) => {
         },
         data: {
           invoice_number: invoiceNumber,
+          type: data.type || 'SALES',
           customer_id: data.customer_id,
           invoice_date: new Date(data.invoice_date),
           due_date: new Date(data.due_date),

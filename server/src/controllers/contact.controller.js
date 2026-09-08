@@ -40,12 +40,42 @@ const createLead = async (req, res) => {
 exports.createLead = createLead;
 const getLeads = async (req, res) => {
   try {
-    // We expect this to be protected by superAdminAuth middleware
-    const leads = await prisma.contactLead.findMany({
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    
+    // Check if pagination is requested (has page and limit)
+    const isPaginated = !isNaN(page) && !isNaN(limit);
+    
+    const queryOptions = {
       orderBy: {
         createdAt: 'desc'
       }
-    });
+    };
+
+    if (isPaginated) {
+      const skip = (page - 1) * limit;
+      queryOptions.skip = skip;
+      queryOptions.take = limit;
+      
+      const [leads, total] = await Promise.all([
+        prisma.contactLead.findMany(queryOptions),
+        prisma.contactLead.count()
+      ]);
+      
+      return res.status(200).json({
+        success: true,
+        data: leads,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    }
+
+    // Unpaginated fallback
+    const leads = await prisma.contactLead.findMany(queryOptions);
     res.status(200).json({
       success: true,
       data: leads

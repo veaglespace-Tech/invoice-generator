@@ -145,6 +145,7 @@ export default function InvoiceGenerator() {
     loadData();
   }, []);
   const [invoiceData, setInvoiceData] = useState({
+    type: 'SALES',
     invoiceNumber: '',
     customerId: null,
     issueDate: new Date().toISOString().split('T')[0],
@@ -318,6 +319,7 @@ export default function InvoiceGenerator() {
         method: 'POST',
         data: {
           customer_id: customerId,
+          type: invoiceData.type,
           invoice_number: invoiceData.invoiceNumber,
           invoice_date: invoiceData.issueDate,
           due_date: invoiceData.dueDate,
@@ -333,9 +335,28 @@ export default function InvoiceGenerator() {
         }
       });
       if (invoiceRes.success && invoiceRes.data?.id) {
-        // 4. Send Email
+        // 4. Generate PDF base64
+        const element = document.getElementById('invoice-preview');
+        let pdfBase64 = '';
+        if (element) {
+          const htmlToImage = await import('html-to-image');
+          const { jsPDF } = await import('jspdf');
+          const dataUrl = await htmlToImage.toPng(element, {
+            quality: 1,
+            pixelRatio: 2,
+            style: { transform: 'scale(1)', transformOrigin: 'top left' }
+          });
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
+          pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          pdfBase64 = pdf.output('datauristring').split(',')[1];
+        }
+
+        // 5. Send Email
         const sendRes = await fetchApi(`/invoices/${invoiceRes.data.id}/send`, {
-          method: 'POST'
+          method: 'POST',
+          data: { pdfBase64 }
         });
         if (sendRes.success) {
           toast.success('Invoice saved and sent successfully to the registered email!');
@@ -401,6 +422,7 @@ export default function InvoiceGenerator() {
         method: 'POST',
         data: {
           customer_id: customerId,
+          type: invoiceData.type,
           invoice_number: invoiceData.invoiceNumber,
           invoice_date: invoiceData.issueDate,
           due_date: invoiceData.dueDate,
@@ -521,6 +543,19 @@ export default function InvoiceGenerator() {
                   Details
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Invoice Type
+                    </label>
+                    <select
+                      value={invoiceData.type}
+                      onChange={(e) => updateData('type', e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                    >
+                      <option value="SALES">Sales</option>
+                      <option value="PURCHASE">Purchase</option>
+                    </select>
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Invoice No.
@@ -1163,7 +1198,7 @@ export default function InvoiceGenerator() {
                   </div>
                 </div>
                 <div className="w-[25%] p-2 flex items-center justify-center font-bold text-base tracking-wide">
-                  TAX INVOICE
+                  {invoiceData.type === 'PURCHASE' ? 'PURCHASE INVOICE' : 'SALES INVOICE'}
                 </div>
               </div>
 
@@ -1338,9 +1373,11 @@ export default function InvoiceGenerator() {
 
               {/* Billed By & Billed To Side-by-Side */}
               <div className="flex border-b border-black text-[10px]">
-                {/* Billed By (Org Details) */}
+                {/* Left Side (Always Organization) */}
                 <div className="w-1/2 border-r border-black flex flex-col p-1.5">
-                  <div className="font-bold mb-1">Details of Supplier (Billed By):</div>
+                  <div className="font-bold mb-1">
+                    {invoiceData.type === 'PURCHASE' ? 'Details of Customer (Billed To):' : 'Details of Supplier (Billed By):'}
+                  </div>
                   <div className="flex">
                     <div className="w-24">Legal Name:</div>
                     <div className="flex-1 uppercase font-semibold">
@@ -1355,26 +1392,34 @@ export default function InvoiceGenerator() {
                   </div>
                   <div className="flex">
                     <div className="w-24">City:</div>
-                    <div className="flex-1">{orgProfile?.city || ''}</div>
+                    <div className="flex-1">
+                      {orgProfile?.city || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">State:</div>
-                    <div className="flex-1">{orgProfile?.state || ''}</div>
+                    <div className="flex-1">
+                      {orgProfile?.state || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Pin code:</div>
-                    <div className="flex-1">{orgProfile?.pincode || ''}</div>
+                    <div className="flex-1">
+                      {orgProfile?.pincode || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">GSTIN:</div>
-                    <div className="flex-1">{orgProfile?.GSTIN || ''}</div>
+                    <div className="flex-1">
+                      {orgProfile?.GSTIN || ''}
+                    </div>
                   </div>
                 </div>
 
-                {/* Billed To (Customer Details) */}
+                {/* Right Side (Always Client) */}
                 <div className="w-1/2 flex flex-col p-1.5">
                   <div className="font-bold mb-1 flex justify-between">
-                    <span>Details of Customer (Billed To):</span>
+                    <span>{invoiceData.type === 'PURCHASE' ? 'Details of Supplier (Billed By):' : 'Details of Customer (Billed To):'}</span>
                     {orgProfile?.settings?.field_visibility?.customerPan !== false && (
                       <span>PAN: {invoiceData.clientPan || ''}</span>
                     )}
@@ -1382,7 +1427,7 @@ export default function InvoiceGenerator() {
                   <div className="flex">
                     <div className="w-24">Name:</div>
                     <div className="flex-1 uppercase font-semibold">
-                      {invoiceData.clientName || 'Select a customer'}
+                      {invoiceData.clientName || (invoiceData.type === 'PURCHASE' ? 'Select a vendor' : 'Select a customer')}
                     </div>
                   </div>
                   <div className="flex">
@@ -1393,19 +1438,27 @@ export default function InvoiceGenerator() {
                   </div>
                   <div className="flex">
                     <div className="w-24">City:</div>
-                    <div className="flex-1">{invoiceData.clientCity}</div>
+                    <div className="flex-1">
+                      {invoiceData.clientCity}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Place of supply:</div>
-                    <div className="flex-1">{invoiceData.clientState}</div>
+                    <div className="flex-1">
+                      {invoiceData.clientState}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Pin code:</div>
-                    <div className="flex-1">{invoiceData.clientPincode}</div>
+                    <div className="flex-1">
+                      {invoiceData.clientPincode}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">GSTIN:</div>
-                    <div className="flex-1">{invoiceData.clientGst}</div>
+                    <div className="flex-1">
+                      {invoiceData.clientGst}
+                    </div>
                   </div>
                 </div>
               </div>

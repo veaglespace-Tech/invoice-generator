@@ -29,6 +29,8 @@ model Organization {
   plan_id         String?
   plan            Plan?     @relation(fields: [plan_id], references: [id])
   custom_max_invoices Int?
+  custom_max_sales_invoices Int?
+  custom_max_purchase_invoices Int?
   custom_max_customers Int?
   is_deleted      Boolean   @default(false)
   deleted_at      DateTime?
@@ -61,6 +63,8 @@ model Plan {
   interval    String   @default("month") // month, year, forever
   features    Json     @default("[]")
   max_invoices Int     @default(-1)
+  max_sales_invoices Int @default(-1)
+  max_purchase_invoices Int @default(-1)
   max_customers Int    @default(-1)
   duration_months Int  @default(1)
   is_popular  Boolean  @default(false)
@@ -195,6 +199,7 @@ model Invoice {
   organization_id String
   organization    Organization @relation(fields: [organization_id], references: [id])
   invoice_number  String
+  type            InvoiceType @default(SALES)
   customer_id     String
   customer        Customer  @relation(fields: [customer_id], references: [id])
   invoice_date    DateTime
@@ -232,6 +237,11 @@ model Invoice {
   @@unique([organization_id, invoice_number])
   @@index([organization_id, status])
   @@index([customer_id])
+}
+
+enum InvoiceType {
+  SALES
+  PURCHASE
 }
 
 enum InvoiceStatus {

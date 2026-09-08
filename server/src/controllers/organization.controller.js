@@ -18,7 +18,13 @@ var _organization = require('../validators/organization.validator');
 var _hash = require('../utils/hash');
 const getAllOrganizations = async (req, res, next) => {
   try {
-    const orgs = await _server.prisma.organization.findMany({
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    
+    // Check if pagination is requested (has page and limit)
+    const isPaginated = !isNaN(page) && !isNaN(limit);
+    
+    const queryOptions = {
       include: {
         _count: {
           select: {
@@ -28,8 +34,36 @@ const getAllOrganizations = async (req, res, next) => {
           }
         },
         plan: true
+      },
+      orderBy: {
+        created_at: 'desc'
       }
-    });
+    };
+
+    if (isPaginated) {
+      const skip = (page - 1) * limit;
+      queryOptions.skip = skip;
+      queryOptions.take = limit;
+      
+      const [orgs, total] = await Promise.all([
+        _server.prisma.organization.findMany(queryOptions),
+        _server.prisma.organization.count()
+      ]);
+      
+      return res.status(200).json({
+        success: true,
+        data: orgs,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    }
+
+    // Unpaginated fallback
+    const orgs = await _server.prisma.organization.findMany(queryOptions);
     res.status(200).json({
       success: true,
       data: orgs

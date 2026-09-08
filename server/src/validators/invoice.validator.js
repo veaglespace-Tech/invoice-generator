@@ -22,6 +22,7 @@ const createInvoiceItemSchema = (exports.createInvoiceItemSchema =
 const createInvoiceSchema = (exports.createInvoiceSchema = _zod.z.object({
   customer_id: _zod.z.string().uuid('Invalid customer ID'),
   invoice_number: _zod.z.string().optional().nullable(),
+  type: _zod.z.enum(['SALES', 'PURCHASE']).optional().nullable().default('SALES'),
   invoice_date: _zod.z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),

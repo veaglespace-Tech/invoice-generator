@@ -6,13 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { MessageSquare, CheckCircle, Mail, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
+import { Pagination } from '@/components/ui/Pagination';
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const fetchLeads = async () => {
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const fetchLeads = async (page = 1) => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/contact`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/contact?page=${page}&limit=10`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('auth_token')}`
@@ -21,6 +28,11 @@ export default function LeadsPage() {
       );
       if (response.data.success) {
         setLeads(response.data.data);
+        if (response.data.pagination) {
+          setTotalPages(response.data.pagination.totalPages);
+          setTotalItems(response.data.pagination.total);
+          setCurrentPage(page);
+        }
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -30,7 +42,7 @@ export default function LeadsPage() {
     }
   };
   useEffect(() => {
-    fetchLeads();
+    fetchLeads(1);
   }, []);
   const markAsRead = async (id) => {
     try {
@@ -172,6 +184,14 @@ export default function LeadsPage() {
                   </div>
                 </div>
               ))}
+              
+              <div className="pt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => fetchLeads(page)}
+                />
+              </div>
             </div>
           )}
         </CardContent>

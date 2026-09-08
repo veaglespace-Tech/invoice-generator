@@ -16,12 +16,17 @@ import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Pagination } from '@/components/ui/Pagination';
+import * as XLSX from 'xlsx';
 export default function InvoicesList() {
   const router = useRouter();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL');
+  const [periodFilter, setPeriodFilter] = useState('ALL');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -121,49 +126,120 @@ export default function InvoicesList() {
       }
     }
   };
-  const handleDownloadReport = () => {
-    if (!filteredInvoices || filteredInvoices.length === 0) {
-      toast.error('No data available to download');
-      return;
-    }
-    const headers = [
-      'Invoice Number',
-      'Client',
-      'Amount',
-      'Invoice Date',
-      'Due Date',
-      'Status'
-    ];
-    const csvRows = [];
-    csvRows.push(headers.join(','));
-    filteredInvoices.forEach((inv) => {
-      const clientName =
-        inv.customer.company_name || inv.customer.customer_name;
-      const row = [
-        inv.invoice_number,
-        `"${clientName}"`,
-        `"${inv.grand_total}"`,
-        new Date(inv.invoice_date).toLocaleDateString(),
-        new Date(inv.due_date).toLocaleDateString(),
-        inv.status
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching data for export...', { id: 'export-toast' });
+      const res = await fetchApi('/invoices?limit=10000');
+      const allData = res.success ? res.data : invoices;
+      
+      const filteredForExport = allData.filter((inv) => {
+        const matchesSearch =
+          inv.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          inv.customer.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          inv.customer.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+        const matchesType = typeFilter === 'ALL' || inv.type === typeFilter;
+        
+        let matchesPeriod = true;
+        if (periodFilter !== 'ALL') {
+          const invDate = new Date(inv.invoice_date);
+          const today = new Date();
+          
+          if (periodFilter === 'DAILY') {
+            matchesPeriod = invDate.toDateString() === today.toDateString();
+          } else if (periodFilter === 'WEEKLY') {
+            const lastWeek = new Date(today);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            matchesPeriod = invDate >= lastWeek && invDate <= today;
+          } else if (periodFilter === 'MONTHLY') {
+            matchesPeriod = invDate.getMonth() === today.getMonth() && invDate.getFullYear() === today.getFullYear();
+          } else if (periodFilter === 'CUSTOM' && startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            matchesPeriod = invDate >= start && invDate <= end;
+          }
+        }
+
+        return matchesSearch && matchesStatus && matchesType && matchesPeriod;
+      });
+
+      if (!filteredForExport || filteredForExport.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download for selected filters');
+        return;
+      }
+
+      const exportData = filteredForExport.map((inv) => ({
+        'Invoice Number': inv.invoice_number,
+        'Type': inv.type || 'SALES',
+        'Client': inv.customer.company_name || inv.customer.customer_name,
+        'Amount': Number(inv.grand_total).toFixed(2),
+        'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
+        'Due Date': new Date(inv.due_date).toLocaleDateString(),
+        'Status': inv.status
+      }));
+
+      // Calculate totals
+      let totalSales = 0;
+      let totalPurchases = 0;
+      filteredForExport.forEach(inv => {
+        if (inv.status !== 'CANCELLED') {
+          const amount = Number(inv.grand_total) || 0;
+          if (inv.type === 'PURCHASE') {
+            totalPurchases += amount;
+          } else {
+            totalSales += amount;
+          }
+        }
+      });
+      
+      const balance = totalSales - totalPurchases;
+
+      // Add space before summary
+      exportData.push({});
+      exportData.push({});
+      
+      // Add summary rows
+      exportData.push({
+        'Invoice Number': 'SUMMARY (Excl. Cancelled)',
+      });
+      exportData.push({
+        'Invoice Number': 'Total Sales',
+        'Amount': totalSales.toFixed(2)
+      });
+      exportData.push({
+        'Invoice Number': 'Total Purchases',
+        'Amount': totalPurchases.toFixed(2)
+      });
+      exportData.push({
+        'Invoice Number': 'Net Balance',
+        'Amount': balance.toFixed(2)
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths to prevent ### in Excel
+      ws['!cols'] = [
+        { wch: 18 }, // Invoice Number
+        { wch: 12 }, // Type
+        { wch: 30 }, // Client
+        { wch: 15 }, // Amount
+        { wch: 15 }, // Invoice Date
+        { wch: 15 }, // Due Date
+        { wch: 15 }  // Status
       ];
-      csvRows.push(row.join(','));
-    });
-    const csvContent = '\uFEFF' + csvRows.join('\n');
-    const blob = new Blob([csvContent], {
-      type: 'text/csv;charset=utf-8;'
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `invoices_export_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Invoices downloaded successfully');
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
+      XLSX.writeFile(wb, `invoices_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.dismiss('export-toast');
+      toast.success('Excel downloaded successfully');
+    } catch (err) {
+      console.error(err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to download Excel file');
+    }
   };
   const filteredInvoices = invoices.filter((inv) => {
     const matchesSearch =
@@ -175,7 +251,30 @@ export default function InvoicesList() {
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesType = typeFilter === 'ALL' || inv.type === typeFilter;
+    
+    let matchesPeriod = true;
+    if (periodFilter !== 'ALL') {
+      const invDate = new Date(inv.invoice_date);
+      const today = new Date();
+      
+      if (periodFilter === 'DAILY') {
+        matchesPeriod = invDate.toDateString() === today.toDateString();
+      } else if (periodFilter === 'WEEKLY') {
+        const lastWeek = new Date(today);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        matchesPeriod = invDate >= lastWeek && invDate <= today;
+      } else if (periodFilter === 'MONTHLY') {
+        matchesPeriod = invDate.getMonth() === today.getMonth() && invDate.getFullYear() === today.getFullYear();
+      } else if (periodFilter === 'CUSTOM' && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        matchesPeriod = invDate >= start && invDate <= end;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesType && matchesPeriod;
   });
   return (
     <>
@@ -218,34 +317,80 @@ export default function InvoicesList() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="dropdown dropdown-end">
-            <div tabIndex={0} role="button" className="btn btn-outline">
-              <Filter className="w-4 h-4" />
-              {statusFilter === 'ALL' ? 'All Status' : statusFilter}
+          <div className="flex flex-wrap items-center gap-3">
+            {periodFilter === 'CUSTOM' && (
+              <div className="flex items-center gap-2 mr-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="input input-sm input-bordered w-32"
+                />
+                <span className="text-slate-400">to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="input input-sm input-bordered w-32"
+                />
+              </div>
+            )}
+            
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 btn-sm h-10 font-medium">
+                <Filter className="w-4 h-4 mr-1" />
+                {periodFilter === 'ALL' ? 'All Time' : periodFilter === 'CUSTOM' ? 'Custom Date' : periodFilter.charAt(0) + periodFilter.slice(1).toLowerCase()}
+              </div>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-40 mt-2 border border-slate-300 dark:border-slate-700">
+                <li><a onClick={() => setPeriodFilter('ALL')}>All Time</a></li>
+                <li><a onClick={() => setPeriodFilter('DAILY')}>Today</a></li>
+                <li><a onClick={() => setPeriodFilter('WEEKLY')}>Last 7 Days</a></li>
+                <li><a onClick={() => setPeriodFilter('MONTHLY')}>This Month</a></li>
+                <li><a onClick={() => setPeriodFilter('CUSTOM')}>Custom Date</a></li>
+              </ul>
             </div>
-            <ul
-              tabIndex={0}
-              className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-52 mt-2 border border-slate-300 dark:border-slate-700"
-            >
-              <li>
-                <a onClick={() => setStatusFilter('ALL')}>All</a>
-              </li>
-              <li>
-                <a onClick={() => setStatusFilter('DRAFT')}>Draft</a>
-              </li>
-              <li>
-                <a onClick={() => setStatusFilter('GENERATED')}>Generated</a>
-              </li>
-              <li>
-                <a onClick={() => setStatusFilter('SENT')}>Sent</a>
-              </li>
-              <li>
-                <a onClick={() => setStatusFilter('PAID')}>Paid</a>
-              </li>
-              <li>
-                <a onClick={() => setStatusFilter('CANCELLED')}>Cancelled</a>
-              </li>
-            </ul>
+
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 btn-sm h-10 font-medium">
+                <Filter className="w-4 h-4 mr-1" />
+                {typeFilter === 'ALL' ? 'All Types' : typeFilter === 'SALES' ? 'Sales' : 'Purchase'}
+              </div>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-40 mt-2 border border-slate-300 dark:border-slate-700">
+                <li><a onClick={() => setTypeFilter('ALL')}>All Types</a></li>
+                <li><a onClick={() => setTypeFilter('SALES')}>Sales</a></li>
+                <li><a onClick={() => setTypeFilter('PURCHASE')}>Purchase</a></li>
+              </ul>
+            </div>
+
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 btn-sm h-10 font-medium">
+                <Filter className="w-4 h-4 mr-1" />
+                {statusFilter === 'ALL' ? 'All Status' : statusFilter}
+              </div>
+              <ul
+                tabIndex={0}
+                className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-40 mt-2 border border-slate-300 dark:border-slate-700"
+              >
+                <li>
+                  <a onClick={() => setStatusFilter('ALL')}>All Status</a>
+                </li>
+                <li>
+                  <a onClick={() => setStatusFilter('DRAFT')}>Draft</a>
+                </li>
+                <li>
+                  <a onClick={() => setStatusFilter('GENERATED')}>Generated</a>
+                </li>
+                <li>
+                  <a onClick={() => setStatusFilter('SENT')}>Sent</a>
+                </li>
+                <li>
+                  <a onClick={() => setStatusFilter('PAID')}>Paid</a>
+                </li>
+                <li>
+                  <a onClick={() => setStatusFilter('CANCELLED')}>Cancelled</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -274,6 +419,7 @@ export default function InvoicesList() {
               <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                 <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                   <th className="py-3 px-4 font-semibold">Invoice Number</th>
+                  <th className="py-3 px-4 font-semibold">Type</th>
                   <th className="py-3 px-4 font-semibold">Client</th>
                   <th className="py-3 px-4 font-semibold">Amount</th>
                   <th className="py-3 px-4 font-semibold">Date</th>
@@ -291,6 +437,13 @@ export default function InvoicesList() {
                   >
                     <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
                       {invoice.invoice_number}
+                    </td>
+                    <td className="py-3 px-4">
+                      {invoice.type === 'PURCHASE' ? (
+                        <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Purchase</span>
+                      ) : (
+                        <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Sales</span>
+                      )}
                     </td>
                     <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">
                       {invoice.customer.company_name ||

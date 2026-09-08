@@ -14,7 +14,8 @@ import {
   X,
   ChevronLeft,
   Shield,
-  CreditCard
+  CreditCard,
+  BarChart3
 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
 const navigation = [
@@ -37,6 +38,11 @@ const navigation = [
     name: 'Items',
     href: '/products',
     icon: Package
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: BarChart3
   }
 ];
 export function Sidebar() {
@@ -117,15 +123,18 @@ export function Sidebar() {
                 <img
                   src="/logo.webp"
                   alt="VS"
-                  className="h-10 w-10 object-contain rounded-lg flex-shrink-0 animate-coin-flip group-hover:scale-110 transition-transform duration-300"
+                  className="h-10 w-10 object-contain rounded-lg flex-shrink-0 animate-coin-flip"
                 />
               ) : (
-                <div className="flex items-center gap-3 px-2 w-full">
+                <div className="flex items-center gap-2 px-1 w-full justify-start -ml-2">
                   <img
                     src="/logo.webp"
-                    alt="Veagle Space"
-                    className="h-12 w-auto max-w-[140px] object-contain flex-shrink-0 animate-coin-flip group-hover:scale-105 transition-transform duration-300"
+                    alt="Veagle Space Logo"
+                    className="h-14 w-auto max-w-[140px] object-contain flex-shrink-0 animate-coin-flip"
                   />
+                  <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
+                    Veagle <span className="text-blue-500 dark:text-blue-400 font-medium">Space</span>
+                  </span>
                 </div>
               )}
             </Link>

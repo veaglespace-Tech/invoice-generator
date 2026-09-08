@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, Building2, Users, Receipt, 
-  Search, Edit, Trash2, X, Loader2 
+  Search, Edit, Trash2, X, Loader2, Download
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { fetchApi } from '@/lib/api';
 import { Pagination } from '@/components/ui/Pagination';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 export default function SuperAdminDashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
@@ -119,6 +121,58 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching data for export...', { id: 'export-toast' });
+      // Fetch all organizations bypassing pagination limit
+      const res = await fetchApi('/organizations?limit=10000');
+      const allData = res.success ? res.data : organizations;
+
+      const filteredForExport = allData.filter(
+        (org) =>
+          org.name.toLowerCase().includes(search.toLowerCase()) ||
+          org.email.toLowerCase().includes(search.toLowerCase())
+      );
+
+      if (!filteredForExport || filteredForExport.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download');
+        return;
+      }
+
+      const exportData = filteredForExport.map((org) => ({
+        'Organization Name': org.name,
+        'Email': org.email,
+        'Phone': org.phone || 'N/A',
+        'Plan': org.plan?.name || 'None',
+        'Users Count': org._count?.users || 0,
+        'Invoices Count': org._count?.invoices || 0,
+        'Status': org.status,
+        'Created At': new Date(org.created_at).toLocaleDateString()
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const colWidths = [
+        { wch: 30 }, { wch: 30 }, { wch: 15 }, { wch: 15 },
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+      ];
+      ws['!cols'] = colWidths;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Organizations');
+
+      const fileName = `Organizations_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.dismiss('export-toast');
+      toast.success('Organizations exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to export data');
+    }
+  };
+
   const filteredOrgs = organizations.filter(
     (org) =>
       org.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -199,16 +253,25 @@ export default function SuperAdminDashboard() {
           Manage Organizations
         </h2>
         <Card>
-          <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:w-96">
+          <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50 dark:bg-slate-800/20">
+            <div className="relative w-full sm:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search organizations..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white text-sm"
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all text-sm"
               />
+            </div>
+            <div className="w-full sm:w-auto flex justify-end">
+              <button
+                onClick={handleDownloadReport}
+                className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl flex items-center justify-center gap-2 font-medium transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Excel</span>
+              </button>
             </div>
           </div>
 

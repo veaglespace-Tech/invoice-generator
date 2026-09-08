@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import { Pagination } from '@/components/ui/Pagination';
+import * as XLSX from 'xlsx';
 
 export default function SuperAdminInvoices() {
   const router = useRouter();
@@ -18,6 +19,9 @@ export default function SuperAdminInvoices() {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [periodFilter, setPeriodFilter] = useState('ALL');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -80,8 +84,123 @@ export default function SuperAdminInvoices() {
     const matchesStatus =
       statusFilter === 'ALL' || inv.status === statusFilter;
       
-    return matchesSearch && matchesStatus;
+    let matchesPeriod = true;
+    if (periodFilter !== 'ALL') {
+      const invDate = new Date(inv.invoice_date);
+      const today = new Date();
+      
+      if (periodFilter === 'DAILY') {
+        matchesPeriod = invDate.toDateString() === today.toDateString();
+      } else if (periodFilter === 'WEEKLY') {
+        const lastWeek = new Date(today);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        matchesPeriod = invDate >= lastWeek && invDate <= today;
+      } else if (periodFilter === 'MONTHLY') {
+        matchesPeriod = invDate.getMonth() === today.getMonth() && invDate.getFullYear() === today.getFullYear();
+      } else if (periodFilter === 'YEARLY') {
+        matchesPeriod = invDate.getFullYear() === today.getFullYear();
+      } else if (periodFilter === 'CUSTOM' && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        matchesPeriod = invDate >= start && invDate <= end;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesPeriod;
   });
+
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching data for export...', { id: 'export-toast' });
+      // Fetch all invoices to bypass pagination limit for download
+      const res = await fetchApi('/invoices?limit=10000');
+      const allData = res.success ? res.data : invoices;
+      
+      const filteredForExport = allData.filter((inv) => {
+        const matchesSearch =
+          inv.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          inv.customer?.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          inv.customer?.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          inv.organization?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+          
+        const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+        
+        let matchesPeriod = true;
+        if (periodFilter !== 'ALL') {
+          const invDate = new Date(inv.invoice_date);
+          const today = new Date();
+          
+          if (periodFilter === 'DAILY') {
+            matchesPeriod = invDate.toDateString() === today.toDateString();
+          } else if (periodFilter === 'WEEKLY') {
+            const lastWeek = new Date(today);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            matchesPeriod = invDate >= lastWeek && invDate <= today;
+          } else if (periodFilter === 'MONTHLY') {
+            matchesPeriod = invDate.getMonth() === today.getMonth() && invDate.getFullYear() === today.getFullYear();
+          } else if (periodFilter === 'YEARLY') {
+            matchesPeriod = invDate.getFullYear() === today.getFullYear();
+          } else if (periodFilter === 'CUSTOM' && startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            matchesPeriod = invDate >= start && invDate <= end;
+          }
+        }
+        return matchesSearch && matchesStatus && matchesPeriod;
+      });
+
+      if (!filteredForExport || filteredForExport.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download for selected filters');
+        return;
+      }
+
+      const exportData = filteredForExport.map((inv) => ({
+        'Invoice Number': inv.invoice_number,
+        'Organization': inv.organization?.name || 'N/A',
+        'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+        'Amount': Number(inv.grand_total).toFixed(2),
+        'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
+        'Due Date': new Date(inv.due_date).toLocaleDateString(),
+        'Status': inv.status
+      }));
+
+      // Summary
+      let totalAmount = 0;
+      filteredForExport.forEach(inv => {
+        if (inv.status !== 'CANCELLED') {
+          totalAmount += Number(inv.grand_total) || 0;
+        }
+      });
+
+      exportData.push({});
+      exportData.push({ 'Invoice Number': 'SUMMARY' });
+      exportData.push({ 'Invoice Number': 'Total Amount', 'Organization': totalAmount.toFixed(2) });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      
+      const colWidths = [
+        { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, 
+        { wch: 15 }, { wch: 15 }, { wch: 15 }
+      ];
+      ws['!cols'] = colWidths;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'System Invoices');
+
+      const fileName = `System_Invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.dismiss('export-toast');
+      toast.success('System Invoices exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to export data');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -108,7 +227,7 @@ export default function SuperAdminInvoices() {
               className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all text-sm"
             />
           </div>
-          <div className="flex gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-3 w-full sm:w-auto items-center">
             <div className="relative flex-1 sm:flex-none">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <select
@@ -127,6 +246,48 @@ export default function SuperAdminInvoices() {
                 <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
+            
+            <div className="relative flex-1 sm:flex-none">
+              <select
+                value={periodFilter}
+                onChange={(e) => setPeriodFilter(e.target.value)}
+                className="w-full sm:w-36 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none dark:text-white transition-all text-sm"
+              >
+                <option value="ALL">All Time</option>
+                <option value="DAILY">Today</option>
+                <option value="WEEKLY">This Week</option>
+                <option value="MONTHLY">This Month</option>
+                <option value="YEARLY">This Year</option>
+                <option value="CUSTOM">Custom Date</option>
+              </select>
+            </div>
+
+            {periodFilter === 'CUSTOM' && (
+              <div className="flex gap-2 items-center flex-1 sm:flex-none">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <span className="text-slate-400">to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={handleDownloadReport}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl flex items-center gap-2 font-medium transition-all shadow-sm flex-1 sm:flex-none justify-center whitespace-nowrap"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export Excel</span>
+              <span className="sm:hidden">Export</span>
+            </button>
           </div>
         </div>
 

@@ -25,6 +25,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,40 +62,75 @@ export default function Dashboard() {
     );
   }
   const { cards, recentInvoices } = data;
-  const handleDownloadReport = () => {
-    if (!recentInvoices || recentInvoices.length === 0) {
-      toast.error('No data available to download');
-      return;
-    }
-    const headers = ['Invoice ID', 'Client', 'Amount', 'Date', 'Status'];
-    const csvRows = [];
-    csvRows.push(headers.join(','));
-    recentInvoices.forEach((inv) => {
-      const row = [
-        inv.id,
-        `"${inv.client}"`,
-        // Escape commas
-        `"${inv.amount}"`,
-        inv.date,
-        inv.status
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching full data for export...', { id: 'export-toast' });
+      const res = await fetchApi('/invoices?limit=10000');
+      
+      if (!res.success || !res.data || res.data.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download');
+        return;
+      }
+      
+      const allInvoices = res.data;
+
+      const exportData = allInvoices.map((inv) => ({
+        'Invoice Number': inv.invoice_number,
+        'Type': inv.type || 'SALES',
+        'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+        'Amount': Number(inv.grand_total).toFixed(2),
+        'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
+        'Due Date': new Date(inv.due_date).toLocaleDateString(),
+        'Status': inv.status
+      }));
+
+      // Calculate totals
+      let totalSales = 0;
+      let totalPurchases = 0;
+      allInvoices.forEach(inv => {
+        if (inv.status !== 'CANCELLED') {
+          const amount = Number(inv.grand_total) || 0;
+          if (inv.type === 'PURCHASE') {
+            totalPurchases += amount;
+          } else {
+            totalSales += amount;
+          }
+        }
+      });
+      
+      const balance = totalSales - totalPurchases;
+
+      // Add space before summary
+      exportData.push({});
+      exportData.push({});
+      exportData.push({ 'Invoice Number': 'SUMMARY (Excl. Cancelled)' });
+      exportData.push({ 'Invoice Number': 'Total Sales', 'Amount': totalSales.toFixed(2) });
+      exportData.push({ 'Invoice Number': 'Total Purchases', 'Amount': totalPurchases.toFixed(2) });
+      exportData.push({ 'Invoice Number': 'Net Balance', 'Amount': balance.toFixed(2) });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      ws['!cols'] = [
+        { wch: 18 }, // Invoice Number
+        { wch: 12 }, // Type
+        { wch: 30 }, // Client
+        { wch: 15 }, // Amount
+        { wch: 15 }, // Invoice Date
+        { wch: 15 }, // Due Date
+        { wch: 15 }  // Status
       ];
-      csvRows.push(row.join(','));
-    });
-    const csvContent = '\uFEFF' + csvRows.join('\n');
-    const blob = new Blob([csvContent], {
-      type: 'text/csv;charset=utf-8;'
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `invoice_report_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Report downloaded successfully');
+
+      XLSX.utils.book_append_sheet(wb, ws, 'All_Invoices');
+      XLSX.writeFile(wb, `full_business_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.dismiss('export-toast');
+      toast.success('Full report downloaded successfully');
+    } catch (err) {
+      console.error(err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to download Excel file');
+    }
   };
   const stats = [
     {

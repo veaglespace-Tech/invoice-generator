@@ -29,7 +29,8 @@ export default function PlansAdminPage() {
     price: 0,
     interval: 'month',
     features: [''],
-    max_invoices: -1,
+    max_sales_invoices: -1,
+    max_purchase_invoices: -1,
     max_customers: -1,
     duration_months: 1,
     is_popular: false,
@@ -60,7 +61,8 @@ export default function PlansAdminPage() {
         price: Number(plan.price),
         interval: plan.interval,
         features: plan.features.length > 0 ? plan.features : [''],
-        max_invoices: plan.max_invoices !== undefined ? plan.max_invoices : -1,
+        max_sales_invoices: plan.max_sales_invoices !== undefined ? plan.max_sales_invoices : -1,
+        max_purchase_invoices: plan.max_purchase_invoices !== undefined ? plan.max_purchase_invoices : -1,
         max_customers: plan.max_customers !== undefined ? plan.max_customers : -1,
         duration_months: plan.duration_months !== undefined ? plan.duration_months : 1,
         is_popular: plan.is_popular,
@@ -74,7 +76,8 @@ export default function PlansAdminPage() {
         price: 0,
         interval: 'month',
         features: [''],
-        max_invoices: -1,
+        max_sales_invoices: -1,
+        max_purchase_invoices: -1,
         max_customers: -1,
         duration_months: 1,
         is_popular: false,
@@ -321,22 +324,43 @@ export default function PlansAdminPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Max Invoices / Cycle (-1 for unlimited)
+                      Max Sales Invoices (-1 for unlimited)
                     </label>
                     <input
                       type="number"
                       required
                       min="-1"
-                      value={formData.max_invoices}
+                      value={formData.max_sales_invoices}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          max_invoices: Number(e.target.value)
+                          max_sales_invoices: Number(e.target.value)
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Max Purchase Invoices (-1 for unlimited)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="-1"
+                      value={formData.max_purchase_invoices}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          max_purchase_invoices: Number(e.target.value)
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Max Customers (-1 for unlimited)

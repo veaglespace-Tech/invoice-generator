@@ -21,13 +21,16 @@ export function Navbar() {
         <div className="flex-1 flex items-center">
           <Link
             href="/"
-            className="flex items-center gap-2 text-2xl font-bold group cursor-pointer"
+            className="flex items-center gap-2 group cursor-pointer -ml-2"
           >
             <img
               src="/logo.webp"
-              alt="Veagle Space Technology"
-              className="h-[40px] md:h-[56px] w-auto object-contain animate-coin-flip transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2"
+              alt="Veagle Space Logo"
+              className="h-[48px] md:h-[64px] w-auto object-contain animate-coin-flip"
             />
+            <span className="text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
+              Veagle <span className="text-blue-500 dark:text-blue-400 font-medium">Space</span>
+            </span>
           </Link>
         </div>
 

@@ -483,74 +483,92 @@ export default function InvoicePrintView() {
 
               {/* Billed By & Billed To Side-by-Side */}
               <div className="flex border-b border-black text-[10px]">
-                {/* Billed By (Org Details) */}
+                {/* Left Side (Always Organization) */}
                 <div className="w-1/2 border-r border-black flex flex-col p-1.5">
-                  <div className="font-bold mb-1">Details of Supplier (Billed By):</div>
+                  <div className="font-bold mb-1">
+                    {invoice.type === 'PURCHASE' ? 'Details of Customer (Billed To):' : 'Details of Supplier (Billed By):'}
+                  </div>
                   <div className="flex">
                     <div className="w-24">Legal Name:</div>
                     <div className="flex-1 uppercase font-semibold">
-                      {invoice.organization.legal_name || invoice.organization.name || ''}
+                      {invoice.organization?.legal_name || invoice.organization?.name || ''}
                     </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Address:</div>
                     <div className="flex-1 whitespace-pre-wrap">
-                      {invoice.organization.address || ''}
+                      {invoice.organization?.address || ''}
                     </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">City:</div>
-                    <div className="flex-1">{invoice.organization.city || ''}</div>
+                    <div className="flex-1">
+                      {invoice.organization?.city || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">State:</div>
-                    <div className="flex-1">{invoice.organization.state || ''}</div>
+                    <div className="flex-1">
+                      {invoice.organization?.state || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Pin code:</div>
-                    <div className="flex-1">{invoice.organization.pincode || ''}</div>
+                    <div className="flex-1">
+                      {invoice.organization?.pincode || ''}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">GSTIN:</div>
-                    <div className="flex-1">{invoice.organization.GSTIN || ''}</div>
+                    <div className="flex-1">
+                      {invoice.organization?.GSTIN || ''}
+                    </div>
                   </div>
                 </div>
 
-                {/* Billed To (Customer Details) */}
+                {/* Right Side (Always Client) */}
                 <div className="w-1/2 flex flex-col p-1.5">
                   <div className="font-bold mb-1 flex justify-between">
-                    <span>Details of Customer (Billed To):</span>
-                    {invoice.organization.settings?.field_visibility?.customerPan !== false && (
-                      <span>PAN: {invoice.customer.PAN || ''}</span>
+                    <span>{invoice.type === 'PURCHASE' ? 'Details of Supplier (Billed By):' : 'Details of Customer (Billed To):'}</span>
+                    {invoice.organization?.settings?.field_visibility?.customerPan !== false && (
+                      <span>PAN: {invoice.customer?.PAN || ''}</span>
                     )}
                   </div>
                   <div className="flex">
                     <div className="w-24">Name:</div>
                     <div className="flex-1 uppercase font-semibold">
-                      {invoice.customer.company_name || invoice.customer.customer_name}
+                      {invoice.customer?.company_name || invoice.customer?.customer_name}
                     </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Address:</div>
                     <div className="flex-1 whitespace-pre-wrap">
-                      {invoice.customer.billing_address}
+                      {invoice.customer?.billing_address}
                     </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">City:</div>
-                    <div className="flex-1">{invoice.customer.billing_city}</div>
+                    <div className="flex-1">
+                      {invoice.customer?.billing_city}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Place of supply:</div>
-                    <div className="flex-1">{invoice.customer.billing_state}</div>
+                    <div className="flex-1">
+                      {invoice.customer?.billing_state}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">Pin code:</div>
-                    <div className="flex-1">{invoice.customer.billing_pincode}</div>
+                    <div className="flex-1">
+                      {invoice.customer?.billing_pincode}
+                    </div>
                   </div>
                   <div className="flex">
                     <div className="w-24">GSTIN:</div>
-                    <div className="flex-1">{invoice.customer.GSTIN}</div>
+                    <div className="flex-1">
+                      {invoice.customer?.GSTIN}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -10,17 +10,21 @@ import {
   Phone,
   Building2,
   Loader2,
-  X
+  X,
+  Download
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { Pagination } from '@/components/ui/Pagination';
+import * as XLSX from 'xlsx';
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -156,6 +160,63 @@ export default function CustomersPage() {
       }
     }
   };
+
+  const handleDownloadReport = async () => {
+    try {
+      toast.loading('Fetching data for export...', { id: 'export-toast' });
+      const res = await fetchApi('/customers?limit=10000');
+      const allData = res.success ? res.data : customers;
+      
+      const filteredForExport = allData.filter((c) => {
+        return c.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+               c.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+
+      if (!filteredForExport || filteredForExport.length === 0) {
+        toast.dismiss('export-toast');
+        toast.error('No data available to download for selected filters');
+        return;
+      }
+
+      const exportData = filteredForExport.map((c) => ({
+        'Customer Name': c.customer_name,
+        'Company Name': c.company_name || 'N/A',
+        'Email': c.email || 'N/A',
+        'Phone': c.phone || 'N/A',
+        'City': c.city || 'N/A',
+        'State': c.state || 'N/A',
+        'GSTIN': c.GSTIN || 'N/A'
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      ws['!cols'] = [
+        { wch: 30 }, // Customer Name
+        { wch: 30 }, // Company Name
+        { wch: 25 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 15 }, // City
+        { wch: 15 }, // State
+        { wch: 20 }  // GSTIN
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Customers');
+      XLSX.writeFile(wb, `customers_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.dismiss('export-toast');
+      toast.success('Excel downloaded successfully');
+    } catch (err) {
+      console.error(err);
+      toast.dismiss('export-toast');
+      toast.error('Failed to download Excel file');
+    }
+  };
+
+  const filteredCustomers = customers.filter(c => 
+    c.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    c.company_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -167,13 +228,22 @@ export default function CustomersPage() {
             Add new and existing customers.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="btn btn-primary text-white hover:scale-105 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Customer
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleDownloadReport}
+            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+          >
+            <Download className="w-5 h-5" />
+            Export to Excel
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn btn-primary text-white hover:scale-105 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Add Customer
+          </button>
+        </div>
       </div>
 
       <Card>
@@ -184,6 +254,8 @@ export default function CustomersPage() {
               type="text"
               placeholder="Search customers by name or company..."
               className="input input-bordered w-full pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button className="btn btn-outline">
@@ -208,9 +280,9 @@ export default function CustomersPage() {
                 Try again
               </button>
             </div>
-          ) : customers.length === 0 ? (
+          ) : filteredCustomers.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-slate-500">
-              <p>No customers found.</p>
+              <p>No customers found matching search.</p>
             </div>
           ) : (
             <table className="table w-full text-sm text-left">
@@ -223,7 +295,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
+                {filteredCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-700">
                     <td>
                       <div className="flex items-center gap-3">
