@@ -114,9 +114,14 @@ export default function ContactPage() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                     Visit Office
                   </h3>
-                  <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Kudale+Patil+Tower,+Vadgaon+Budruk,+Pune"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-slate-600 dark:text-slate-300 mb-2 font-medium leading-relaxed hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
                     'Kudale Patil Tower', Office No. 207, 2nd Floor, Jadhav Nagar, Near Shiv Temple, Vadgaon Budruk, Pune, Maharashtra 411041<br/>India
-                  </p>
+                  </a>
                 </div>
               </div>
             </div>

@@ -33,7 +33,7 @@ export function Navbar() {
 
         {/* Desktop Menu - Centered Links */}
         <div className="hidden md:flex flex-1 justify-center">
-          <ul className="flex items-center gap-8 font-medium text-slate-600 dark:text-slate-300 text-sm md:text-base">
+          <ul className="flex items-center gap-4 font-medium text-slate-600 dark:text-slate-300 text-xs md:text-sm">
             <li>
               <Link
                 href="/"
@@ -78,12 +78,12 @@ export function Navbar() {
         </div>
 
         {/* Desktop Buttons */}
-        <div className="hidden md:flex flex-1 items-center justify-end gap-6 min-w-[200px]">
+        <div className="hidden md:flex flex-1 items-center justify-end gap-4 min-w-[200px]">
           {isMounted &&
             (isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-full font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2"
               >
                 <LayoutDashboard className="w-4 h-4" /> Dashboard
               </Link>
@@ -91,13 +91,13 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm md:text-base"
+                  className="font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-xs md:text-sm"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 text-white px-6 py-2.5 rounded-full font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                  className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 text-white px-4 py-1.5 rounded-full font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5"
                 >
                   Get Started <ArrowRight className="w-4 h-4" />
                 </Link>
