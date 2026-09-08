@@ -38,10 +38,6 @@ const navigation = [
     href: '/products',
     icon: Package
   },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Settings
   }
 ];
 export function Sidebar() {
