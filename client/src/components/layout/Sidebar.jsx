@@ -37,7 +37,6 @@ const navigation = [
     name: 'Items',
     href: '/products',
     icon: Package
-  },
   }
 ];
 export function Sidebar() {
