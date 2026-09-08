@@ -52,7 +52,7 @@ export default function ContactPage() {
           <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 font-medium text-sm mb-2 shadow-sm uppercase tracking-widest">
             Get in Touch
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">
             Contact Us
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed font-light">
@@ -75,51 +75,48 @@ export default function ContactPage() {
                     Email Us
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
-                    Our friendly team is here to help.
+                    Available 24/7
                   </p>
                   <a
-                    href="mailto:support@veaglespace.com"
+                    href="mailto:info@veaglespace.com"
                     className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
                   >
-                    support@veaglespace.com
+                    info@veaglespace.com
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 mb-8">
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shrink-0">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
-                    Office
-                  </h3>
-                  <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
-                    Come say hello at our headquarters.
-                  </p>
-                  <p className="text-slate-700 dark:text-slate-300 font-medium">
-                    Pune, Maharashtra, India
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shrink-0">
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
-                    Phone
+                    Call Support
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
-                    Mon-Fri from 9am to 6pm.
+                    Mon-Sat, 10am - 7pm
                   </p>
                   <a
                     href="tel:+918237999101"
                     className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
                   >
-                    +91 82379 99101
+                    +91 8237999101
                   </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shrink-0">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                    Visit Office
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
+                    'Kudale Patil Tower', Office No. 207, 2nd Floor, Jadhav Nagar, Near Shiv Temple, Vadgaon Budruk, Pune, Maharashtra 411041<br/>India
+                  </p>
                 </div>
               </div>
             </div>
