@@ -195,7 +195,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       <div className="pt-4">
-        <h2 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
           Manage Organizations
         </h2>
         <Card>
@@ -312,7 +312,7 @@ export default function SuperAdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-slate-300 dark:border-slate-700">
-              <h2 className="font-semibold text-sm md:text-base text-slate-900 dark:text-white">
+              <h2 className="font-semibold text-lg text-slate-900 dark:text-white">
                 Change Subscription Plan
               </h2>
               <button

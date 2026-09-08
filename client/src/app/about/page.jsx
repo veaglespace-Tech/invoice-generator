@@ -71,7 +71,7 @@ export default function AboutPage() {
               effortless & elegant
             </span>
           </h1>
-          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
             Veagle Invoice is built for freelancers, agencies, and growing enterprises. We transform the tedious task of invoicing into a seamless, secure, and professional experience, helping you get paid faster.
           </p>
         </section>
@@ -92,7 +92,7 @@ export default function AboutPage() {
         <section className="mb-32">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Why Choose Veagle?</h2>
-            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">We combine cutting-edge technology with intuitive design to deliver an unparalleled billing experience.</p>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">We combine cutting-edge technology with intuitive design to deliver an unparalleled billing experience.</p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -101,7 +101,7 @@ export default function AboutPage() {
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${feature.bg} group-hover:scale-110 transition-transform duration-300`}>
                   {feature.icon}
                 </div>
-                <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h3>
                 <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                   {feature.description}
                 </p>
@@ -118,7 +118,7 @@ export default function AboutPage() {
           <div className="relative z-10 p-12 md:p-20">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Uncompromising Trust</h2>
-              <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">We prioritize your data security and operational transparency above all else. Review our policies to understand our commitment to you.</p>
+              <p className="text-lg text-slate-600 dark:text-slate-400">We prioritize your data security and operational transparency above all else. Review our policies to understand our commitment to you.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">

@@ -121,7 +121,7 @@ export default function SuperAdminSettings() {
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm md:text-base font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Profile Information
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -216,7 +216,7 @@ export default function SuperAdminSettings() {
               <Lock className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm md:text-base font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Security & Password
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">

@@ -30,7 +30,7 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-base md:text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-normal">
+          <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-normal">
             Experience a masterclass in financial management. Generate pristine,
             tax-compliant invoices in seconds with our state-of-the-art
             enterprise platform.
@@ -39,13 +39,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
             <Link
               href="/register"
-              className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 px-6 py-3 md:px-8 md:py-3.5 rounded-full font-semibold text-base md:text-sm md:text-base transition-all shadow-[0_8px_30px_rgba(79,70,229,0.2)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2 transform hover:-translate-y-[1px] active:scale-[0.98] border border-transparent"
+              className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 px-6 py-3 md:px-8 md:py-3.5 rounded-full font-semibold text-base md:text-lg transition-all shadow-[0_8px_30px_rgba(79,70,229,0.2)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2 transform hover:-translate-y-[1px] active:scale-[0.98] border border-transparent"
             >
               Experience Veagle Space <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               href="/login"
-              className="w-full sm:w-auto bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-slate-800 px-6 py-3 md:px-8 md:py-3.5 rounded-full font-semibold text-base md:text-sm md:text-base transition-all flex items-center justify-center gap-2 transform hover:-translate-y-[1px] active:scale-[0.98]"
+              className="w-full sm:w-auto bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-slate-800 px-6 py-3 md:px-8 md:py-3.5 rounded-full font-semibold text-base md:text-lg transition-all flex items-center justify-center gap-2 transform hover:-translate-y-[1px] active:scale-[0.98]"
             >
               Sign In to Portal
             </Link>
@@ -69,7 +69,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">
               Uncompromising Excellence
             </h2>
-            <p className="text-base md:text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-normal">
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-normal">
               A meticulously crafted ecosystem designed to handle your finances
               with absolute precision and elegance.
             </p>
@@ -80,7 +80,7 @@ export default function Home() {
               <div className="w-10 h-10 mx-auto bg-white group-hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center rounded-xl text-blue-600 group-hover:text-white shadow-sm border border-blue-100">
                 <Zap className="w-5 h-5" />
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Lightning Fast
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -94,7 +94,7 @@ export default function Home() {
               <div className="w-10 h-10 mx-auto bg-white group-hover:bg-emerald-500 transition-colors duration-300 flex items-center justify-center rounded-xl text-emerald-600 group-hover:text-white shadow-sm border border-emerald-100">
                 <Shield className="w-5 h-5" />
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Integrated Payments
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -108,7 +108,7 @@ export default function Home() {
               <div className="w-10 h-10 mx-auto bg-white group-hover:bg-violet-500 transition-colors duration-300 flex items-center justify-center rounded-xl text-violet-600 group-hover:text-white shadow-sm border border-violet-100">
                 <Hexagon className="w-5 h-5" />
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Multi-Org Support
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -137,7 +137,7 @@ export default function Home() {
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Role-Based Access
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -164,7 +164,7 @@ export default function Home() {
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Tax & GST Ready
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -191,7 +191,7 @@ export default function Home() {
                   <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                 </svg>
               </div>
-              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Advanced Analytics
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed font-normal">
@@ -217,7 +217,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight leading-tight pb-2">
               Invest in your workflow
             </h2>
-            <p className="text-base md:text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-normal">
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-normal">
               Transparent, scalable plans designed for visionaries and industry
               leaders.
             </p>

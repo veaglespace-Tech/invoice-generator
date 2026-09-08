@@ -137,7 +137,7 @@ export default function LeadsPage() {
                   <div className="flex flex-col md:flex-row gap-4 justify-between items-start">
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-3">
-                        <h4 className="font-bold text-slate-900 dark:text-white text-sm md:text-base">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-lg">
                           {lead.name}
                         </h4>
                         {lead.status === 'UNREAD' && (
