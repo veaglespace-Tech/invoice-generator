@@ -193,7 +193,7 @@ export default function PlansAdminPage() {
                   Popular
                 </div>
               )}
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+              <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-1">
                 {plan.name}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 h-10 line-clamp-2">
@@ -255,7 +255,7 @@ export default function PlansAdminPage() {
           ></div>
           <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
                 {editingPlan ? 'Edit Plan' : 'Add New Plan'}
               </h2>
             </div>

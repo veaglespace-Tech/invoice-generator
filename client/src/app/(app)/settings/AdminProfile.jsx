@@ -153,7 +153,7 @@ export default function AdminProfile() {
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-sm md:text-base font-semibold text-slate-900 dark:text-white">
             Admin Profile
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">

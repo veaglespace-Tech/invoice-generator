@@ -55,7 +55,7 @@ export default function ContactPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">
             Contact Us
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-light">
             Have questions about Veagle Space or want to discuss enterprise
             features? We'd love to hear from you. Send us a message and we'll
             respond as soon as possible.
@@ -71,7 +71,7 @@ export default function ContactPage() {
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-1">
                     Email Us
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
@@ -91,7 +91,7 @@ export default function ContactPage() {
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-1">
                     Call Support
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-2 font-light">
@@ -111,7 +111,7 @@ export default function ContactPage() {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white mb-1">
                     Visit Office
                   </h3>
                   <a

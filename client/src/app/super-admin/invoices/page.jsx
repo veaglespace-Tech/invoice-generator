@@ -176,7 +176,7 @@ export default function SuperAdminInvoices() {
                   <td colSpan={7} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-500">
                       <FileText className="w-12 h-12 mb-3 text-slate-300" />
-                      <p className="text-lg font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white">
                         No invoices found
                       </p>
                       <p className="text-sm">

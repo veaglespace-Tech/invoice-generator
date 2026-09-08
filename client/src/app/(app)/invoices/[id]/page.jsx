@@ -186,7 +186,7 @@ export default function InvoicePrintView() {
   if (!invoice) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-xl text-slate-600">Invoice not found</p>
+        <p className="text-sm md:text-base text-slate-600">Invoice not found</p>
         <Link href="/invoices">
           <Button variant="outline">Back to Invoices</Button>
         </Link>

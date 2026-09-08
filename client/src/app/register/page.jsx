@@ -595,7 +595,7 @@ export default function RegisterPage() {
                             Popular
                           </div>
                         )}
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">
+                        <h3 className="font-bold text-sm md:text-base text-slate-900 dark:text-white mb-1">
                           {plan.name}
                         </h3>
                         <p

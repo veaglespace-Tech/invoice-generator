@@ -157,7 +157,7 @@ export default function BillingPage() {
                   >
                     <PlanIcon className="w-5 h-5" />
                   </div>
-                  <h3 className="font-semibold text-lg text-slate-900 dark:text-white">
+                  <h3 className="font-semibold text-sm md:text-base text-slate-900 dark:text-white">
                     {plan.name}
                   </h3>
                 </div>
