@@ -198,7 +198,7 @@ export default function ReportsPage() {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
                       Total Sales
                     </p>
-                    <p className="text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mt-2 break-words">
+                    <p className="text-lg xl:text-xl font-bold text-slate-900 dark:text-white mt-2 truncate">
                       ₹{data.summary.totalSales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -222,7 +222,7 @@ export default function ReportsPage() {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
                       Total Purchases
                     </p>
-                    <p className="text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mt-2 break-words">
+                    <p className="text-lg xl:text-xl font-bold text-slate-900 dark:text-white mt-2 truncate">
                       ₹{data.summary.totalPurchases.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -246,7 +246,7 @@ export default function ReportsPage() {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
                       Total Expenses
                     </p>
-                    <p className="text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mt-2 break-words">
+                    <p className="text-lg xl:text-xl font-bold text-slate-900 dark:text-white mt-2 truncate">
                       ₹{(data.summary.totalExpenses || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export default function ReportsPage() {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
                       Net Balance
                     </p>
-                    <p className="text-xl xl:text-2xl font-bold text-slate-900 dark:text-white mt-2 break-words">
+                    <p className="text-lg xl:text-xl font-bold text-slate-900 dark:text-white mt-2 truncate">
                       ₹{data.summary.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
