@@ -83,19 +83,23 @@ const getReports = async (req, res, next) => {
 
     const salesInvoices = invoices.filter(inv => inv.type === 'SALES');
     const purchaseInvoices = invoices.filter(inv => inv.type === 'PURCHASE');
+    const expenseInvoices = invoices.filter(inv => inv.type === 'EXPENSE');
 
     const totalSales = salesInvoices.reduce((sum, inv) => sum + Number(inv.grand_total), 0);
     const totalPurchases = purchaseInvoices.reduce((sum, inv) => sum + Number(inv.grand_total), 0);
-    const balance = totalSales - totalPurchases;
+    const totalExpenses = expenseInvoices.reduce((sum, inv) => sum + Number(inv.grand_total), 0);
+    const balance = totalSales - totalPurchases - totalExpenses;
 
     res.status(200).json({
       success: true,
       data: {
         sales: salesInvoices,
         purchases: purchaseInvoices,
+        expenses: expenseInvoices,
         summary: {
           totalSales,
           totalPurchases,
+          totalExpenses,
           balance
         }
       }

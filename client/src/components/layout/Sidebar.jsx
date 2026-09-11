@@ -29,6 +29,7 @@ const navigation = [
     href: '/invoices',
     icon: Receipt
   },
+
   {
     name: 'Customers',
     href: '/customers',

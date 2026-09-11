@@ -140,16 +140,35 @@ export default function SuperAdminDashboard() {
         return;
       }
 
-      const exportData = filteredForExport.map((org) => ({
-        'Organization Name': org.name,
-        'Email': org.email,
-        'Phone': org.phone || 'N/A',
-        'Plan': org.plan?.name || 'None',
-        'Users Count': org._count?.users || 0,
-        'Invoices Count': org._count?.invoices || 0,
-        'Status': org.status,
-        'Created At': new Date(org.created_at).toLocaleDateString()
-      }));
+      let totalUsers = 0;
+      let totalInvoices = 0;
+      const exportData = filteredForExport.map((org) => {
+        totalUsers += org._count?.users || 0;
+        totalInvoices += org._count?.invoices || 0;
+        return {
+          'Organization Name': org.name,
+          'Email': org.email,
+          'Phone': org.phone || 'N/A',
+          'Plan': org.plan?.name || 'None',
+          'Users Count': org._count?.users || 0,
+          'Invoices Count': org._count?.invoices || 0,
+          'Status': org.status,
+          'Created At': new Date(org.created_at).toLocaleDateString()
+        };
+      });
+
+      if (exportData.length > 0) {
+        exportData.push({
+          'Organization Name': '',
+          'Email': '',
+          'Phone': '',
+          'Plan': 'TOTAL',
+          'Users Count': totalUsers,
+          'Invoices Count': totalInvoices,
+          'Status': '',
+          'Created At': ''
+        });
+      }
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const colWidths = [

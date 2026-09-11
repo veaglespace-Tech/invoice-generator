@@ -56,6 +56,10 @@ const getAllInvoices = async (req, res, next) => {
     } else if (req.query.organization_id) {
       filter.organization_id = req.query.organization_id;
     }
+    
+    if (req.query.type) {
+      filter.type = req.query.type;
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
@@ -167,7 +171,7 @@ const createInvoice = async (req, res, next) => {
     });
 
     if (subscription) {
-      const isPurchase = data.type === 'PURCHASE';
+      const isPurchase = data.type === 'PURCHASE' || data.type === 'EXPENSE';
       
       const allowedMax = isPurchase 
         ? (subscription.organization.custom_max_purchase_invoices !== null && subscription.organization.custom_max_purchase_invoices !== undefined
@@ -181,7 +185,7 @@ const createInvoice = async (req, res, next) => {
         const invoiceCount = await _server.prisma.invoice.count({
           where: {
             organization_id: targetOrgId,
-            type: isPurchase ? 'PURCHASE' : 'SALES',
+            type: data.type || 'SALES',
             created_at: {
               gte: subscription.start_date || new Date(0),
               lte: subscription.end_date || new Date('2099-12-31')

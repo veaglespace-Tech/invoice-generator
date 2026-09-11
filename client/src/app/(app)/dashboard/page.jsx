@@ -10,7 +10,8 @@ import {
   FileText,
   CheckCircle2,
   Loader2,
-  Download
+  Download,
+  CreditCard
 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
 import Link from 'next/link';
@@ -61,7 +62,7 @@ export default function Dashboard() {
       </div>
     );
   }
-  const { cards, recentInvoices } = data;
+  const { cards, recentInvoices, recentExpenses } = data;
   const handleDownloadReport = async () => {
     try {
       toast.loading('Fetching full data for export...', { id: 'export-toast' });
@@ -135,10 +136,17 @@ export default function Dashboard() {
   const stats = [
     {
       name: 'Total Revenue',
-      value: `₹${cards.totalPaidAmount.toLocaleString('en-IN')}`,
+      value: `₹${(cards.totalPaidAmount || 0).toLocaleString('en-IN')}`,
       change: '0.0%',
       trend: 'up',
       icon: IndianRupee
+    },
+    {
+      name: 'Total Expenses',
+      value: `₹${(cards.totalExpenseAmount || 0).toLocaleString('en-IN')}`,
+      change: '0.0%',
+      trend: 'down',
+      icon: CreditCard
     },
     {
       name: 'Outstanding',
@@ -189,7 +197,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
         {stats.map((stat) => (
           <Card key={stat.name} className="relative overflow-hidden group">
             <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-transparent rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
@@ -407,6 +415,69 @@ export default function Dashboard() {
                           }
                         >
                           {invoice.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Expenses</CardTitle>
+          </CardHeader>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                  <th className="py-3 px-4 font-semibold">Expense ID</th>
+                  <th className="py-3 px-4 font-semibold">Vendor/Client</th>
+                  <th className="py-3 px-4 font-semibold">Amount</th>
+                  <th className="py-3 px-4 font-semibold">Date</th>
+                  <th className="py-3 px-4 font-semibold text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {!recentExpenses || recentExpenses.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
+                    >
+                      No expenses found.
+                    </td>
+                  </tr>
+                ) : (
+                  recentExpenses.map((expense) => (
+                    <tr key={expense.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
+                        <Link
+                          href={`/invoices/${expense.id}`}
+                          className="hover:underline"
+                        >
+                          {expense.id}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{expense.client}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">{expense.amount}</td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{expense.date}</td>
+                      <td className="py-3 px-4 text-right">
+                        <Badge
+                          variant={
+                            expense.status === 'Paid'
+                              ? 'success'
+                              : expense.status === 'Pending' ||
+                                  expense.status === 'Sent'
+                                ? 'warning'
+                                : expense.status === 'Overdue'
+                                  ? 'danger'
+                                  : 'default'
+                          }
+                        >
+                          {expense.status}
                         </Badge>
                       </td>
                     </tr>

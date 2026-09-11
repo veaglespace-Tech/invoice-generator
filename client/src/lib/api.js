@@ -24,7 +24,9 @@ export async function fetchApi(endpoint, options = {}) {
     config.body = JSON.stringify(data);
   }
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const fullUrl = `${API_BASE_URL}${endpoint}`;
+    console.log('Fetching:', fullUrl, config.method);
+    const response = await fetch(fullUrl, config);
     const result = await response.json();
     if (!response.ok) {
       let errorMessage = result.message || 'API Request failed';

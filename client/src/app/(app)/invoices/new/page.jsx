@@ -138,6 +138,20 @@ export default function InvoiceGenerator() {
             invoiceNumber: nextNumberRes.data.invoice_number
           }));
         }
+        
+        const params = new URLSearchParams(window.location.search);
+        const typeParam = params.get('type');
+        if (typeParam === 'PURCHASE') {
+          setInvoiceData((prev) => ({
+            ...prev,
+            type: 'PURCHASE'
+          }));
+        } else if (typeParam === 'EXPENSE') {
+          setInvoiceData((prev) => ({
+            ...prev,
+            type: 'EXPENSE'
+          }));
+        }
       } catch (err) {
         console.error('Failed to load initial data for invoice preview', err);
       }
@@ -380,11 +394,12 @@ export default function InvoiceGenerator() {
     try {
       let customerId = invoiceData.customerId;
       
-      if (customerMode === 'new') {
+      if (customerMode === 'new' || (invoiceData.type === 'EXPENSE' && !customerId)) {
+        const defaultName = invoiceData.type === 'EXPENSE' ? 'Miscellaneous Expense' : 'Unknown Client';
         const customerRes = await fetchApi('/customers', {
           method: 'POST',
           data: {
-            customer_name: invoiceData.clientName || 'Unknown Client',
+            customer_name: invoiceData.clientName || defaultName,
             company_name: invoiceData.clientCompany,
             email: invoiceData.clientEmail,
             phone: invoiceData.clientPhone,
@@ -396,7 +411,7 @@ export default function InvoiceGenerator() {
         }
         customerId = customerRes.data.id;
       } else if (!customerId) {
-        toast.error('Please select an existing customer from the dropdown.');
+        toast.error(invoiceData.type === 'PURCHASE' ? 'Please select a vendor.' : 'Please select an existing customer from the dropdown.');
         setIsSaving(false);
         return;
       }
@@ -554,6 +569,7 @@ export default function InvoiceGenerator() {
                     >
                       <option value="SALES">Sales</option>
                       <option value="PURCHASE">Purchase</option>
+                      <option value="EXPENSE">Expense</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
@@ -1198,7 +1214,7 @@ export default function InvoiceGenerator() {
                   </div>
                 </div>
                 <div className="w-[25%] p-2 flex items-center justify-center font-bold text-base tracking-wide">
-                  {invoiceData.type === 'PURCHASE' ? 'PURCHASE INVOICE' : 'SALES INVOICE'}
+                  {invoiceData.type === 'EXPENSE' ? 'EXPENSE INVOICE' : invoiceData.type === 'PURCHASE' ? 'PURCHASE INVOICE' : 'SALES INVOICE'}
                 </div>
               </div>
 
@@ -1376,7 +1392,7 @@ export default function InvoiceGenerator() {
                 {/* Left Side (Always Organization) */}
                 <div className="w-1/2 border-r border-black flex flex-col p-1.5">
                   <div className="font-bold mb-1">
-                    {invoiceData.type === 'PURCHASE' ? 'Details of Customer (Billed To):' : 'Details of Supplier (Billed By):'}
+                    {invoiceData.type === 'PURCHASE' || invoiceData.type === 'EXPENSE' ? 'Details of Customer (Billed To):' : 'Details of Supplier (Billed By):'}
                   </div>
                   <div className="flex">
                     <div className="w-24">Legal Name:</div>
@@ -1419,7 +1435,7 @@ export default function InvoiceGenerator() {
                 {/* Right Side (Always Client) */}
                 <div className="w-1/2 flex flex-col p-1.5">
                   <div className="font-bold mb-1 flex justify-between">
-                    <span>{invoiceData.type === 'PURCHASE' ? 'Details of Supplier (Billed By):' : 'Details of Customer (Billed To):'}</span>
+                    <span>{invoiceData.type === 'PURCHASE' || invoiceData.type === 'EXPENSE' ? 'Details of Supplier (Billed By):' : 'Details of Customer (Billed To):'}</span>
                     {orgProfile?.settings?.field_visibility?.customerPan !== false && (
                       <span>PAN: {invoiceData.clientPan || ''}</span>
                     )}
@@ -1427,7 +1443,7 @@ export default function InvoiceGenerator() {
                   <div className="flex">
                     <div className="w-24">Name:</div>
                     <div className="flex-1 uppercase font-semibold">
-                      {invoiceData.clientName || (invoiceData.type === 'PURCHASE' ? 'Select a vendor' : 'Select a customer')}
+                      {invoiceData.clientName || (invoiceData.type === 'PURCHASE' || invoiceData.type === 'EXPENSE' ? 'Select a vendor' : 'Select a customer')}
                     </div>
                   </div>
                   <div className="flex">

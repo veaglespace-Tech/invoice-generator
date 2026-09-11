@@ -175,10 +175,15 @@ export default function SuperAdminInvoices() {
         }
       });
 
-      exportData.push({});
-      exportData.push({ 'Invoice Number': 'SUMMARY' });
-      exportData.push({ 'Invoice Number': 'Total Amount', 'Organization': totalAmount.toFixed(2) });
-
+      exportData.push({
+        'Invoice Number': '',
+        'Organization': '',
+        'Client': 'TOTAL',
+        'Amount': totalAmount.toFixed(2),
+        'Invoice Date': '',
+        'Due Date': '',
+        'Status': ''
+      });
       const ws = XLSX.utils.json_to_sheet(exportData);
       
       const colWidths = [

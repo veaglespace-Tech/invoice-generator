@@ -353,12 +353,13 @@ export default function InvoicesList() {
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 btn-sm h-10 font-medium">
                 <Filter className="w-4 h-4 mr-1" />
-                {typeFilter === 'ALL' ? 'All Types' : typeFilter === 'SALES' ? 'Sales' : 'Purchase'}
+                {typeFilter === 'ALL' ? 'All Types' : typeFilter === 'SALES' ? 'Sales' : typeFilter === 'PURCHASE' ? 'Purchase' : 'Expense'}
               </div>
               <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-40 mt-2 border border-slate-300 dark:border-slate-700">
                 <li><a onClick={() => setTypeFilter('ALL')}>All Types</a></li>
                 <li><a onClick={() => setTypeFilter('SALES')}>Sales</a></li>
                 <li><a onClick={() => setTypeFilter('PURCHASE')}>Purchase</a></li>
+                <li><a onClick={() => setTypeFilter('EXPENSE')}>Expense</a></li>
               </ul>
             </div>
 
@@ -439,8 +440,10 @@ export default function InvoicesList() {
                       {invoice.invoice_number}
                     </td>
                     <td className="py-3 px-4">
-                      {invoice.type === 'PURCHASE' ? (
-                        <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Purchase</span>
+                      {invoice.type === 'EXPENSE' ? (
+                        <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Expense</span>
+                      ) : invoice.type === 'PURCHASE' ? (
+                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Purchase</span>
                       ) : (
                         <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2.5 py-1 rounded-md text-xs font-semibold uppercase">Sales</span>
                       )}

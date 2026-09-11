@@ -242,6 +242,7 @@ model Invoice {
 enum InvoiceType {
   SALES
   PURCHASE
+  EXPENSE
 }
 
 enum InvoiceStatus {
