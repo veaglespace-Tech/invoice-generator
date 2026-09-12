@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-exports.sendInvoiceEmail = void 0;
+exports.sendWelcomeEmail = exports.sendInvoiceEmail = exports.sendOTP = void 0;
 var _nodemailer = _interopRequireDefault(require('nodemailer'));
 var _server = require('../server');
 
@@ -122,3 +122,54 @@ const sendWelcomeEmail = async (org, user) => {
 };
 
 exports.sendWelcomeEmail = sendWelcomeEmail;
+
+const sendOTP = async (email, otp) => {
+  const subject = `Super Admin Login OTP - Veagle Space`;
+  const text = `Your OTP for Super Admin Login is: ${otp}\n\nThis OTP is valid for 10 minutes.`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #4f46e5; margin: 0;">Veagle Space</h1>
+      </div>
+      <h2 style="color: #1e293b; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Super Admin Login OTP</h2>
+      <p style="font-size: 16px; color: #334155;">Hello,</p>
+      <p style="font-size: 16px; color: #334155;">You recently attempted to login to the Super Admin portal at Veagle Space. Please use the following OTP to complete your secure login:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 36px; font-weight: bold; color: #4f46e5; letter-spacing: 8px; padding: 15px 25px; background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;">${otp}</span>
+      </div>
+      <p style="font-size: 14px; color: #64748b; text-align: center;">This OTP is strictly valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <p style="font-size: 12px; color: #94a3b8;">&copy; ${new Date().getFullYear()} Veagle Space. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+
+  let lastError = null;
+
+  for (let i = 0; i < smtpAccounts.length; i++) {
+    const account = smtpAccounts[i];
+    const transporter = getTransporter(account);
+
+    const mailOptions = {
+      from: `"Veagle Space Info" <${account.user}>`,
+      to: email,
+      subject,
+      text,
+      html
+    };
+
+    try {
+      console.log(`Attempting to send OTP via ${account.user}...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`OTP sent successfully via ${account.user}: ${info.messageId}`);
+      return info;
+    } catch (error) {
+      console.error(`Failed to send OTP via ${account.user}: ${error.message}`);
+      lastError = error;
+    }
+  }
+
+  throw new Error(`Failed to send OTP email after trying all accounts. Last error: ${lastError?.message}`);
+};
+
+exports.sendOTP = sendOTP;

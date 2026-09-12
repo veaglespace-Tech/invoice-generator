@@ -58,6 +58,8 @@ export function AuthGuard({ children, requireSuperAdmin = false }) {
             if (res.success && res.data) {
               if (res.data.role === 'SUPER_ADMIN') {
                 router.replace('/super-admin/dashboard');
+              } else if (res.data.organization?.status === 'PAYMENT_PENDING' && !pathname.startsWith('/settings/billing')) {
+                router.replace('/settings/billing');
               } else {
                 setIsAuthenticated(true);
               }

@@ -99,7 +99,10 @@ export default function RegisterPage() {
     if (!email) return 'Admin Email is required';
     if (!/^\S+@\S+\.\S+$/.test(email)) return 'Invalid Admin email format';
     if (!password) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (!/^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/.test(password)) {
+      return 'Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)';
+    }
     return null;
   };
   const nextStep = () => {
@@ -164,9 +167,13 @@ export default function RegisterPage() {
             });
             if (loginRes.success && loginRes.data) {
               const token = loginRes.data.accessToken;
-              localStorage.setItem('auth_token', token);
+              // We intentionally do NOT save the token to localStorage here
+              // so the user isn't fully logged in if they cancel the payment.
               const payRes = await fetchApi('/subscriptions/initiate', {
                 method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${token}`
+                },
                 data: {
                   plan_id: selectedPlan
                 }
@@ -342,7 +349,7 @@ export default function RegisterPage() {
                       value={orgName}
                       onChange={(e) => setOrgName(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="e.g. Stark Industries"
+                      placeholder="e.g. Tech Solutions"
                       autoFocus
                     />
                   </div>
@@ -355,7 +362,7 @@ export default function RegisterPage() {
                       value={legalName}
                       onChange={(e) => setLegalName(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="e.g. Stark Industries Pvt. Ltd."
+                      placeholder="e.g. Tech Solutions Pvt. Ltd."
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -367,7 +374,7 @@ export default function RegisterPage() {
                       value={orgEmail}
                       onChange={(e) => setOrgEmail(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="billing@stark.com"
+                      placeholder="billing@techsolutions.com"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -379,7 +386,7 @@ export default function RegisterPage() {
                       value={orgPhone}
                       onChange={(e) => setOrgPhone(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="+1 (555) 123-4567"
+                      placeholder="+91 98765 43210"
                     />
                   </div>
                 </div>
@@ -398,7 +405,7 @@ export default function RegisterPage() {
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                        placeholder="10880 Malibu Point"
+                        placeholder="Office 207, Kudale Patil Tower"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -410,7 +417,7 @@ export default function RegisterPage() {
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                        placeholder="Malibu"
+                        placeholder="Pune"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -422,7 +429,7 @@ export default function RegisterPage() {
                         value={state}
                         onChange={(e) => setState(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                        placeholder="CA"
+                        placeholder="Maharashtra"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -434,7 +441,7 @@ export default function RegisterPage() {
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                        placeholder="United States"
+                        placeholder="India"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -446,7 +453,7 @@ export default function RegisterPage() {
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                        placeholder="90265"
+                        placeholder="411041"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -499,7 +506,7 @@ export default function RegisterPage() {
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="Tony Stark"
+                      placeholder="Rajesh Patil"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -511,7 +518,7 @@ export default function RegisterPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:text-white transition-all"
-                      placeholder="tony@stark.com"
+                      placeholder="rajesh@techsolutions.com"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -549,9 +556,6 @@ export default function RegisterPage() {
                   <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                     Choose your plan
                   </h2>
-                  <p className="text-slate-500 dark:text-slate-400 mt-2">
-                    No credit card required for 14-day trials.
-                  </p>
                 </div>
 
                 <div className="flex justify-center">
@@ -566,10 +570,12 @@ export default function RegisterPage() {
                       onClick={() => setIsYearly(true)}
                       className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${isYearly ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     >
-                      Yearly{' '}
-                      <span className="text-indigo-600 dark:text-indigo-400 ml-1">
-                        -20%
-                      </span>
+                      Yearly
+                      {plans.some(p => p.interval === 'year' && p.discount > 0) && (
+                        <span className="text-indigo-600 dark:text-indigo-400 ml-1">
+                          -{Math.max(...plans.filter(p => p.interval === 'year').map(p => Number(p.discount) || 0))}%
+                        </span>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -584,14 +590,14 @@ export default function RegisterPage() {
                       No plans available at the moment.
                     </div>
                   ) : (
-                    plans.map((plan) => (
+                    plans.filter(p => p.interval === (isYearly ? 'year' : 'month')).map((plan) => (
                       <div
                         key={plan.id}
                         onClick={() => setSelectedPlan(plan.id)}
                         className={`cursor-pointer rounded-2xl border-2 p-5 transition-all relative ${selectedPlan === plan.id ? (plan.is_popular ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-md transform -translate-y-1' : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-md transform -translate-y-1') : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'}`}
                       >
                         {plan.is_popular && (
-                          <div className="absolute top-0 right-4 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
                             Popular
                           </div>
                         )}
@@ -599,13 +605,23 @@ export default function RegisterPage() {
                           {plan.name}
                         </h3>
                         <p
-                          className={`font-bold text-2xl mb-3 ${plan.is_popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                          className={`font-bold text-2xl mb-1 ${plan.is_popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}
                         >
                           ₹{plan.price}
                           <span className="text-sm text-slate-500 font-medium">
                             /{plan.interval}
                           </span>
                         </p>
+                        {Number(plan.discount) > 0 && (
+                          <div className="text-xs text-emerald-600 font-semibold mb-1">
+                            {plan.discount}% Off applied
+                          </div>
+                        )}
+                        {Number(plan.gst_rate) > 0 && (
+                          <div className="text-xs text-slate-400 mb-3">
+                            + {plan.gst_rate}% GST
+                          </div>
+                        )}
                         <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1.5 h-32 overflow-y-auto">
                           {plan.features.map((feat, i) => (
                             <li key={i}>• {feat}</li>
@@ -617,7 +633,7 @@ export default function RegisterPage() {
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" /> Selected{' '}
                             {Number(plan.price) > 0
-                              ? '— PayU payment will open'
+                              ? `— PayU payment will open (Total: ₹${(Number(plan.price) - (Number(plan.price) * Number(plan.discount) / 100) + ((Number(plan.price) - (Number(plan.price) * Number(plan.discount) / 100)) * Number(plan.gst_rate) / 100)).toFixed(2)})`
                               : ''}
                           </div>
                         )}
@@ -627,15 +643,58 @@ export default function RegisterPage() {
                 </div>
 
                 {selectedPlan &&
-                  plans.find((p) => p.id === selectedPlan)?.price > 0 && (
-                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                      <span>💳</span>
-                      <span>
-                        After registration, <strong>PayU payment page</strong>{' '}
-                        will open. Complete payment to activate your plan.
-                      </span>
-                    </div>
-                  )}
+                  plans.find((p) => p.id === selectedPlan)?.price > 0 && (() => {
+                    const plan = plans.find((p) => p.id === selectedPlan);
+                    const basePrice = Number(plan.price);
+                    const discount = Number(plan.discount) || 0;
+                    const discountAmt = (basePrice * discount) / 100;
+                    const afterDiscount = basePrice - discountAmt;
+                    const gstRate = Number(plan.gst_rate) || 18; // Default to 18%
+                    const gstAmt = (afterDiscount * gstRate) / 100;
+                    const halfGstRate = gstRate / 2;
+                    const halfGstAmt = gstAmt / 2;
+                    const total = afterDiscount + gstAmt;
+
+                    return (
+                      <div className="mt-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Payment Summary</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Base Price</span>
+                            <span>₹{basePrice.toFixed(2)}</span>
+                          </div>
+                          {discount > 0 && (
+                            <div className="flex justify-between text-emerald-600">
+                              <span>Discount ({discount}%)</span>
+                              <span>- ₹{discountAmt.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {gstRate > 0 && (
+                            <>
+                              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                                <span>CGST ({halfGstRate}%)</span>
+                                <span>+ ₹{halfGstAmt.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                                <span>SGST ({halfGstRate}%)</span>
+                                <span>+ ₹{halfGstAmt.toFixed(2)}</span>
+                              </div>
+                            </>
+                          )}
+                          <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between font-bold text-slate-900 dark:text-white text-base">
+                            <span>Total Payable</span>
+                            <span>₹{total.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                          <span>💳</span>
+                          <span>
+                            After registration, <strong>PayU payment page</strong> will open.
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
               </div>
             )}
           </div>
@@ -669,7 +728,9 @@ export default function RegisterPage() {
                     </>
                   ) : (
                     <>
-                      Complete Setup <CheckCircle2 className="w-5 h-5" />
+                      {selectedPlan && plans.find((p) => p.id === selectedPlan)?.price > 0 
+                        ? `Proceed to Pay ₹${(Number(plans.find((p) => p.id === selectedPlan).price) - (Number(plans.find((p) => p.id === selectedPlan).price) * Number(plans.find((p) => p.id === selectedPlan).discount) / 100) + ((Number(plans.find((p) => p.id === selectedPlan).price) - (Number(plans.find((p) => p.id === selectedPlan).price) * Number(plans.find((p) => p.id === selectedPlan).discount) / 100)) * Number(plans.find((p) => p.id === selectedPlan).gst_rate) / 100)).toFixed(2)}`
+                        : 'Complete Setup'} <CheckCircle2 className="w-5 h-5" />
                     </>
                   )}
                 </button>

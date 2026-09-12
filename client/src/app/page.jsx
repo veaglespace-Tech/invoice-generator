@@ -50,10 +50,6 @@ export default function Home() {
               Sign In to Portal
             </Link>
           </div>
-
-          <p className="text-sm text-slate-500 dark:text-slate-500 mt-4">
-            No credit card required. 14-day free trial.
-          </p>
         </div>
       </main>
 

@@ -23,8 +23,12 @@ const getAllOrganizations = async (req, res, next) => {
     
     // Check if pagination is requested (has page and limit)
     const isPaginated = !isNaN(page) && !isNaN(limit);
+    const excludeSuspended = req.query.excludeSuspended === 'true';
     
     const queryOptions = {
+      where: {
+        ...(excludeSuspended ? { status: { notIn: ['SUSPENDED', 'PAYMENT_PENDING'] } } : {})
+      },
       include: {
         _count: {
           select: {
@@ -45,9 +49,14 @@ const getAllOrganizations = async (req, res, next) => {
       queryOptions.skip = skip;
       queryOptions.take = limit;
       
-      const [orgs, total] = await Promise.all([
+      const [orgs, total, activeTotal] = await Promise.all([
         _server.prisma.organization.findMany(queryOptions),
-        _server.prisma.organization.count()
+        _server.prisma.organization.count({
+          where: queryOptions.where
+        }),
+        _server.prisma.organization.count({
+          where: { status: 'ACTIVE' }
+        })
       ]);
       
       return res.status(200).json({
@@ -55,6 +64,7 @@ const getAllOrganizations = async (req, res, next) => {
         data: orgs,
         pagination: {
           total,
+          activeTotal,
           page,
           limit,
           totalPages: Math.ceil(total / limit)

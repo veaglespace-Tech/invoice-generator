@@ -106,8 +106,12 @@ export default function AdminProfile() {
       setPasswordError('New passwords do not match.');
       return;
     }
-    if (passwords.new.length < 6) {
-      setPasswordError('New password must be at least 6 characters.');
+    if (passwords.new.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
+      return;
+    }
+    if (!/^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/.test(passwords.new)) {
+      setPasswordError('Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)');
       return;
     }
     setIsSavingPassword(true);

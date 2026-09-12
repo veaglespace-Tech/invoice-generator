@@ -201,7 +201,7 @@ export default function InvoiceGenerator() {
       description: '',
       hsn: '',
       qty: 1,
-      rate: 0
+      rate: ''
     }
   ]);
   const updateData = (field, value) => {
@@ -218,7 +218,7 @@ export default function InvoiceGenerator() {
         description: '',
         hsn: '',
         qty: 1,
-        rate: 0
+        rate: ''
       }
     ]);
   };
@@ -479,7 +479,13 @@ export default function InvoiceGenerator() {
   } else if (invoiceData.taxType === 'CGST_SGST') {
     isInterstate = false;
   } else {
-    isInterstate = (orgProfile?.state || '').trim().toLowerCase() !== (invoiceData.clientState || '').trim().toLowerCase();
+    const orgState = (orgProfile?.state || '').trim().toLowerCase();
+    const clientState = (invoiceData.clientState || '').trim().toLowerCase();
+    if (clientState === '') {
+      isInterstate = false; // Default to CGST+SGST when client state is not set
+    } else {
+      isInterstate = orgState !== clientState;
+    }
   }
   
   const cgstAmount = isInterstate ? 0 : taxAmount / 2;
@@ -1071,9 +1077,9 @@ export default function InvoiceGenerator() {
                           <span className="text-xs text-slate-500">Qty</span>
                           <input
                             type="number"
-                            value={item.qty}
+                            value={item.qty === '' ? '' : item.qty}
                             onChange={(e) =>
-                              updateItem(item.id, 'qty', Number(e.target.value))
+                              updateItem(item.id, 'qty', e.target.value === '' ? '' : Number(e.target.value))
                             }
                             className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                           />
@@ -1084,12 +1090,12 @@ export default function InvoiceGenerator() {
                           </span>
                           <input
                             type="number"
-                            value={item.rate}
+                            value={item.rate === '' ? '' : item.rate}
                             onChange={(e) =>
                               updateItem(
                                 item.id,
                                 'rate',
-                                Number(e.target.value)
+                                e.target.value === '' ? '' : Number(e.target.value)
                               )
                             }
                             className="w-full bg-white dark:bg-slate-950 border border-slate-400 dark:border-slate-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
@@ -1130,9 +1136,9 @@ export default function InvoiceGenerator() {
                     </div>
                     <input
                       type="number"
-                      value={invoiceData.discount}
+                      value={invoiceData.discount === '' ? '' : invoiceData.discount}
                       onChange={(e) =>
-                        updateData('discount', Number(e.target.value))
+                        updateData('discount', e.target.value === '' ? '' : Number(e.target.value))
                       }
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                     />
@@ -1144,9 +1150,9 @@ export default function InvoiceGenerator() {
                     <div className="flex gap-2">
                       <input
                         type="number"
-                        value={invoiceData.taxRate}
+                        value={invoiceData.taxRate === '' ? '' : invoiceData.taxRate}
                         onChange={(e) =>
-                          updateData('taxRate', Number(e.target.value))
+                          updateData('taxRate', e.target.value === '' ? '' : Number(e.target.value))
                         }
                         className="w-1/2 bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                       />

@@ -79,7 +79,7 @@ export default function LeadsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Contact Leads
+            Support Inquiries
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
             Manage inquiries from the public contact page.
@@ -127,7 +127,7 @@ export default function LeadsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Leads</CardTitle>
+          <CardTitle>Recent Support Inquiries</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -137,7 +137,7 @@ export default function LeadsPage() {
           ) : leads.length === 0 ? (
             <div className="text-center p-12 text-slate-500">
               <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p>No contact leads found.</p>
+              <p>No support inquiries found.</p>
             </div>
           ) : (
             <div className="space-y-4">

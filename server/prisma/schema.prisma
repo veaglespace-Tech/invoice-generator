@@ -52,6 +52,7 @@ model Organization {
 enum OrgStatus {
   ACTIVE
   SUSPENDED
+  PAYMENT_PENDING
 }
 
 model Plan {
@@ -67,6 +68,8 @@ model Plan {
   max_purchase_invoices Int @default(-1)
   max_customers Int    @default(-1)
   duration_months Int  @default(1)
+  gst_rate    Decimal  @default(0) @db.Decimal(5, 2)
+  discount    Decimal  @default(0) @db.Decimal(5, 2)
   is_popular  Boolean  @default(false)
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
@@ -89,6 +92,8 @@ model User {
   last_login      DateTime?
   is_deleted      Boolean   @default(false)
   deleted_at      DateTime?
+  otp             String?
+  otp_expires_at  DateTime?
 
   permissions     UserPermission[]
   audit_logs      AuditLog[]

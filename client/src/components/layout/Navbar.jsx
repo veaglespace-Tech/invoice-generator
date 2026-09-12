@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { ArrowRight, LayoutDashboard, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+
 export function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,6 +18,19 @@ export function Navbar() {
       setIsLoggedIn(true);
     }
   }, []);
+
+  const handleScroll = (e, id) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    if (pathname !== '/') {
+      router.push('/');
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   return (
     <header className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-all">
       <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-2 flex items-center justify-between">
@@ -46,20 +63,22 @@ export function Navbar() {
               </Link>
             </li>
             <li>
-              <Link
+              <a
                 href="/#features"
-                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                onClick={(e) => handleScroll(e, 'features')}
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap cursor-pointer"
               >
                 Features
-              </Link>
+              </a>
             </li>
             <li>
-              <Link
+              <a
                 href="/#pricing"
-                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap"
+                onClick={(e) => handleScroll(e, 'pricing')}
+                className="relative px-3 py-1.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 group whitespace-nowrap cursor-pointer"
               >
                 Pricing
-              </Link>
+              </a>
             </li>
             <li>
               <Link
@@ -149,20 +168,20 @@ export function Navbar() {
           >
             Home
           </Link>
-          <Link
+          <a
             href="/#features"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+            onClick={(e) => handleScroll(e, 'features')}
+            className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer"
           >
             Features
-          </Link>
-          <Link
+          </a>
+          <a
             href="/#pricing"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+            onClick={(e) => handleScroll(e, 'pricing')}
+            className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 font-medium text-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer"
           >
             Pricing
-          </Link>
+          </a>
           {isMounted &&
             (isLoggedIn ? (
               <Link

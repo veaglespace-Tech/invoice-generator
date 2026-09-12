@@ -206,9 +206,9 @@ export default function InvoicePrintView() {
       year: 'numeric'
     });
   };
-  const isInterstate =
-    (invoice.organization.state || '').trim().toLowerCase() !==
-    (invoice.customer.billing_state || '').trim().toLowerCase();
+  const orgState = (invoice.organization.state || '').trim().toLowerCase();
+  const clientState = (invoice.customer.billing_state || '').trim().toLowerCase();
+  const isInterstate = clientState === '' ? false : orgState !== clientState;
   const cgstAmount = isInterstate ? 0 : Number(invoice.tax_total) / 2;
   const sgstAmount = isInterstate ? 0 : Number(invoice.tax_total) / 2;
   const igstAmount = isInterstate ? Number(invoice.tax_total) : 0;

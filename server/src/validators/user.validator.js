@@ -14,7 +14,11 @@ const createUserSchema = (exports.createUserSchema = _zod.z.object({
   email: _zod.z.string().email('Invalid email format'),
   password: _zod.z
     .string()
-    .min(6, 'Password must be at least 6 characters long'),
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(
+      /^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/,
+      'Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)'
+    ),
   role: _zod.z.nativeEnum(_client.Role),
   organization_id: _zod.z.string().uuid('Invalid organization ID').optional(),
   permissions: _zod.z.array(_zod.z.string()).optional()
@@ -31,5 +35,9 @@ const changePasswordSchema = (exports.changePasswordSchema = _zod.z.object({
   currentPassword: _zod.z.string().min(1, 'Current password is required'),
   newPassword: _zod.z
     .string()
-    .min(6, 'New password must be at least 6 characters long')
+    .min(8, 'New password must be at least 8 characters long')
+    .regex(
+      /^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/,
+      'Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)'
+    )
 }));

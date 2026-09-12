@@ -1,0 +1,32 @@
+'use client';
+
+import React from 'react';
+import { usePathname } from 'next/navigation';
+import { SuperAdminSidebar } from '@/components/layout/SuperAdminSidebar';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+
+export function SuperAdminLayoutWrapper({ children }) {
+  const pathname = usePathname();
+
+  if (pathname === '/super-admin/login') {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
+      <SuperAdminSidebar />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <Header />
+        <main className="flex-1 overflow-y-auto flex flex-col">
+          <div className="p-6 md:p-8 flex-1">
+            <div className="max-w-7xl mx-auto space-y-6">{children}</div>
+          </div>
+          <div className="mt-auto">
+            <Footer />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

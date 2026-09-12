@@ -34,6 +34,7 @@ const registerOrganization = async (req, res, next) => {
     // Use transaction to ensure both Org and User are created
     const result = await _server.prisma.$transaction(async (tx) => {
       let assignedPlanId = data.plan_id;
+      let planPrice = 0;
       if (!assignedPlanId) {
         // Try to find a free plan
         const freePlan = await tx.plan.findFirst({
@@ -43,6 +44,13 @@ const registerOrganization = async (req, res, next) => {
           }
         });
         if (freePlan) assignedPlanId = freePlan.id;
+      } else {
+        const selectedPlan = await tx.plan.findUnique({
+          where: { id: assignedPlanId }
+        });
+        if (selectedPlan) {
+          planPrice = Number(selectedPlan.price);
+        }
       }
       const org = await tx.organization.create({
         data: {
@@ -57,7 +65,8 @@ const registerOrganization = async (req, res, next) => {
           pincode: data.pincode,
           GSTIN: data.GSTIN,
           PAN: data.PAN,
-          plan_id: assignedPlanId
+          plan_id: assignedPlanId,
+          status: planPrice > 0 ? 'PAYMENT_PENDING' : 'ACTIVE'
         }
       });
       const user = await tx.user.create({
@@ -124,6 +133,28 @@ const login = async (req, res, next) => {
         message: 'Invalid credentials'
       });
     }
+
+    if (user.role === 'SUPER_ADMIN') {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpiresAt = new Date();
+      otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 10);
+
+      await _server.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          otp: otp,
+          otp_expires_at: otpExpiresAt
+        }
+      });
+
+      await _email.sendOTP(user.email, otp);
+
+      return res.status(200).json({
+        success: true,
+        requiresOTP: true,
+        message: 'OTP sent to your email.'
+      });
+    }
     const payload = {
       id: user.id,
       organization_id: user.organization_id,
@@ -171,6 +202,79 @@ const login = async (req, res, next) => {
   }
 };
 exports.login = login;
+
+const verifySuperAdminOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const user = await _server.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() }
+    });
+
+    if (!user || user.role !== 'SUPER_ADMIN') {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!user.otp || user.otp !== otp) {
+      return res.status(401).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    if (!user.otp_expires_at || user.otp_expires_at < new Date()) {
+      return res.status(401).json({ success: false, message: 'OTP has expired' });
+    }
+
+    // Clear OTP and login
+    await _server.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otp: null,
+        otp_expires_at: null,
+        last_login: new Date()
+      }
+    });
+
+    const payload = {
+      id: user.id,
+      organization_id: user.organization_id,
+      role: user.role
+    };
+    const accessToken = (0, _jwt.generateAccessToken)(payload);
+    const refreshToken = (0, _jwt.generateRefreshToken)(payload);
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await _server.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        user_id: user.id,
+        expires_at: expiresAt
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          organization_id: user.organization_id
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.verifySuperAdminOtp = verifySuperAdminOtp;
 const getMe = async (req, res, next) => {
   try {
     const user = await _server.prisma.user.findUnique({
@@ -190,6 +294,7 @@ const getMe = async (req, res, next) => {
           select: {
             name: true,
             plan_id: true,
+            status: true,
             plan: true
           }
         }

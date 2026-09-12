@@ -448,7 +448,7 @@ export default function CustomersPage() {
                           })
                         }
                         className="input input-bordered w-full"
-                        placeholder="e.g. John Doe"
+                        placeholder="e.g. Rajesh Patil"
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">
@@ -465,7 +465,7 @@ export default function CustomersPage() {
                           })
                         }
                         className="input input-bordered w-full"
-                        placeholder="e.g. Acme Corp"
+                        placeholder="e.g. Tech Solutions"
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">
@@ -482,7 +482,7 @@ export default function CustomersPage() {
                           })
                         }
                         className="input input-bordered w-full"
-                        placeholder="john@example.com"
+                        placeholder="rajesh@example.com"
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">

@@ -60,9 +60,9 @@ export default function SuperAdminDashboard() {
         });
         
         // Let's preserve totalOrgs logic since we might only get a paginated list now.
-        // Actually totalItems is the true totalOrgs
+        // Use activeTotal for the display count if available, otherwise fallback
         setStats({
-          totalOrgs: orgsRes.pagination?.total || orgsRes.data.length,
+          totalOrgs: orgsRes.pagination?.activeTotal || orgsRes.pagination?.total || orgsRes.data.length,
           totalUsers: users,
           totalInvoices: invoices
         });
@@ -118,6 +118,25 @@ export default function SuperAdminDashboard() {
       alert('An error occurred while updating the plan.');
     } finally {
       setIsSavingPlan(false);
+    }
+  };
+
+  const handleDeleteOrg = async (id) => {
+    if (window.confirm('Are you sure you want to delete this organization? This action cannot be undone.')) {
+      try {
+        const res = await fetchApi(`/organizations/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.success) {
+          toast.success('Organization deleted successfully');
+          loadData();
+        } else {
+          toast.error(res.message || 'Failed to delete organization');
+        }
+      } catch (err) {
+        console.error('Failed to delete organization', err);
+        toast.error('An error occurred while deleting the organization');
+      }
     }
   };
 
@@ -349,8 +368,8 @@ export default function SuperAdminDashboard() {
                         {org._count?.invoices || 0}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${org.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                          {org.status}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${org.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : org.status === 'PAYMENT_PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                          {org.status === 'PAYMENT_PENDING' ? 'Payment Pending' : org.status}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -362,7 +381,11 @@ export default function SuperAdminDashboard() {
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+                          <button
+                            onClick={() => handleDeleteOrg(org.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            title="Delete Organization"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>

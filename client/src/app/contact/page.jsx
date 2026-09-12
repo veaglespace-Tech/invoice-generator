@@ -155,7 +155,7 @@ export default function ContactPage() {
                     onChange={handleChange}
                     required
                     className="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all font-medium"
-                    placeholder="John Doe"
+                    placeholder="Rajesh Patil"
                   />
                 </div>
 
@@ -174,7 +174,7 @@ export default function ContactPage() {
                     onChange={handleChange}
                     required
                     className="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all font-medium"
-                    placeholder="john@company.com"
+                    placeholder="rajesh@company.com"
                   />
                 </div>
 

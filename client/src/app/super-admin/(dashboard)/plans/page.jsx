@@ -26,13 +26,15 @@ export default function PlansAdminPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: 0,
+    price: '',
     interval: 'month',
     features: [''],
-    max_sales_invoices: -1,
-    max_purchase_invoices: -1,
-    max_customers: -1,
-    duration_months: 1,
+    max_sales_invoices: '',
+    max_purchase_invoices: '',
+    max_customers: '',
+    duration_months: '',
+    gst_rate: '',
+    discount: '',
     is_popular: false,
     is_active: true
   });
@@ -65,6 +67,8 @@ export default function PlansAdminPage() {
         max_purchase_invoices: plan.max_purchase_invoices !== undefined ? plan.max_purchase_invoices : -1,
         max_customers: plan.max_customers !== undefined ? plan.max_customers : -1,
         duration_months: plan.duration_months !== undefined ? plan.duration_months : 1,
+        gst_rate: plan.gst_rate !== undefined ? Number(plan.gst_rate) : 0,
+        discount: plan.discount !== undefined ? Number(plan.discount) : 0,
         is_popular: plan.is_popular,
         is_active: plan.is_active
       });
@@ -73,13 +77,15 @@ export default function PlansAdminPage() {
       setFormData({
         name: '',
         description: '',
-        price: 0,
+        price: '',
         interval: 'month',
         features: [''],
-        max_sales_invoices: -1,
-        max_purchase_invoices: -1,
-        max_customers: -1,
-        duration_months: 1,
+        max_sales_invoices: '',
+        max_purchase_invoices: '',
+        max_customers: '',
+        duration_months: '',
+        gst_rate: '',
+        discount: '',
         is_popular: false,
         is_active: true
       });
@@ -113,6 +119,13 @@ export default function PlansAdminPage() {
     try {
       const payload = {
         ...formData,
+        price: Number(formData.price) || 0,
+        max_sales_invoices: formData.max_sales_invoices === '' ? -1 : Number(formData.max_sales_invoices),
+        max_purchase_invoices: formData.max_purchase_invoices === '' ? -1 : Number(formData.max_purchase_invoices),
+        max_customers: formData.max_customers === '' ? -1 : Number(formData.max_customers),
+        duration_months: Number(formData.duration_months) || 1,
+        gst_rate: Number(formData.gst_rate) || 0,
+        discount: Number(formData.discount) || 0,
         features: formData.features.filter((f) => f.trim() !== '')
       };
       if (editingPlan) {
@@ -296,12 +309,37 @@ export default function PlansAdminPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          price: Number(e.target.value)
+                          price: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Billing Interval *
+                  </label>
+                  <select
+                    value={formData.interval}
+                    onChange={(e) => {
+                      const newInterval = e.target.value;
+                      let newDuration = 1;
+                      if (newInterval === 'year') newDuration = 12;
+                      if (newInterval === 'forever') newDuration = 1200; // e.g. 100 years
+                      setFormData({
+                        ...formData,
+                        interval: newInterval,
+                        duration_months: newDuration
+                      });
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                  >
+                    <option value="month">Monthly</option>
+                    <option value="year">Yearly</option>
+                    <option value="forever">Forever / Lifetime</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -334,7 +372,7 @@ export default function PlansAdminPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          max_sales_invoices: Number(e.target.value)
+                          max_sales_invoices: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
@@ -352,7 +390,7 @@ export default function PlansAdminPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          max_purchase_invoices: Number(e.target.value)
+                          max_purchase_invoices: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
@@ -373,7 +411,7 @@ export default function PlansAdminPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          max_customers: Number(e.target.value)
+                          max_customers: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
@@ -382,19 +420,60 @@ export default function PlansAdminPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
+                  {formData.interval !== 'forever' && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Duration ({formData.interval === 'year' ? 'Years' : 'Months'}) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={formData.duration_months === '' ? '' : (formData.interval === 'year' ? formData.duration_months / 12 : formData.duration_months)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData({
+                            ...formData,
+                            duration_months: val === '' ? '' : Number(val) * (formData.interval === 'year' ? 12 : 1)
+                          });
+                        }}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Duration (Months) *
+                      GST Rate (%)
                     </label>
                     <input
                       type="number"
                       required
-                      min="1"
-                      value={formData.duration_months}
+                      min="0"
+                      max="100"
+                      value={formData.gst_rate}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          duration_months: Number(e.target.value)
+                          gst_rate: e.target.value
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Discount (%)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      max="100"
+                      value={formData.discount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          discount: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"

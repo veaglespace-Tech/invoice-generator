@@ -66,7 +66,13 @@ const initiateSubscription = async (req, res) => {
       });
       return;
     }
-    const amount = planObj.price.toString();
+    const basePrice = Number(planObj.price);
+    const discountAmount = (basePrice * Number(planObj.discount)) / 100;
+    const priceAfterDiscount = basePrice - discountAmount;
+    const gstRate = Number(planObj.gst_rate) || 18;
+    const gstAmount = (priceAfterDiscount * gstRate) / 100;
+    const finalAmount = priceAfterDiscount + gstAmount;
+    const amount = finalAmount.toFixed(2);
     const txnid = `TXN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const productinfo = `${planObj.name} Subscription`;
     const firstname = org.name;
@@ -89,7 +95,7 @@ const initiateSubscription = async (req, res) => {
       data: {
         organization_id: org.id,
         plan_id: planObj.id,
-        amount: planObj.price,
+        amount: finalAmount,
         status: 'PENDING',
         txnid
       }
@@ -213,14 +219,15 @@ const handlePaymentSuccess = async (req, res) => {
           id: subscription.organization_id
         },
         data: {
-          plan_id: subscription.plan_id
+          plan_id: subscription.plan_id,
+          status: 'ACTIVE'
         }
       });
     }
-    res.redirect(`${FRONTEND_URL}/login?payment=success`);
+    res.redirect(`${FRONTEND_URL}/payment/success`);
   } catch (error) {
     console.error('Error in handlePaymentSuccess:', error);
-    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/payment/failed`);
   }
 };
 exports.handlePaymentSuccess = handlePaymentSuccess;
@@ -237,10 +244,10 @@ const handlePaymentFail = async (req, res) => {
         }
       });
     }
-    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/payment/failed`);
   } catch (error) {
     console.error('Error in handlePaymentFail:', error);
-    res.redirect(`${FRONTEND_URL}/login?payment=failed`);
+    res.redirect(`${FRONTEND_URL}/payment/failed`);
   }
 };
 exports.handlePaymentFail = handlePaymentFail;

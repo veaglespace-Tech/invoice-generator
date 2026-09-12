@@ -12,7 +12,11 @@ const loginSchema = (exports.loginSchema = _zod.z.object({
   email: _zod.z.string().email('Invalid email format').trim().toLowerCase(),
   password: _zod.z
     .string()
-    .min(6, 'Password must be at least 6 characters long')
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(
+      /^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/,
+      'Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)'
+    )
 }));
 const registerOrgSchema = (exports.registerOrgSchema = _zod.z.object({
   orgName: _zod.z.string().min(2, 'Organization name is required'),
@@ -20,7 +24,11 @@ const registerOrgSchema = (exports.registerOrgSchema = _zod.z.object({
   email: _zod.z.string().email('Invalid email format').trim().toLowerCase(),
   password: _zod.z
     .string()
-    .min(6, 'Password must be at least 6 characters long'),
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(
+      /^[A-Z][a-z]+[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|-]+[0-9]+.*$/,
+      'Password must start with a capital letter, followed by lowercase letters, a special character, and a number (e.g. Password@123)'
+    ),
   // Additional organization details
   legalName: _zod.z.string().optional(),
   orgPhone: _zod.z.string().optional(),

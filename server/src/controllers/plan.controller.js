@@ -25,6 +25,8 @@ const planSchema = _zod.z.object({
   max_purchase_invoices: _zod.z.number().optional().default(-1),
   max_customers: _zod.z.number().optional().default(-1),
   duration_months: _zod.z.number().optional().default(1),
+  gst_rate: _zod.z.number().optional().default(0),
+  discount: _zod.z.number().optional().default(0),
   is_popular: _zod.z.boolean().optional(),
   is_active: _zod.z.boolean().optional()
 });

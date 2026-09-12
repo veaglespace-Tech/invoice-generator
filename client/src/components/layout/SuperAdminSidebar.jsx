@@ -70,7 +70,7 @@ export function SuperAdminSidebar() {
       icon: CreditCard
     },
     {
-      name: 'Leads',
+      name: 'Support Inquiries',
       href: '/super-admin/leads',
       icon: MessageSquare
     }
