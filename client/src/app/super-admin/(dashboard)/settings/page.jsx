@@ -59,6 +59,7 @@ export default function SuperAdminSettings() {
         method: 'PUT',
         data: {
           name: profile.name,
+          email: profile.email,
           avatar: profile.avatar
         }
       });
