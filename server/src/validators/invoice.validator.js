@@ -25,10 +25,14 @@ const createInvoiceSchema = (exports.createInvoiceSchema = _zod.z.object({
   type: _zod.z.enum(['SALES', 'PURCHASE', 'EXPENSE']).optional().nullable().default('SALES'),
   invoice_date: _zod.z
     .string()
-    .refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),
+    .optional()
+    .nullable()
+    .refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
   due_date: _zod.z
     .string()
-    .refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),
+    .optional()
+    .nullable()
+    .refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
   notes: _zod.z.string().optional().nullable(),
   terms: _zod.z.string().optional().nullable(),
   payment_details: _zod.z.string().optional().nullable(),

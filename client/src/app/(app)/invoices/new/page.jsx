@@ -250,10 +250,15 @@ export default function InvoiceGenerator() {
       const htmlToImage = await import('html-to-image');
       const { jsPDF } = await import('jspdf');
 
+      const captureWidth = element.scrollWidth;
+      const captureHeight = element.scrollHeight;
+
       // Convert DOM to high quality PNG
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
         pixelRatio: 2,
+        width: captureWidth,
+        height: captureHeight,
         // High resolution
         style: {
           transform: 'scale(1)',
@@ -262,15 +267,16 @@ export default function InvoiceGenerator() {
       });
 
       // A4 dimensions at 72 PPI
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = (captureHeight * pdfWidth) / captureWidth;
+      const finalPdfHeight = Math.max(297, pdfHeight); // At least A4 height
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: [pdfWidth, finalPdfHeight]
       });
 
-      // Calculate width and height to fit A4
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
       pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${invoiceData.invoiceNumber}.pdf`);
     } catch (err) {
@@ -355,14 +361,19 @@ export default function InvoiceGenerator() {
         if (element) {
           const htmlToImage = await import('html-to-image');
           const { jsPDF } = await import('jspdf');
+          const captureWidth = element.scrollWidth;
+          const captureHeight = element.scrollHeight;
           const dataUrl = await htmlToImage.toPng(element, {
             quality: 1,
             pixelRatio: 2,
+            width: captureWidth,
+            height: captureHeight,
             style: { transform: 'scale(1)', transformOrigin: 'top left' }
           });
-          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
+          const pdfWidth = 210;
+          const pdfHeight = (captureHeight * pdfWidth) / captureWidth;
+          const finalPdfHeight = Math.max(297, pdfHeight);
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfWidth, finalPdfHeight] });
           pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
           pdfBase64 = pdf.output('datauristring').split(',')[1];
         }
