@@ -28,7 +28,7 @@ const updateUserSchema = (exports.updateUserSchema = _zod.z.object({
   email: _zod.z.string().email('Invalid email format').optional(),
   role: _zod.z.nativeEnum(_client.Role).optional(),
   status: _zod.z.enum(['ACTIVE', 'INACTIVE']).optional(),
-  avatar: _zod.z.string().optional(),
+  avatar: _zod.z.string().optional().nullable(),
   permissions: _zod.z.array(_zod.z.string()).optional()
 }));
 const changePasswordSchema = (exports.changePasswordSchema = _zod.z.object({
