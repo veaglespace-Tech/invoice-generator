@@ -32,7 +32,7 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
     GSTIN: _zod.z.string().optional().nullable(),
     PAN: _zod.z.string().optional().nullable(),
     logo: _zod.z.string().optional().nullable(),
-    website: _zod.z.string().optional().nullable(),
+    website: _zod.z.union([_zod.z.string(), _zod.z.literal('')]).optional().nullable(),
     currency: _zod.z.string().optional(),
     timezone: _zod.z.string().optional(),
     plan_id: _zod.z.string().uuid('Invalid Plan ID').optional().nullable(),
