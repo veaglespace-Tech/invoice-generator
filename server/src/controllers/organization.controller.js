@@ -185,6 +185,9 @@ const updateOrganization = async (req, res, next) => {
     if (req.user?.role !== _client.Role.SUPER_ADMIN) {
       delete orgData.plan_id; // Normal admins cannot change plan directly
       delete orgData.custom_max_invoices;
+      delete orgData.custom_max_sales_invoices;
+      delete orgData.custom_max_purchase_invoices;
+      delete orgData.custom_max_expense_invoices;
       delete orgData.custom_max_customers;
       delete orgData.additional_months;
     }

@@ -39,6 +39,7 @@ const updateOrganizationSchema = (exports.updateOrganizationSchema =
     custom_max_invoices: _zod.z.number().optional().nullable(),
     custom_max_sales_invoices: _zod.z.number().optional().nullable(),
     custom_max_purchase_invoices: _zod.z.number().optional().nullable(),
+    custom_max_expense_invoices: _zod.z.number().optional().nullable(),
     custom_max_customers: _zod.z.number().optional().nullable(),
     additional_months: _zod.z.number().optional().nullable(),
     settings: _zod.z

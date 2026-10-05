@@ -31,6 +31,7 @@ export default function PlansAdminPage() {
     features: [''],
     max_sales_invoices: '',
     max_purchase_invoices: '',
+    max_expense_invoices: '',
     max_customers: '',
     duration_months: '',
     gst_rate: '',
@@ -65,6 +66,7 @@ export default function PlansAdminPage() {
         features: plan.features.length > 0 ? plan.features : [''],
         max_sales_invoices: plan.max_sales_invoices !== undefined ? plan.max_sales_invoices : -1,
         max_purchase_invoices: plan.max_purchase_invoices !== undefined ? plan.max_purchase_invoices : -1,
+        max_expense_invoices: plan.max_expense_invoices !== undefined ? plan.max_expense_invoices : -1,
         max_customers: plan.max_customers !== undefined ? plan.max_customers : -1,
         duration_months: plan.duration_months !== undefined ? plan.duration_months : 1,
         gst_rate: plan.gst_rate !== undefined ? Number(plan.gst_rate) : 0,
@@ -82,6 +84,7 @@ export default function PlansAdminPage() {
         features: [''],
         max_sales_invoices: '',
         max_purchase_invoices: '',
+        max_expense_invoices: '',
         max_customers: '',
         duration_months: '',
         gst_rate: '',
@@ -122,6 +125,7 @@ export default function PlansAdminPage() {
         price: Number(formData.price) || 0,
         max_sales_invoices: formData.max_sales_invoices === '' ? -1 : Number(formData.max_sales_invoices),
         max_purchase_invoices: formData.max_purchase_invoices === '' ? -1 : Number(formData.max_purchase_invoices),
+        max_expense_invoices: formData.max_expense_invoices === '' ? -1 : Number(formData.max_expense_invoices),
         max_customers: formData.max_customers === '' ? -1 : Number(formData.max_customers),
         duration_months: Number(formData.duration_months) || 1,
         gst_rate: Number(formData.gst_rate) || 0,
@@ -391,6 +395,27 @@ export default function PlansAdminPage() {
                         setFormData({
                           ...formData,
                           max_purchase_invoices: e.target.value
+                        })
+                      }
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Max Expense Invoices (-1 for unlimited)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="-1"
+                      value={formData.max_expense_invoices}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          max_expense_invoices: e.target.value
                         })
                       }
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2"

@@ -172,15 +172,24 @@ const createInvoice = async (req, res, next) => {
     });
 
     if (subscription) {
-      const isPurchase = data.type === 'PURCHASE' || data.type === 'EXPENSE';
-      
-      const allowedMax = isPurchase 
-        ? (subscription.organization.custom_max_purchase_invoices !== null && subscription.organization.custom_max_purchase_invoices !== undefined
-            ? subscription.organization.custom_max_purchase_invoices 
-            : subscription.plan.max_purchase_invoices)
-        : (subscription.organization.custom_max_sales_invoices !== null && subscription.organization.custom_max_sales_invoices !== undefined
-            ? subscription.organization.custom_max_sales_invoices 
-            : subscription.plan.max_sales_invoices);
+      let allowedMax = -1;
+      let typeName = '';
+      if (data.type === 'EXPENSE') {
+        typeName = 'Expense Invoices';
+        allowedMax = subscription.organization.custom_max_expense_invoices !== null && subscription.organization.custom_max_expense_invoices !== undefined
+          ? subscription.organization.custom_max_expense_invoices
+          : (subscription.plan.max_expense_invoices !== undefined ? subscription.plan.max_expense_invoices : -1);
+      } else if (data.type === 'PURCHASE') {
+        typeName = 'Purchase Invoices';
+        allowedMax = subscription.organization.custom_max_purchase_invoices !== null && subscription.organization.custom_max_purchase_invoices !== undefined
+          ? subscription.organization.custom_max_purchase_invoices
+          : subscription.plan.max_purchase_invoices;
+      } else {
+        typeName = 'Sales Invoices';
+        allowedMax = subscription.organization.custom_max_sales_invoices !== null && subscription.organization.custom_max_sales_invoices !== undefined
+          ? subscription.organization.custom_max_sales_invoices
+          : subscription.plan.max_sales_invoices;
+      }
         
       if (allowedMax !== -1) {
         const invoiceCount = await _server.prisma.invoice.count({
@@ -195,7 +204,6 @@ const createInvoice = async (req, res, next) => {
           }
         });
         if (invoiceCount >= allowedMax) {
-          const typeName = isPurchase ? 'Purchase Invoices' : 'Sales Invoices';
           return res.status(403).json({
             success: false,
             message: `${typeName} limit reached. Your current plan allows up to ${allowedMax} ${typeName.toLowerCase()} per billing cycle.`
