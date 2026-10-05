@@ -59,7 +59,7 @@ function _interopRequireWildcard(e, t) {
 const app = (0, _express.default)();
 
 // Security Middlewares
-app.use((0, _helmet.default)());
+app.use((0, _helmet.default)({ crossOriginResourcePolicy: false, hsts: false }));
 app.use((0, _cors.default)());
 
 // Rate Limiter

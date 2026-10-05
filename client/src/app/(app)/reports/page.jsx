@@ -63,29 +63,53 @@ export default function ReportsPage() {
       const exportData = transactions.map((inv, index) => {
         const amount = Number(inv.grand_total) || 0;
         totalAmount += amount;
+        
+        const itemNames = inv.items ? inv.items.map(i => i.description).join(', ') : 'N/A';
+        const itemCount = inv.items ? inv.items.length : 0;
+        
         return {
           'Sr. No.': index + 1,
           'Date': new Date(inv.invoice_date).toLocaleDateString(),
           'Type': inv.displayType,
           'Invoice Number': inv.invoice_number,
           'Party Name': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+          'Items': itemNames,
+          'Item Count': itemCount,
           'Amount': amount.toFixed(2),
           'Status': inv.status
         };
       });
 
       if (exportData.length > 0) {
+        exportData.push({}); // Add space before total
+        exportData.push({});
         exportData.push({
           'Sr. No.': '',
           'Date': '',
           'Type': '',
           'Invoice Number': '',
           'Party Name': 'TOTAL',
+          'Items': '',
+          'Item Count': '',
           'Amount': totalAmount.toFixed(2),
           'Status': ''
         });
         
         const wsTransactions = XLSX.utils.json_to_sheet(exportData);
+        
+        // Design columns with proper widths
+        wsTransactions['!cols'] = [
+          { wch: 8 },  // Sr. No.
+          { wch: 12 }, // Date
+          { wch: 12 }, // Type
+          { wch: 18 }, // Invoice Number
+          { wch: 30 }, // Party Name
+          { wch: 40 }, // Items
+          { wch: 12 }, // Item Count
+          { wch: 15 }, // Amount
+          { wch: 15 }  // Status
+        ];
+        
         XLSX.utils.book_append_sheet(wb, wsTransactions, 'Transactions');
       }
 
@@ -97,6 +121,12 @@ export default function ReportsPage() {
         { Metric: 'Net Balance', Amount: data.summary.balance.toFixed(2) }
       ];
       const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+      
+      wsSummary['!cols'] = [
+        { wch: 20 }, // Metric
+        { wch: 15 }  // Amount
+      ];
+      
       XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
       XLSX.writeFile(wb, `Business_Report_${period}_${new Date().getTime()}.xlsx`);

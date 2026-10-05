@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { API_BASE_URL } from '@/lib/api';
+import { fetchApi } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -26,17 +26,7 @@ export function SuperAdminSidebar() {
     const fetchUser = () => {
       const token = localStorage.getItem('auth_token');
       if (token) {
-        fetch(`${API_BASE_URL}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-          .then((res) => {
-            if (res.status === 401) {
-              localStorage.removeItem('auth_token');
-            }
-            return res.json();
-          })
+        fetchApi('/auth/me')
           .then((res) => {
             if (res.success && res.data) setUser(res.data);
           })

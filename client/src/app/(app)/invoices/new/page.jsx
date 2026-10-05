@@ -160,6 +160,8 @@ export default function InvoiceGenerator() {
   }, []);
   const [invoiceData, setInvoiceData] = useState({
     type: 'SALES',
+    status: 'GENERATED',
+    paymentDetails: '',
     invoiceNumber: '',
     customerId: null,
     issueDate: new Date().toISOString().split('T')[0],
@@ -351,6 +353,7 @@ export default function InvoiceGenerator() {
           document_type_code: invoiceData.documentType || null,
           irn: invoiceData.irn || null,
           tax_type: invoiceData.taxType,
+          status: invoiceData.status,
           items: formattedItems
         }
       });
@@ -460,6 +463,8 @@ export default function InvoiceGenerator() {
           document_type_code: invoiceData.documentType || null,
           irn: invoiceData.irn || null,
           tax_type: invoiceData.taxType,
+          status: invoiceData.status,
+          payment_details: invoiceData.paymentDetails || null,
           items: formattedItems
         }
       });
@@ -589,6 +594,38 @@ export default function InvoiceGenerator() {
                       <option value="EXPENSE">Expense</option>
                     </select>
                   </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Status
+                    </label>
+                    <select
+                      value={invoiceData.status}
+                      onChange={(e) => updateData('status', e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                    >
+                      <option value="DRAFT">Draft</option>
+                      <option value="GENERATED">Generated</option>
+                      <option value="PAID">Paid</option>
+                      <option value="PARTIALLY_PAID">Partially Paid</option>
+                      <option value="SENT">Sent</option>
+                    </select>
+                  </div>
+                  {(invoiceData.status === 'PAID' || invoiceData.status === 'PARTIALLY_PAID') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-slate-500">
+                        Payment Details
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Cash, UPI, NEFT..."
+                        value={invoiceData.paymentDetails}
+                        onChange={(e) =>
+                          updateData('paymentDetails', e.target.value)
+                        }
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Invoice No.

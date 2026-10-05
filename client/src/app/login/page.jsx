@@ -23,6 +23,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [requiresOTP, setRequiresOTP] = useState(false);
+  const [otp, setOtp] = useState('');
 
   // Payment status from PayU redirect
   const paymentStatus = searchParams.get('payment');
@@ -36,6 +38,30 @@ function LoginForm() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
+    
+    if (requiresOTP) {
+      if (!otp) {
+        setError('OTP is required');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const response = await fetchApi('/auth/verify-otp', {
+          method: 'POST',
+          data: { email, otp }
+        });
+        if (response.success && response.data) {
+          localStorage.setItem('auth_token', response.data.accessToken);
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        setError(err.message || 'Invalid OTP. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -50,15 +76,15 @@ function LoginForm() {
           password
         }
       });
-      if (response.success && response.data) {
-        if (response.data.user.role === 'SUPER_ADMIN') {
-          setError('Super Admins must use the Super Admin Portal to log in.');
-          return;
-        }
+      
+      if (response.requiresOTP) {
+        setRequiresOTP(true);
+        return;
+      }
 
+      if (response.success && response.data) {
         // Save token
         localStorage.setItem('auth_token', response.data.accessToken);
-
         // Redirect to dashboard
         router.push('/dashboard');
       }
@@ -118,54 +144,76 @@ function LoginForm() {
         )}
 
         <form onSubmit={handleLogin} className="space-y-5">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
-              placeholder="rajesh@techsolutions.com"
-              disabled={isLoading}
-            />
-          </div>
+          {!requiresOTP ? (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
+                  placeholder="rajesh@techsolutions.com"
+                  disabled={isLoading}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Password
+                  </label>
+                  <Link
+                    href="#"
+                    className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2 animate-in fade-in zoom-in duration-300">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Password
+                Enter OTP
               </label>
-              <Link
-                href="#"
-                className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
-                placeholder="••••••••"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all text-center tracking-widest text-lg font-bold"
+                placeholder="000000"
+                maxLength={6}
                 disabled={isLoading}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
+              <p className="text-xs text-slate-500 text-center mt-2">
+                An OTP has been sent to {email}
+              </p>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
@@ -179,7 +227,7 @@ function LoginForm() {
               </>
             ) : (
               <>
-                Log in <ArrowRight className="w-5 h-5" />
+                {requiresOTP ? 'Verify OTP' : 'Log in'} <ArrowRight className="w-5 h-5" />
               </>
             )}
           </button>

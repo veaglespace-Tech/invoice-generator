@@ -793,6 +793,13 @@ export default function InvoicePrintView() {
                         : '0.00'}
                     </div>
                   </div>
+                  {invoice.payment_details && (
+                    <div className="flex bg-white border-t border-black text-[9px]">
+                      <div className="w-full p-1.5 font-medium">
+                        Payment Details: {invoice.payment_details}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

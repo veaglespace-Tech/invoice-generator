@@ -76,15 +76,21 @@ export default function Dashboard() {
       
       const allInvoices = res.data;
 
-      const exportData = allInvoices.map((inv) => ({
-        'Invoice Number': inv.invoice_number,
-        'Type': inv.type || 'SALES',
-        'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
-        'Amount': Number(inv.grand_total).toFixed(2),
-        'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
-        'Due Date': new Date(inv.due_date).toLocaleDateString(),
-        'Status': inv.status
-      }));
+      const exportData = allInvoices.map((inv) => {
+        const itemNames = inv.items ? inv.items.map(i => i.description).join(', ') : 'N/A';
+        const itemCount = inv.items ? inv.items.length : 0;
+        return {
+          'Invoice Number': inv.invoice_number,
+          'Type': inv.type || 'SALES',
+          'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+          'Items': itemNames,
+          'Item Count': itemCount,
+          'Amount': Number(inv.grand_total).toFixed(2),
+          'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
+          'Due Date': new Date(inv.due_date).toLocaleDateString(),
+          'Status': inv.status
+        };
+      });
 
       // Calculate totals
       let totalSales = 0;
@@ -117,6 +123,8 @@ export default function Dashboard() {
         { wch: 18 }, // Invoice Number
         { wch: 12 }, // Type
         { wch: 30 }, // Client
+        { wch: 40 }, // Items
+        { wch: 12 }, // Item Count
         { wch: 15 }, // Amount
         { wch: 15 }, // Invoice Date
         { wch: 15 }, // Due Date
@@ -361,7 +369,28 @@ export default function Dashboard() {
             </Link>
           </CardContent>
         </Card>
+      </div>
 
+      <div className="grid grid-cols-1 mt-6 lg:mt-0 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+              {data.statusBreakdown && Object.entries(data.statusBreakdown).map(([status, stats]) => (
+                <div key={status} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{status.replace('_', ' ')}</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">₹{stats.amount.toLocaleString('en-IN')}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{stats.count} invoice{stats.count !== 1 && 's'}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Recent Invoices</CardTitle>

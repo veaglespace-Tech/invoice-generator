@@ -13,11 +13,11 @@ const createInvoiceItemSchema = (exports.createInvoiceItemSchema =
   _zod.z.object({
     product_id: _zod.z.string().uuid().optional().nullable(),
     description: _zod.z.string().min(1, 'Description is required'),
-    quantity: _zod.z.number().min(0.01, 'Quantity must be greater than 0'),
+    quantity: _zod.z.coerce.number().min(0.01, 'Quantity must be greater than 0'),
     unit: _zod.z.string().optional().nullable(),
-    rate: _zod.z.number().min(0, 'Rate must be positive'),
-    discount: _zod.z.number().min(0).default(0),
-    tax_rate: _zod.z.number().min(0).max(100).default(0)
+    rate: _zod.z.coerce.number().min(0, 'Rate must be positive'),
+    discount: _zod.z.coerce.number().min(0).default(0),
+    tax_rate: _zod.z.coerce.number().min(0).max(100).default(0)
   }));
 const createInvoiceSchema = (exports.createInvoiceSchema = _zod.z.object({
   customer_id: _zod.z.string().uuid('Invalid customer ID'),
@@ -46,6 +46,16 @@ const createInvoiceSchema = (exports.createInvoiceSchema = _zod.z.object({
     .optional()
     .nullable()
     .default('AUTO'),
+  status: _zod.z.enum([
+      'DRAFT',
+      'GENERATED',
+      'SENT',
+      'VIEWED',
+      'PAID',
+      'PARTIALLY_PAID',
+      'OVERDUE',
+      'CANCELLED'
+    ]).optional().nullable(),
   items: _zod.z
     .array(createInvoiceItemSchema)
     .min(1, 'At least one item is required')

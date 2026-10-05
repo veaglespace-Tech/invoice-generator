@@ -74,7 +74,8 @@ const getReports = async (req, res, next) => {
             customer_name: true,
             company_name: true,
           }
-        }
+        },
+        items: true
       },
       orderBy: {
         invoice_date: 'desc'

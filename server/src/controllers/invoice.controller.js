@@ -77,7 +77,8 @@ const getAllInvoices = async (req, res, next) => {
             select: {
               name: true
             }
-          }
+          },
+          items: true
         },
         orderBy: {
           created_at: 'desc'
@@ -234,6 +235,7 @@ const createInvoice = async (req, res, next) => {
           category: data.category || null,
           document_type_code: data.document_type_code || null,
           irn: data.irn || null,
+          status: data.status || 'DRAFT',
           items: {
             create: calculatedItems
           }
@@ -265,11 +267,7 @@ const createInvoice = async (req, res, next) => {
     });
   } catch (error) {
     console.error("CREATE INVOICE ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Internal Server Error',
-      stack: error.stack
-    });
+    next(error);
   }
 };
 exports.createInvoice = createInvoice;
@@ -327,6 +325,7 @@ const updateInvoice = async (req, res, next) => {
           notes: data.notes,
           terms: data.terms,
           payment_details: data.payment_details,
+          status: data.status || 'DRAFT',
           items: {
             create: calculatedItems
           }

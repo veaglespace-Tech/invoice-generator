@@ -31,7 +31,21 @@ export async function fetchApi(endpoint, options = {}) {
     if (!response.ok) {
       let errorMessage = result.message || 'API Request failed';
       if (result.errors) {
-        errorMessage += ': ' + JSON.stringify(result.errors);
+        if (Array.isArray(result.errors)) {
+          const detailedErrors = result.errors
+            .map((e) => {
+              if (typeof e === 'object' && e.message) {
+                return e.path ? `${e.path}: ${e.message}` : e.message;
+              }
+              return String(e);
+            })
+            .join(', ');
+          if (detailedErrors) {
+            errorMessage += ': ' + detailedErrors;
+          }
+        } else {
+          errorMessage += ': ' + JSON.stringify(result.errors);
+        }
       }
       throw new Error(errorMessage);
     }

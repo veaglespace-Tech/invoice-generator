@@ -473,6 +473,7 @@ export default function InvoicesList() {
                         <option value="GENERATED">Generated</option>
                         <option value="SENT">Sent</option>
                         <option value="PAID">Paid</option>
+                        <option value="PARTIALLY_PAID">Partially Paid</option>
                         <option value="CANCELLED">Cancelled</option>
                       </select>
                     </td>

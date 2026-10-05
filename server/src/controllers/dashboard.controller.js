@@ -116,6 +116,17 @@ const getOrganizationDashboard = async (req, res, next) => {
     let totalPaidInvoices = 0;
     let totalExpenseAmount = 0;
     
+    let statusBreakdown = {
+      DRAFT: { count: 0, amount: 0 },
+      GENERATED: { count: 0, amount: 0 },
+      SENT: { count: 0, amount: 0 },
+      VIEWED: { count: 0, amount: 0 },
+      PAID: { count: 0, amount: 0 },
+      PARTIALLY_PAID: { count: 0, amount: 0 },
+      OVERDUE: { count: 0, amount: 0 },
+      CANCELLED: { count: 0, amount: 0 }
+    };
+    
     invoices.forEach((inv) => {
       const amount = Number(inv.grand_total);
       if (inv.type === 'EXPENSE') {
@@ -124,6 +135,10 @@ const getOrganizationDashboard = async (req, res, next) => {
         }
       } else {
         totalInvoiceValue += amount;
+        if (statusBreakdown[inv.status]) {
+          statusBreakdown[inv.status].amount += amount;
+          statusBreakdown[inv.status].count += 1;
+        }
         if (inv.status === 'PAID') {
           totalPaidAmount += amount;
           totalPaidInvoices += 1;
@@ -188,6 +203,7 @@ const getOrganizationDashboard = async (req, res, next) => {
           totalPendingAmount,
           totalExpenseAmount
         },
+        statusBreakdown,
         recentInvoices,
         recentExpenses
       }
