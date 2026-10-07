@@ -1,4 +1,4 @@
-name: Deploy InVoice-Genrator
+name: Deploy Invoice Generator
 
 on:
   push:
@@ -11,40 +11,53 @@ jobs:
 
     steps:
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           timeout: 180s
+          command_timeout: 30m
 
           script: |
             set -e
 
+            echo "======================================"
+            echo "Starting Invoice Generator Deployment"
+            echo "======================================"
+
             cd /root/invoice-generator
 
-            echo "Updating repository..."
-            git fetch origin
+            echo "=== Pull latest code ==="
+            git fetch origin main
             git reset --hard origin/main
 
-            echo "Installing frontend dependencies..."
-            cd client
+            echo "=== Installing backend dependencies ==="
+            cd /root/invoice-generator/server
             npm install
 
-            echo "Building frontend..."
+            echo "=== Generating Prisma Client ==="
+            npx prisma generate
+
+            echo "=== Syncing database schema ==="
+            npx prisma db push
+
+            echo "=== Installing frontend dependencies ==="
+            cd /root/invoice-generator/client
+            npm install
+
+            echo "=== Building frontend ==="
             npm run build
 
-            echo "Installing backend dependencies..."
-            cd ../server
-            npm install
-
-            echo "Restarting frontend..."
-            pm2 restart invoice-frontend
-
-            echo "Restarting backend..."
+            echo "=== Restarting backend ==="
             pm2 restart invoice-backend
 
-            echo "Saving PM2..."
+            echo "=== Restarting frontend ==="
+            pm2 restart invoice-frontend
+
+            echo "=== Saving PM2 ==="
             pm2 save
 
-            echo "✅ Deployment completed successfully."
+            echo "======================================"
+            echo "Invoice Generator Deployment Completed"
+            echo "======================================"
