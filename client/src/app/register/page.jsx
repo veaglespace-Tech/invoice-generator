@@ -238,8 +238,10 @@ export default function RegisterPage() {
       <main className="flex-1 flex flex-col items-center p-6 z-10 pt-28">
         {/* We use max-w-4xl for the first step because it's a big form, max-w-2xl for others */}
         <div
-          className={`w-full ${currentStep === 1 ? 'max-w-4xl' : 'max-w-2xl'} bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all`}
+          className={`w-full ${currentStep === 1 ? 'max-w-4xl' : 'max-w-2xl'} bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-800/50 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all relative overflow-hidden`}
         >
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-white/0 to-white/40 dark:from-slate-800/40 dark:via-slate-800/0 dark:to-slate-800/40 pointer-events-none"></div>
+          <div className="relative z-10">
           {/* Stepper Header */}
           <div className="flex items-center justify-between mb-12 relative">
             <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 -z-10 -translate-y-1/2 rounded-full"></div>
@@ -737,6 +739,7 @@ export default function RegisterPage() {
               )}
             </div>
           )}
+          </div>
         </div>
       </main>
       <Footer />

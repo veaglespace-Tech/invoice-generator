@@ -130,7 +130,9 @@ function LoginForm() {
         </div>
       )}
 
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
+      <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-800/50 p-8 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-white/0 to-white/40 dark:from-slate-800/40 dark:via-slate-800/0 dark:to-slate-800/40 pointer-events-none"></div>
+        <div className="relative z-10">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
             Welcome back
@@ -246,6 +248,7 @@ function LoginForm() {
             Create one free
           </Link>
         </p>
+        </div>
       </div>
     </>
   );

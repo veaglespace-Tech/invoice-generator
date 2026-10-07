@@ -3,7 +3,7 @@ import React from 'react';
 export function Card({ className = '', children, ...props }) {
   return (
     <div
-      className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-md hover:shadow-xl hover:border-indigo-400 dark:hover:border-indigo-500 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${className}`}
+      className={`bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.1)] hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${className}`}
       {...props}
     >
       {children}
@@ -14,7 +14,7 @@ export function Card({ className = '', children, ...props }) {
 export function CardHeader({ className = '', children, ...props }) {
   return (
     <div
-      className={`px-6 py-4 border-b border-slate-200 dark:border-slate-800 ${className}`}
+      className={`px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30 ${className}`}
       {...props}
     >
       {children}
