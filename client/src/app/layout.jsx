@@ -10,8 +10,8 @@ export const metadata = {
   description: 'Generate and manage invoices seamlessly with our premium SaaS solution.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icon.webp',
-    apple: '/icon.webp',
+    icon: '/logo.webp',
+    apple: '/logo.webp',
   },
   appleWebApp: {
     capable: true,
