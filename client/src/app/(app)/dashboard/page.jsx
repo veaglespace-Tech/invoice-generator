@@ -189,23 +189,23 @@ export default function Dashboard() {
             Here's what's happening with your business today.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <button
             onClick={handleDownloadReport}
-            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+            className="btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-black dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-105 transition-all shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto whitespace-nowrap"
           >
             <Download className="w-4 h-4" />
             Export to Excel
           </button>
-          <Link href="/invoices/new">
-            <button className="btn btn-primary text-white hover:scale-105 transition-all shadow-md whitespace-nowrap flex items-center gap-2">
+          <Link href="/invoices/new" className="w-full sm:w-auto">
+            <button className="btn btn-primary w-full text-white hover:scale-105 transition-all shadow-md flex items-center justify-center gap-2 whitespace-nowrap">
               Create Invoice
             </button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
         {stats.map((stat) => (
           <Card key={stat.name} className="relative overflow-hidden group">
             <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-transparent rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
