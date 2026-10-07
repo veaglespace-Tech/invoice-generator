@@ -85,8 +85,12 @@ function LoginForm() {
       if (response.success && response.data) {
         // Save token
         localStorage.setItem('auth_token', response.data.accessToken);
-        // Redirect to dashboard
-        router.push('/dashboard');
+        // Redirect to appropriate dashboard
+        if (response.data.user?.role === 'SUPER_ADMIN') {
+          router.push('/super-admin/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
       }
     } catch (err) {
       setError(err.message || 'Invalid credentials. Please try again.');
@@ -248,7 +252,7 @@ function LoginForm() {
 }
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       {/* Abstract Backgrounds */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/10 dark:bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>

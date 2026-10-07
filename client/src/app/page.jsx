@@ -5,7 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PricingPlans } from '@/components/public/PricingPlans';
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       <Navbar />
 
       <main className="flex-1 flex flex-col items-center justify-center relative pt-24 md:pt-32 pb-6 md:pb-10 overflow-hidden">

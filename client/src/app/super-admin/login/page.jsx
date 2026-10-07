@@ -71,7 +71,7 @@ export default function SuperAdminLoginPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
       {/* Abstract Backgrounds (Using same styling as normal login but keeping red accents for Super Admin) */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/10 dark:bg-red-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/10 dark:bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>

@@ -432,7 +432,7 @@ export default function CustomersPage() {
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
                     Basic Details
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                         Customer Name *
@@ -509,7 +509,7 @@ export default function CustomersPage() {
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
                     Billing Address
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                         Address
@@ -598,7 +598,7 @@ export default function CustomersPage() {
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
                     Tax & Legal
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                         GSTIN (Optional)

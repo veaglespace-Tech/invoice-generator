@@ -7,11 +7,29 @@ const montserrat = Montserrat({
 });
 export const metadata = {
   title: 'Veagle Space Technology | Invoice Generator',
-  description:
-    'Generate and manage invoices seamlessly with our premium SaaS solution.',
+  description: 'Generate and manage invoices seamlessly with our premium SaaS solution.',
+  manifest: '/manifest.json',
   icons: {
-    icon: '/logo.webp'
-  }
+    icon: '/icon.webp',
+    apple: '/icon.webp',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Invoice Generator',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: '#4f46e5',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 import { Providers } from '@/components/Providers';
 export default function RootLayout({ children }) {

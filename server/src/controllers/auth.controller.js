@@ -134,27 +134,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    if (user.role === 'SUPER_ADMIN') {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpiresAt = new Date();
-      otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 10);
 
-      await _server.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          otp: otp,
-          otp_expires_at: otpExpiresAt
-        }
-      });
-
-      await _email.sendOTP(user.email, otp);
-
-      return res.status(200).json({
-        success: true,
-        requiresOTP: true,
-        message: 'OTP sent to your email.'
-      });
-    }
     const payload = {
       id: user.id,
       organization_id: user.organization_id,
