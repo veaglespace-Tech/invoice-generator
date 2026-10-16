@@ -74,12 +74,57 @@ export default function CustomersPage() {
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     if (isSubmittingRef.current) return;
+
+    const name = formData.customer_name?.trim();
+    if (!name) {
+      toast.error('Customer name is required.');
+      return;
+    }
+
+    const email = formData.email?.trim();
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('Please enter a valid email address.');
+        return;
+      }
+      const emailDup = customers.find((c) => (c.email || '').trim().toLowerCase() === email.toLowerCase());
+      if (emailDup) {
+        toast.error(`A customer with this email already exists (${emailDup.customer_name}).`);
+        return;
+      }
+    }
+
+    const phone = formData.phone?.trim();
+    if (phone) {
+      const phoneDup = customers.find((c) => (c.phone || '').trim() === phone);
+      if (phoneDup) {
+        toast.error(`A customer with this phone number already exists (${phoneDup.customer_name}).`);
+        return;
+      }
+    }
+
     isSubmittingRef.current = true;
     setSubmitting(true);
     try {
+      const cleanData = {
+        ...formData,
+        customer_name: name,
+        company_name: formData.company_name?.trim() || null,
+        email: email || null,
+        phone: phone || null,
+        billing_address: formData.billing_address?.trim() || null,
+        city: formData.city?.trim() || null,
+        state: formData.state?.trim() || null,
+        country: formData.country?.trim() || 'India',
+        pincode: formData.pincode?.trim() || null,
+        GSTIN: formData.GSTIN?.trim() || null,
+        PAN: formData.PAN?.trim() || null
+      };
+
       await fetchApi('/customers', {
         method: 'POST',
-        body: JSON.stringify(formData)
+        data: cleanData
       });
       await loadCustomers();
       setIsAddModalOpen(false);
@@ -104,15 +149,65 @@ export default function CustomersPage() {
       setSubmitting(false);
     }
   };
+
   const handleEditCustomer = async (e) => {
     e.preventDefault();
     if (!editingCustomer || isSubmittingRef.current) return;
+
+    const name = formData.customer_name?.trim();
+    if (!name) {
+      toast.error('Customer name is required.');
+      return;
+    }
+
+    const email = formData.email?.trim();
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('Please enter a valid email address.');
+        return;
+      }
+      const emailDup = customers.find(
+        (c) => c.id !== editingCustomer.id && (c.email || '').trim().toLowerCase() === email.toLowerCase()
+      );
+      if (emailDup) {
+        toast.error(`A customer with this email already exists (${emailDup.customer_name}).`);
+        return;
+      }
+    }
+
+    const phone = formData.phone?.trim();
+    if (phone) {
+      const phoneDup = customers.find(
+        (c) => c.id !== editingCustomer.id && (c.phone || '').trim() === phone
+      );
+      if (phoneDup) {
+        toast.error(`A customer with this phone number already exists (${phoneDup.customer_name}).`);
+        return;
+      }
+    }
+
     isSubmittingRef.current = true;
     setSubmitting(true);
     try {
+      const cleanData = {
+        ...formData,
+        customer_name: name,
+        company_name: formData.company_name?.trim() || null,
+        email: email || null,
+        phone: phone || null,
+        billing_address: formData.billing_address?.trim() || null,
+        city: formData.city?.trim() || null,
+        state: formData.state?.trim() || null,
+        country: formData.country?.trim() || 'India',
+        pincode: formData.pincode?.trim() || null,
+        GSTIN: formData.GSTIN?.trim() || null,
+        PAN: formData.PAN?.trim() || null
+      };
+
       await fetchApi(`/customers/${editingCustomer.id}`, {
         method: 'PUT',
-        body: JSON.stringify(formData)
+        data: cleanData
       });
       await loadCustomers();
       setIsEditModalOpen(false);

@@ -8,7 +8,8 @@ import {
   Download,
   ArrowLeft,
   Hexagon,
-  Share2
+  Share2,
+  Edit
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { QRCodeSVG } from 'qrcode.react';
@@ -226,6 +227,15 @@ export default function InvoicePrintView() {
           Back to Invoices
         </Link>
         <div className="flex gap-3">
+          <Link href={`/invoices/${invoice.id}/edit`}>
+            <Button
+              variant="outline"
+              className="gap-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Invoice
+            </Button>
+          </Link>
           <Button
             onClick={handleShare}
             disabled={isSharing}
@@ -496,7 +506,7 @@ export default function InvoicePrintView() {
                   </div>
                   <div className="flex">
                     <div className="w-24">Address:</div>
-                    <div className="flex-1 whitespace-pre-wrap">
+                    <div className="flex-1 whitespace-pre-wrap break-words">
                       {invoice.organization?.address || ''}
                     </div>
                   </div>
@@ -542,7 +552,7 @@ export default function InvoicePrintView() {
                   </div>
                   <div className="flex">
                     <div className="w-24">Address:</div>
-                    <div className="flex-1 whitespace-pre-wrap">
+                    <div className="flex-1 whitespace-pre-wrap break-words">
                       {invoice.customer?.billing_address}
                     </div>
                   </div>

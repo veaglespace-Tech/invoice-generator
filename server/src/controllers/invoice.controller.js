@@ -212,10 +212,78 @@ const createInvoice = async (req, res, next) => {
       }
     }
 
+    // Resolve Customer: existing ID, match existing customer, or prepare for atomic creation in transaction
+    let finalCustomerId = data.customer_id;
+    let customerToCreate = null;
+
+    if (!finalCustomerId && data.customer) {
+      const trimmedEmail = data.customer.email?.trim() || null;
+      const trimmedPhone = data.customer.phone?.trim() || null;
+      const trimmedGstin = data.customer.GSTIN?.trim() || null;
+      const trimmedName = data.customer.customer_name?.trim() || null;
+      const trimmedCompany = data.customer.company_name?.trim() || null;
+
+      let existingCustomer = null;
+      if (trimmedEmail) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: {
+            email: trimmedEmail,
+            organization_id: targetOrgId
+          }
+        });
+      }
+      if (!existingCustomer && trimmedPhone) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: {
+            phone: trimmedPhone,
+            organization_id: targetOrgId
+          }
+        });
+      }
+      if (!existingCustomer && trimmedGstin) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: {
+            GSTIN: trimmedGstin,
+            organization_id: targetOrgId
+          }
+        });
+      }
+      if (!existingCustomer && trimmedName && trimmedCompany) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: {
+            customer_name: trimmedName,
+            company_name: trimmedCompany,
+            organization_id: targetOrgId
+          }
+        });
+      }
+
+      if (existingCustomer) {
+        finalCustomerId = existingCustomer.id;
+      } else {
+        customerToCreate = {
+          organization_id: targetOrgId,
+          customer_name: trimmedName || 'Unknown Client',
+          company_name: trimmedCompany,
+          email: trimmedEmail,
+          phone: trimmedPhone,
+          billing_address: data.customer.billing_address?.trim() || null,
+          shipping_address: data.customer.shipping_address?.trim() || null,
+          city: data.customer.city?.trim() || null,
+          state: data.customer.state?.trim() || null,
+          country: data.customer.country?.trim() || 'India',
+          pincode: data.customer.pincode?.trim() || null,
+          GSTIN: trimmedGstin,
+          PAN: data.customer.PAN?.trim() || null,
+          notes: data.customer.notes?.trim() || null
+        };
+      }
+    }
+
     // Backend-side calculation engine
     const { calculatedItems, totals } = await (0, _invoice2.calculateInvoice)(
       targetOrgId,
-      data.customer_id,
+      finalCustomerId || data.customer,
       data.items,
       data.tax_type
     );
@@ -226,12 +294,20 @@ const createInvoice = async (req, res, next) => {
       invoiceNumber = await (0, _invoice2.generateInvoiceNumber)(targetOrgId);
     }
     const result = await _server.prisma.$transaction(async (tx) => {
+      let customerIdForInvoice = finalCustomerId;
+      if (!customerIdForInvoice && customerToCreate) {
+        const createdCust = await tx.customer.create({
+          data: customerToCreate
+        });
+        customerIdForInvoice = createdCust.id;
+      }
+
       const invoice = await tx.invoice.create({
         data: {
           organization_id: targetOrgId,
           invoice_number: invoiceNumber,
           type: data.type || 'SALES',
-          customer_id: data.customer_id,
+          customer_id: customerIdForInvoice,
           invoice_date: data.invoice_date ? new Date(data.invoice_date) : new Date(),
           due_date: data.due_date ? new Date(data.due_date) : (data.invoice_date ? new Date(data.invoice_date) : new Date()),
           ...totals,
@@ -300,10 +376,69 @@ const updateInvoice = async (req, res, next) => {
     }
     const targetOrgId = existingInvoice.organization_id;
 
+    // Resolve Customer
+    let finalCustomerId = data.customer_id;
+    let customerToCreate = null;
+
+    if (!finalCustomerId && data.customer) {
+      const trimmedEmail = data.customer.email?.trim() || null;
+      const trimmedPhone = data.customer.phone?.trim() || null;
+      const trimmedGstin = data.customer.GSTIN?.trim() || null;
+      const trimmedName = data.customer.customer_name?.trim() || null;
+      const trimmedCompany = data.customer.company_name?.trim() || null;
+
+      let existingCustomer = null;
+      if (trimmedEmail) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: { email: trimmedEmail, organization_id: targetOrgId }
+        });
+      }
+      if (!existingCustomer && trimmedPhone) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: { phone: trimmedPhone, organization_id: targetOrgId }
+        });
+      }
+      if (!existingCustomer && trimmedGstin) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: { GSTIN: trimmedGstin, organization_id: targetOrgId }
+        });
+      }
+      if (!existingCustomer && trimmedName && trimmedCompany) {
+        existingCustomer = await _server.prisma.customer.findFirst({
+          where: { customer_name: trimmedName, company_name: trimmedCompany, organization_id: targetOrgId }
+        });
+      }
+
+      if (existingCustomer) {
+        finalCustomerId = existingCustomer.id;
+      } else {
+        customerToCreate = {
+          organization_id: targetOrgId,
+          customer_name: trimmedName || 'Unknown Client',
+          company_name: trimmedCompany,
+          email: trimmedEmail,
+          phone: trimmedPhone,
+          billing_address: data.customer.billing_address?.trim() || null,
+          shipping_address: data.customer.shipping_address?.trim() || null,
+          city: data.customer.city?.trim() || null,
+          state: data.customer.state?.trim() || null,
+          country: data.customer.country?.trim() || 'India',
+          pincode: data.customer.pincode?.trim() || null,
+          GSTIN: trimmedGstin,
+          PAN: data.customer.PAN?.trim() || null,
+          notes: data.customer.notes?.trim() || null
+        };
+      }
+    }
+
+    if (!finalCustomerId && !customerToCreate) {
+      finalCustomerId = existingInvoice.customer_id;
+    }
+
     // Backend-side calculation engine
     const { calculatedItems, totals } = await (0, _invoice2.calculateInvoice)(
       targetOrgId,
-      data.customer_id,
+      finalCustomerId || data.customer,
       data.items,
       data.tax_type
     );
@@ -311,6 +446,14 @@ const updateInvoice = async (req, res, next) => {
     // Use provided Invoice Number or keep existing
     const invoiceNumber = data.invoice_number || existingInvoice.invoice_number;
     const result = await _server.prisma.$transaction(async (tx) => {
+      let customerIdForInvoice = finalCustomerId;
+      if (!customerIdForInvoice && customerToCreate) {
+        const createdCust = await tx.customer.create({
+          data: customerToCreate
+        });
+        customerIdForInvoice = createdCust.id;
+      }
+
       // Delete existing line items
       await tx.invoiceItem.deleteMany({
         where: {
@@ -325,15 +468,20 @@ const updateInvoice = async (req, res, next) => {
         },
         data: {
           invoice_number: invoiceNumber,
-          type: data.type || 'SALES',
-          customer_id: data.customer_id,
-          invoice_date: data.invoice_date ? new Date(data.invoice_date) : new Date(),
-          due_date: data.due_date ? new Date(data.due_date) : (data.invoice_date ? new Date(data.invoice_date) : new Date()),
+          type: data.type || existingInvoice.type || 'SALES',
+          customer_id: customerIdForInvoice,
+          invoice_date: data.invoice_date ? new Date(data.invoice_date) : existingInvoice.invoice_date,
+          due_date: data.due_date ? new Date(data.due_date) : (data.invoice_date ? new Date(data.invoice_date) : existingInvoice.due_date),
           ...totals,
-          notes: data.notes,
-          terms: data.terms,
-          payment_details: data.payment_details,
-          status: data.status || 'DRAFT',
+          notes: data.notes !== undefined ? data.notes : existingInvoice.notes,
+          terms: data.terms !== undefined ? data.terms : existingInvoice.terms,
+          payment_details: data.payment_details !== undefined ? data.payment_details : existingInvoice.payment_details,
+          document_ref_no: data.document_ref_no !== undefined ? data.document_ref_no : existingInvoice.document_ref_no,
+          document_date: data.document_date ? new Date(data.document_date) : (data.document_date === null ? null : existingInvoice.document_date),
+          category: data.category !== undefined ? data.category : existingInvoice.category,
+          document_type_code: data.document_type_code !== undefined ? data.document_type_code : existingInvoice.document_type_code,
+          irn: data.irn !== undefined ? data.irn : existingInvoice.irn,
+          status: data.status || existingInvoice.status,
           items: {
             create: calculatedItems
           }

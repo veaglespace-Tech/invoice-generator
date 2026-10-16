@@ -10,30 +10,41 @@ var _server = require('../server');
 function _interopRequireDefault(e) {
   return e && e.__esModule ? e : { default: e };
 }
-const calculateInvoice = async (organizationId, customerId, items, taxType = 'AUTO') => {
-  // Fetch org and customer to determine state for GST
-  const [org, customer] = await Promise.all([
-    _server.prisma.organization.findUnique({
-      where: {
-        id: organizationId
-      }
-    }),
-    _server.prisma.customer.findUnique({
-      where: {
-        id: customerId
-      }
-    })
-  ]);
-  if (!org || !customer) {
-    throw new Error('Organization or Customer not found');
+const calculateInvoice = async (organizationId, customerOrId, items, taxType = 'AUTO') => {
+  const org = await _server.prisma.organization.findUnique({
+    where: {
+      id: organizationId
+    }
+  });
+  if (!org) {
+    throw new Error('Organization not found');
   }
+
+  let customer = null;
+  if (typeof customerOrId === 'string') {
+    customer = await _server.prisma.customer.findUnique({
+      where: {
+        id: customerOrId
+      }
+    });
+    if (!customer) {
+      throw new Error('Customer not found');
+    }
+  } else if (customerOrId && typeof customerOrId === 'object') {
+    customer = customerOrId;
+  } else {
+    throw new Error('Customer details or ID required');
+  }
+
   let isInterState = false;
   if (taxType === 'IGST') {
     isInterState = true;
   } else if (taxType === 'CGST_SGST') {
     isInterState = false;
   } else {
-    isInterState = org.state?.toLowerCase() !== customer.state?.toLowerCase();
+    const orgState = (org.state || '').trim().toLowerCase();
+    const custState = (customer.state || '').trim().toLowerCase();
+    isInterState = orgState !== '' && custState !== '' && orgState !== custState;
   }
   let subtotal = new _decimal.default(0);
   let totalDiscount = new _decimal.default(0);

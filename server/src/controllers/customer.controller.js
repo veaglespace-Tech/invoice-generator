@@ -132,18 +132,70 @@ const createCustomer = async (req, res, next) => {
       }
     }
 
-    if (data.email) {
-      const existingCustomer = await _server.prisma.customer.findFirst({
+    // Prevent duplicate customers
+    const trimmedEmail = data.email?.trim() || null;
+    const trimmedPhone = data.phone?.trim() || null;
+    const trimmedGstin = data.GSTIN?.trim() || null;
+    const trimmedName = data.customer_name?.trim() || null;
+    const trimmedCompany = data.company_name?.trim() || null;
+
+    if (trimmedEmail) {
+      const existing = await _server.prisma.customer.findFirst({
         where: {
-          email: data.email,
+          email: trimmedEmail,
           organization_id: targetOrgId
         }
       });
-      
-      if (existingCustomer) {
+      if (existing) {
         return res.status(400).json({
           success: false,
-          message: 'A customer with this email already exists in your organization'
+          message: `A customer with this email (${trimmedEmail}) already exists (${existing.customer_name})`
+        });
+      }
+    }
+
+    if (trimmedPhone) {
+      const existing = await _server.prisma.customer.findFirst({
+        where: {
+          phone: trimmedPhone,
+          organization_id: targetOrgId
+        }
+      });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: `A customer with this phone number (${trimmedPhone}) already exists (${existing.customer_name})`
+        });
+      }
+    }
+
+    if (trimmedGstin) {
+      const existing = await _server.prisma.customer.findFirst({
+        where: {
+          GSTIN: trimmedGstin,
+          organization_id: targetOrgId
+        }
+      });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: `A customer with this GSTIN (${trimmedGstin}) already exists (${existing.customer_name})`
+        });
+      }
+    }
+
+    if (trimmedName && trimmedCompany) {
+      const existing = await _server.prisma.customer.findFirst({
+        where: {
+          customer_name: trimmedName,
+          company_name: trimmedCompany,
+          organization_id: targetOrgId
+        }
+      });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: `A customer record for "${trimmedName}" from "${trimmedCompany}" already exists`
         });
       }
     }
@@ -151,12 +203,17 @@ const createCustomer = async (req, res, next) => {
     const customer = await _server.prisma.customer.create({
       data: {
         ...data,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        GSTIN: trimmedGstin,
+        customer_name: trimmedName,
+        company_name: trimmedCompany,
         organization_id: targetOrgId
       }
     });
     res.status(201).json({
       success: true,
-      message: 'Customer created',
+      message: 'Customer created successfully',
       data: customer
     });
   } catch (error) {
@@ -184,10 +241,14 @@ const updateCustomer = async (req, res, next) => {
       });
     }
 
-    if (data.email && data.email !== existingCustomer.email) {
+    const trimmedEmail = data.email !== undefined ? (data.email?.trim() || null) : undefined;
+    const trimmedPhone = data.phone !== undefined ? (data.phone?.trim() || null) : undefined;
+    const trimmedGstin = data.GSTIN !== undefined ? (data.GSTIN?.trim() || null) : undefined;
+
+    if (trimmedEmail && trimmedEmail !== existingCustomer.email) {
       const emailExists = await _server.prisma.customer.findFirst({
         where: {
-          email: data.email,
+          email: trimmedEmail,
           organization_id: existingCustomer.organization_id,
           id: {
             not: id
@@ -197,7 +258,43 @@ const updateCustomer = async (req, res, next) => {
       if (emailExists) {
         return res.status(400).json({
           success: false,
-          message: 'A customer with this email already exists in your organization'
+          message: `A customer with this email (${trimmedEmail}) already exists (${emailExists.customer_name})`
+        });
+      }
+    }
+
+    if (trimmedPhone && trimmedPhone !== existingCustomer.phone) {
+      const phoneExists = await _server.prisma.customer.findFirst({
+        where: {
+          phone: trimmedPhone,
+          organization_id: existingCustomer.organization_id,
+          id: {
+            not: id
+          }
+        }
+      });
+      if (phoneExists) {
+        return res.status(400).json({
+          success: false,
+          message: `A customer with this phone number (${trimmedPhone}) already exists (${phoneExists.customer_name})`
+        });
+      }
+    }
+
+    if (trimmedGstin && trimmedGstin !== existingCustomer.GSTIN) {
+      const gstinExists = await _server.prisma.customer.findFirst({
+        where: {
+          GSTIN: trimmedGstin,
+          organization_id: existingCustomer.organization_id,
+          id: {
+            not: id
+          }
+        }
+      });
+      if (gstinExists) {
+        return res.status(400).json({
+          success: false,
+          message: `A customer with this GSTIN (${trimmedGstin}) already exists (${gstinExists.customer_name})`
         });
       }
     }

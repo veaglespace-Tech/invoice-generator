@@ -29,23 +29,13 @@ export async function fetchApi(endpoint, options = {}) {
     const response = await fetch(fullUrl, config);
     const result = await response.json();
     if (!response.ok) {
-      let errorMessage = result.message || 'API Request failed';
-      if (result.errors) {
-        if (Array.isArray(result.errors)) {
-          const detailedErrors = result.errors
-            .map((e) => {
-              if (typeof e === 'object' && e.message) {
-                return e.path ? `${e.path}: ${e.message}` : e.message;
-              }
-              return String(e);
-            })
-            .join(', ');
-          if (detailedErrors) {
-            errorMessage += ': ' + detailedErrors;
-          }
-        } else {
-          errorMessage += ': ' + JSON.stringify(result.errors);
-        }
+      let errorMessage = result.message || 'API request failed';
+      if (result.message === 'Validation Error' && Array.isArray(result.errors) && result.errors.length > 0) {
+        const firstError = result.errors[0];
+        errorMessage = typeof firstError === 'object' && firstError.message ? firstError.message : String(firstError);
+      } else if (!result.message && Array.isArray(result.errors) && result.errors.length > 0) {
+        const firstError = result.errors[0];
+        errorMessage = typeof firstError === 'object' && firstError.message ? firstError.message : String(firstError);
       }
       throw new Error(errorMessage);
     }

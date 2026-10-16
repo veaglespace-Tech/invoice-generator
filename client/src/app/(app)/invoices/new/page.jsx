@@ -290,75 +290,123 @@ export default function InvoiceGenerator() {
       setIsDownloading(false);
     }
   };
+  const validateInvoiceInputs = () => {
+    if (customerMode === 'new') {
+      if (!invoiceData.clientName || !invoiceData.clientName.trim()) {
+        toast.error(invoiceData.type === 'PURCHASE' ? 'Please enter a vendor name.' : 'Please enter customer name.');
+        return false;
+      }
+      if (invoiceData.clientEmail && invoiceData.clientEmail.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(invoiceData.clientEmail.trim())) {
+          toast.error('Please enter a valid customer email address.');
+          return false;
+        }
+      }
+    } else {
+      if (!invoiceData.customerId) {
+        toast.error(invoiceData.type === 'PURCHASE' ? 'Please select an existing vendor.' : 'Please select an existing customer from the dropdown.');
+        return false;
+      }
+    }
+
+    if (!items || items.length === 0) {
+      toast.error('Please add at least one item to the invoice.');
+      return false;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.description || !item.description.trim()) {
+        toast.error(`Please enter a description for Item #${i + 1}.`);
+        return false;
+      }
+      const qty = Number(item.qty);
+      if (isNaN(qty) || qty <= 0) {
+        toast.error(`Quantity must be greater than 0 for Item #${i + 1}.`);
+        return false;
+      }
+      const rate = Number(item.rate);
+      if (item.rate === '' || item.rate === null || isNaN(rate) || rate < 0) {
+        toast.error(`Please enter a valid rate for Item #${i + 1}.`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const buildInvoicePayload = () => {
+    const subtotalCalc = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
+    const totalDiscountAmount = invoiceData.discountType === 'percentage'
+      ? (subtotalCalc * invoiceData.discount) / 100
+      : Number(invoiceData.discount);
+
+    const formattedItems = items.map((item) => ({
+      description: item.description.trim(),
+      hsn_code: item.hsn || invoiceData.hsnCode || null,
+      quantity: Number(item.qty),
+      rate: Number(item.rate),
+      tax_rate: Number(invoiceData.taxRate) || 0,
+      discount: totalDiscountAmount / (items.length || 1)
+    }));
+
+    const payload = {
+      type: invoiceData.type,
+      invoice_number: invoiceData.invoiceNumber || null,
+      invoice_date: invoiceData.issueDate,
+      due_date: invoiceData.dueDate,
+      notes: invoiceData.notes,
+      terms: invoiceData.termsConditions || 'Thank you for your business.',
+      document_ref_no: invoiceData.documentRef || null,
+      document_date: invoiceData.documentDate || null,
+      category: invoiceData.category || null,
+      document_type_code: invoiceData.documentType || null,
+      irn: invoiceData.irn || null,
+      tax_type: invoiceData.taxType,
+      status: invoiceData.status,
+      payment_details: invoiceData.paymentDetails || null,
+      items: formattedItems
+    };
+
+    if (customerMode === 'existing' && invoiceData.customerId) {
+      payload.customer_id = invoiceData.customerId;
+    } else {
+      payload.customer = {
+        customer_name: (invoiceData.clientName || 'Unknown Client').trim(),
+        company_name: invoiceData.clientCompany?.trim() || null,
+        email: invoiceData.clientEmail?.trim() || null,
+        phone: invoiceData.clientPhone?.trim() || null,
+        billing_address: invoiceData.clientAddress?.trim() || null,
+        city: invoiceData.clientCity?.trim() || null,
+        state: invoiceData.clientState?.trim() || null,
+        country: 'India',
+        pincode: invoiceData.clientPincode?.trim() || null,
+        GSTIN: invoiceData.clientGst?.trim() || null,
+        PAN: invoiceData.clientPan?.trim() || null
+      };
+    }
+
+    return payload;
+  };
+
   const handleShare = async () => {
     if (!invoiceData.clientEmail) {
       toast.error('Please enter a customer email address first.');
       return;
     }
+    if (!validateInvoiceInputs()) return;
+
     setIsDownloading(true);
     try {
-      let customerId = invoiceData.customerId;
-      
-      if (customerMode === 'new') {
-        const customerRes = await fetchApi('/customers', {
-          method: 'POST',
-          data: {
-            customer_name: invoiceData.clientName || 'Unknown Client',
-            company_name: invoiceData.clientCompany,
-            email: invoiceData.clientEmail,
-            phone: invoiceData.clientPhone,
-            billing_address: invoiceData.clientAddress
-          }
-        });
-        if (!customerRes.success || !customerRes.data) {
-          throw new Error('Failed to create customer record for invoice');
-        }
-        customerId = customerRes.data.id;
-      } else if (!customerId) {
-        alert('Please select an existing customer from the dropdown.');
-        setIsDownloading(false);
-        return;
-      }
-
-      // Calculations
-      const subtotalCalc = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
-      const totalDiscountAmount = invoiceData.discountType === 'percentage'
-        ? (subtotalCalc * invoiceData.discount) / 100
-        : Number(invoiceData.discount);
-
-      // 2. Format Items
-      const formattedItems = items.map((item) => ({
-        description: item.description || 'Item',
-        hsn_code: item.hsn || invoiceData.hsnCode || null,
-        quantity: item.qty,
-        rate: item.rate,
-        tax_rate: invoiceData.taxRate,
-        discount: totalDiscountAmount / (items.length || 1)
-      }));
-
-      // 3. Create Invoice
+      const payload = buildInvoicePayload();
       const invoiceRes = await fetchApi('/invoices', {
         method: 'POST',
-        data: {
-          customer_id: customerId,
-          type: invoiceData.type,
-          invoice_number: invoiceData.invoiceNumber,
-          invoice_date: invoiceData.issueDate,
-          due_date: invoiceData.dueDate,
-          notes: invoiceData.notes,
-          terms: 'Thank you for your business.',
-          document_ref_no: invoiceData.documentRef || null,
-          document_date: invoiceData.documentDate || null,
-          category: invoiceData.category || null,
-          document_type_code: invoiceData.documentType || null,
-          irn: invoiceData.irn || null,
-          tax_type: invoiceData.taxType,
-          status: invoiceData.status,
-          items: formattedItems
-        }
+        data: payload
       });
+
       if (invoiceRes.success && invoiceRes.data?.id) {
-        // 4. Generate PDF base64
+        // Generate PDF base64
         const element = document.getElementById('invoice-preview');
         let pdfBase64 = '';
         if (element) {
@@ -381,7 +429,7 @@ export default function InvoiceGenerator() {
           pdfBase64 = pdf.output('datauristring').split(',')[1];
         }
 
-        // 5. Send Email
+        // Send Email
         const sendRes = await fetchApi(`/invoices/${invoiceRes.data.id}/send`, {
           method: 'POST',
           data: { pdfBase64 }
@@ -390,87 +438,36 @@ export default function InvoiceGenerator() {
           toast.success('Invoice saved and sent successfully to the registered email!');
           window.location.href = '/invoices';
         } else {
-          toast.error('Invoice saved, but failed to send email: ' + sendRes.message);
+          toast.error('Invoice saved, but failed to send email: ' + (sendRes.message || ''));
           window.location.href = '/invoices';
         }
       } else {
-        throw new Error('Failed to create invoice');
+        throw new Error(invoiceRes.message || 'Failed to create invoice');
       }
     } catch (err) {
       console.error('Failed to process share', err);
-      toast.error('Failed to share invoice via email. Please check console for details.');
+      toast.error(err.message || 'Failed to share invoice via email.');
     } finally {
       setIsDownloading(false);
     }
   };
+
   const handleSave = async () => {
+    if (!validateInvoiceInputs()) return;
+
     setIsSaving(true);
     try {
-      let customerId = invoiceData.customerId;
-      
-      if (customerMode === 'new' || (invoiceData.type === 'EXPENSE' && !customerId)) {
-        const defaultName = invoiceData.type === 'EXPENSE' ? 'Miscellaneous Expense' : 'Unknown Client';
-        const customerRes = await fetchApi('/customers', {
-          method: 'POST',
-          data: {
-            customer_name: invoiceData.clientName || defaultName,
-            company_name: invoiceData.clientCompany,
-            email: invoiceData.clientEmail,
-            phone: invoiceData.clientPhone,
-            billing_address: invoiceData.clientAddress
-          }
-        });
-        if (!customerRes.success || !customerRes.data) {
-          throw new Error(customerRes.message || 'Failed to create customer record for invoice');
-        }
-        customerId = customerRes.data.id;
-      } else if (!customerId) {
-        toast.error(invoiceData.type === 'PURCHASE' ? 'Please select a vendor.' : 'Please select an existing customer from the dropdown.');
-        setIsSaving(false);
-        return;
-      }
-
-      // Calculations
-      const subtotalCalc = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
-      const totalDiscountAmount = invoiceData.discountType === 'percentage'
-        ? (subtotalCalc * invoiceData.discount) / 100
-        : Number(invoiceData.discount);
-
-      // 2. Format Items
-      const formattedItems = items.map((item) => ({
-        description: item.description || 'Item',
-        hsn_code: item.hsn || invoiceData.hsnCode || null,
-        quantity: item.qty,
-        rate: item.rate,
-        tax_rate: invoiceData.taxRate,
-        discount: totalDiscountAmount / (items.length || 1) // Distribute flat discount roughly
-      }));
-
-      // 3. Create Invoice
+      const payload = buildInvoicePayload();
       const invoiceRes = await fetchApi('/invoices', {
         method: 'POST',
-        data: {
-          customer_id: customerId,
-          type: invoiceData.type,
-          invoice_number: invoiceData.invoiceNumber,
-          invoice_date: invoiceData.issueDate,
-          due_date: invoiceData.dueDate,
-          notes: invoiceData.notes,
-          terms: 'Thank you for your business.',
-          document_ref_no: invoiceData.documentRef || null,
-          document_date: invoiceData.documentDate || null,
-          category: invoiceData.category || null,
-          document_type_code: invoiceData.documentType || null,
-          irn: invoiceData.irn || null,
-          tax_type: invoiceData.taxType,
-          status: invoiceData.status,
-          payment_details: invoiceData.paymentDetails || null,
-          items: formattedItems
-        }
+        data: payload
       });
+
       if (invoiceRes.success) {
         toast.success('Invoice saved successfully!');
         window.location.href = '/invoices';
+      } else {
+        throw new Error(invoiceRes.message || 'Failed to save invoice.');
       }
     } catch (error) {
       console.error('Save error', error);
@@ -1502,7 +1499,7 @@ export default function InvoiceGenerator() {
                   </div>
                   <div className="flex">
                     <div className="w-24">Address:</div>
-                    <div className="flex-1 whitespace-pre-wrap">
+                    <div className="flex-1 whitespace-pre-wrap break-words">
                       {invoiceData.clientAddress}
                     </div>
                   </div>

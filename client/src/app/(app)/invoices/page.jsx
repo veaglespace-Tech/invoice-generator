@@ -8,7 +8,10 @@ import {
   Filter,
   MoreHorizontal,
   Loader2,
-  Download
+  Download,
+  Eye,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -483,32 +486,28 @@ export default function InvoicesList() {
                       className="py-3 px-4 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="dropdown dropdown-end">
-                        <div
-                          tabIndex={0}
-                          role="button"
-                          className="btn btn-ghost btn-sm btn-square text-slate-700 dark:text-slate-300"
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/invoices/${invoice.id}`}
+                          title="View Invoice"
+                          className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors inline-flex items-center justify-center"
                         >
-                          <MoreHorizontal className="w-5 h-5" />
-                        </div>
-                        <ul
-                          tabIndex={0}
-                          className="dropdown-content z-[10] menu p-2 shadow bg-white dark:bg-slate-800 rounded-box w-36 border border-slate-300 dark:border-slate-700"
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <Link
+                          href={`/invoices/${invoice.id}/edit`}
+                          title="Edit Invoice"
+                          className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors inline-flex items-center justify-center"
                         >
-                          <li>
-                            <Link href={`/invoices/${invoice.id}`}>
-                              View Details
-                            </Link>
-                          </li>
-                          <li>
-                            <button
-                              onClick={() => handleDelete(invoice.id)}
-                              className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                              Delete
-                            </button>
-                          </li>
-                        </ul>
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(invoice.id)}
+                          title="Delete Invoice"
+                          className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors inline-flex items-center justify-center"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

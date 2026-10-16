@@ -14,7 +14,7 @@ model Organization {
   email           String    @unique
   phone           String?
   fax             String?
-  address         String?
+  address         String?   @db.Text
   city            String?
   state           String?
   country         String?
@@ -144,15 +144,15 @@ model Customer {
   company_name    String?
   email           String?
   phone           String?
-  billing_address String?
-  shipping_address String?
+  billing_address String?   @db.Text
+  shipping_address String?  @db.Text
   city            String?
   state           String?
   country         String?
   pincode         String?
   GSTIN           String?
   PAN             String?
-  notes           String?
+  notes           String?   @db.Text
   status          CustomerStatus @default(ACTIVE)
   is_deleted      Boolean   @default(false)
   deleted_at      DateTime?
