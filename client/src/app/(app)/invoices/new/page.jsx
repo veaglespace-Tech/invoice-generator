@@ -355,7 +355,7 @@ export default function InvoiceGenerator() {
       type: invoiceData.type,
       invoice_number: invoiceData.invoiceNumber || null,
       invoice_date: invoiceData.issueDate,
-      due_date: invoiceData.dueDate,
+      due_date: invoiceData.dueDate ? invoiceData.dueDate : null,
       notes: invoiceData.notes,
       terms: invoiceData.termsConditions || 'Thank you for your business.',
       document_ref_no: invoiceData.documentRef || null,
@@ -662,12 +662,23 @@ export default function InvoiceGenerator() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-500">
-                      Due Date
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-slate-500">
+                        Due Date
+                      </label>
+                      {invoiceData.dueDate && (
+                        <button
+                          type="button"
+                          onClick={() => updateData('dueDate', '')}
+                          className="text-[11px] text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-medium"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="date"
-                      value={invoiceData.dueDate}
+                      value={invoiceData.dueDate || ''}
                       onChange={(e) => updateData('dueDate', e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-400 dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                     />
@@ -1391,7 +1402,7 @@ export default function InvoiceGenerator() {
                           ? new Date(invoiceData.dueDate).toLocaleDateString(
                               'en-GB'
                             )
-                          : ''}
+                          : '-'}
                       </span>
                     </div>
                     {orgProfile?.settings?.field_visibility?.category && (

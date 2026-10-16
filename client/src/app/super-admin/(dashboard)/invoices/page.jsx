@@ -163,7 +163,7 @@ export default function SuperAdminInvoices() {
         'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
         'Amount': Number(inv.grand_total).toFixed(2),
         'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
-        'Due Date': new Date(inv.due_date).toLocaleDateString(),
+        'Due Date': inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A',
         'Status': inv.status
       }));
 

@@ -436,7 +436,7 @@ export default function InvoicePrintView() {
                             ? new Date(invoice.due_date).toLocaleDateString(
                                 'en-GB'
                               )
-                            : ''}
+                            : '-'}
                       </span>
                     </div>
                     {invoice.organization.settings?.field_visibility

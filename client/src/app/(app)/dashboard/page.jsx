@@ -93,7 +93,7 @@ export default function Dashboard() {
           'Item Count': itemCount,
           'Amount': Number(inv.grand_total).toFixed(2),
           'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
-          'Due Date': new Date(inv.due_date).toLocaleDateString(),
+          'Due Date': inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A',
           'Status': inv.status
         };
       });

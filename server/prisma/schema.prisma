@@ -210,7 +210,7 @@ model Invoice {
   customer_id     String
   customer        Customer  @relation(fields: [customer_id], references: [id])
   invoice_date    DateTime
-  due_date        DateTime
+  due_date        DateTime?
   document_ref_no String?
   document_date   DateTime?
   category        String?

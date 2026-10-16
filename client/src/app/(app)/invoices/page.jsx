@@ -185,7 +185,7 @@ export default function InvoicesList() {
         'GSTIN': inv.customer?.GSTIN || '',
         'Amount': Number(inv.grand_total).toFixed(2),
         'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
-        'Due Date': new Date(inv.due_date).toLocaleDateString(),
+        'Due Date': inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A',
         'Status': inv.status
       }));
 
@@ -476,7 +476,7 @@ export default function InvoicesList() {
                       {new Date(invoice.invoice_date).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                      {new Date(invoice.due_date).toLocaleDateString()}
+                      {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                       <select
