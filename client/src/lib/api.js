@@ -27,13 +27,21 @@ export async function fetchApi(endpoint, options = {}) {
     const fullUrl = `${API_BASE_URL}${endpoint}`;
     console.log('Fetching:', fullUrl, config.method);
     const response = await fetch(fullUrl, config);
-    const result = await response.json();
+    const contentType = response.headers.get('content-type') || '';
+    let result = null;
+    if (contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      result = { message: text && text.length < 200 ? text : `Server returned status ${response.status} (${response.statusText || 'Error'})` };
+    }
+
     if (!response.ok) {
-      let errorMessage = result.message || 'API request failed';
-      if (result.message === 'Validation Error' && Array.isArray(result.errors) && result.errors.length > 0) {
+      let errorMessage = result?.message || `Request failed with status ${response.status}`;
+      if (result?.message === 'Validation Error' && Array.isArray(result.errors) && result.errors.length > 0) {
         const firstError = result.errors[0];
         errorMessage = typeof firstError === 'object' && firstError.message ? firstError.message : String(firstError);
-      } else if (!result.message && Array.isArray(result.errors) && result.errors.length > 0) {
+      } else if (!result?.message && Array.isArray(result?.errors) && result.errors.length > 0) {
         const firstError = result.errors[0];
         errorMessage = typeof firstError === 'object' && firstError.message ? firstError.message : String(firstError);
       }

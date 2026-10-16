@@ -30,6 +30,11 @@ router.get(
   (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'STAFF']),
   _invoice.getInvoiceById
 );
+router.put(
+  '/:id',
+  (0, _rbac.requireRole)(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'STAFF']),
+  _invoice.updateInvoice
+);
 
 router.post(
   '/:id/send',
