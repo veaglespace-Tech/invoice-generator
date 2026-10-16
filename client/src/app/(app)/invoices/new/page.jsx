@@ -757,6 +757,7 @@ export default function InvoiceGenerator() {
                         setCustomerMode('new');
                         setInvoiceData((prev) => ({
                           ...prev,
+                          customerId: '',
                           clientName: '',
                           clientCompany: '',
                           clientEmail: '',
@@ -778,6 +779,7 @@ export default function InvoiceGenerator() {
                         setCustomerMode('existing');
                         setInvoiceData((prev) => ({
                           ...prev,
+                          customerId: '',
                           clientName: '',
                           clientCompany: '',
                           clientEmail: '',

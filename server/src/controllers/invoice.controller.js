@@ -232,63 +232,51 @@ const createInvoice = async (req, res, next) => {
       const trimmedGstin = data.customer.GSTIN?.trim() || null;
       const trimmedName = data.customer.customer_name?.trim() || null;
       const trimmedCompany = data.customer.company_name?.trim() || null;
+      const trimmedAddress = data.customer.billing_address?.trim() || null;
 
+      // Duplicate match rule: ONLY when name, mobile no, email, AND address all match simultaneously
+      // "jr invoice genrate kartana name , mobile no , emaild, address . jeva he sagle ek sobt same nightil tevach entry nhi padli pahijhe db maddhe"
       let existingCustomer = null;
-      if (trimmedEmail) {
-        existingCustomer = await _server.prisma.customer.findFirst({
+
+      const normStr = (val) => (val ? String(val).trim().replace(/\s+/g, ' ').toLowerCase() : '');
+      const normPhone = (val) => {
+        if (!val) return '';
+        const digits = String(val).replace(/\D/g, '');
+        return digits.length > 10 ? digits.slice(-10) : digits;
+      };
+
+      const targetName = normStr(trimmedName);
+      const targetPhone = normPhone(trimmedPhone);
+      const targetEmail = normStr(trimmedEmail);
+      const targetAddress = normStr(trimmedAddress);
+
+      if (targetName) {
+        const candidates = await _server.prisma.customer.findMany({
           where: {
-            email: trimmedEmail,
-            organization_id: targetOrgId
+            organization_id: targetOrgId,
+            is_deleted: false
           }
         });
-      }
-      if (!existingCustomer && trimmedPhone) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: {
-            phone: trimmedPhone,
-            organization_id: targetOrgId
-          }
-        });
-      }
-      if (!existingCustomer && trimmedGstin) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: {
-            GSTIN: trimmedGstin,
-            organization_id: targetOrgId
-          }
-        });
-      }
-      if (!existingCustomer && trimmedName && trimmedCompany) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: {
-            customer_name: trimmedName,
-            company_name: trimmedCompany,
-            organization_id: targetOrgId
-          }
+
+        existingCustomer = candidates.find((cust) => {
+          const custName = normStr(cust.customer_name);
+          const custPhone = normPhone(cust.phone);
+          const custEmail = normStr(cust.email);
+          const custAddress = normStr(cust.billing_address);
+
+          return (
+            custName === targetName &&
+            custPhone === targetPhone &&
+            custEmail === targetEmail &&
+            custAddress === targetAddress
+          );
         });
       }
 
       if (existingCustomer) {
+        // All 4 matched simultaneously -> Reuse existing customer, do NOT create a new entry in DB
         finalCustomerId = existingCustomer.id;
         const updateData = {};
-        if (data.customer.billing_address !== undefined && data.customer.billing_address !== null) {
-          updateData.billing_address = data.customer.billing_address.trim() || null;
-        }
-        if (data.customer.city !== undefined && data.customer.city !== null) {
-          updateData.city = data.customer.city.trim() || null;
-        }
-        if (data.customer.state !== undefined && data.customer.state !== null) {
-          updateData.state = data.customer.state.trim() || null;
-        }
-        if (data.customer.pincode !== undefined && data.customer.pincode !== null) {
-          updateData.pincode = data.customer.pincode.trim() || null;
-        }
-        if (trimmedPhone && !existingCustomer.phone) {
-          updateData.phone = trimmedPhone;
-        }
-        if (trimmedEmail && !existingCustomer.email) {
-          updateData.email = trimmedEmail;
-        }
         if (trimmedGstin && !existingCustomer.GSTIN) {
           updateData.GSTIN = trimmedGstin;
         }
@@ -305,13 +293,14 @@ const createInvoice = async (req, res, next) => {
           });
         }
       } else {
+        // Did not all match simultaneously -> Create new customer entry in DB
         customerToCreate = {
           organization_id: targetOrgId,
           customer_name: trimmedName || 'Unknown Client',
           company_name: trimmedCompany,
           email: trimmedEmail,
           phone: trimmedPhone,
-          billing_address: data.customer.billing_address?.trim() || null,
+          billing_address: trimmedAddress,
           shipping_address: data.customer.shipping_address?.trim() || null,
           city: data.customer.city?.trim() || null,
           state: data.customer.state?.trim() || null,
@@ -465,26 +454,42 @@ const updateInvoice = async (req, res, next) => {
       const trimmedGstin = data.customer.GSTIN?.trim() || null;
       const trimmedName = data.customer.customer_name?.trim() || null;
       const trimmedCompany = data.customer.company_name?.trim() || null;
+      const trimmedAddress = data.customer.billing_address?.trim() || null;
 
       let existingCustomer = null;
-      if (trimmedEmail) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: { email: trimmedEmail, organization_id: targetOrgId }
+
+      const normStr = (val) => (val ? String(val).trim().replace(/\s+/g, ' ').toLowerCase() : '');
+      const normPhone = (val) => {
+        if (!val) return '';
+        const digits = String(val).replace(/\D/g, '');
+        return digits.length > 10 ? digits.slice(-10) : digits;
+      };
+
+      const targetName = normStr(trimmedName);
+      const targetPhone = normPhone(trimmedPhone);
+      const targetEmail = normStr(trimmedEmail);
+      const targetAddress = normStr(trimmedAddress);
+
+      if (targetName) {
+        const candidates = await _server.prisma.customer.findMany({
+          where: {
+            organization_id: targetOrgId,
+            is_deleted: false
+          }
         });
-      }
-      if (!existingCustomer && trimmedPhone) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: { phone: trimmedPhone, organization_id: targetOrgId }
-        });
-      }
-      if (!existingCustomer && trimmedGstin) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: { GSTIN: trimmedGstin, organization_id: targetOrgId }
-        });
-      }
-      if (!existingCustomer && trimmedName && trimmedCompany) {
-        existingCustomer = await _server.prisma.customer.findFirst({
-          where: { customer_name: trimmedName, company_name: trimmedCompany, organization_id: targetOrgId }
+
+        existingCustomer = candidates.find((cust) => {
+          const custName = normStr(cust.customer_name);
+          const custPhone = normPhone(cust.phone);
+          const custEmail = normStr(cust.email);
+          const custAddress = normStr(cust.billing_address);
+
+          return (
+            custName === targetName &&
+            custPhone === targetPhone &&
+            custEmail === targetEmail &&
+            custAddress === targetAddress
+          );
         });
       }
 
@@ -497,7 +502,7 @@ const updateInvoice = async (req, res, next) => {
           company_name: trimmedCompany,
           email: trimmedEmail,
           phone: trimmedPhone,
-          billing_address: data.customer.billing_address?.trim() || null,
+          billing_address: trimmedAddress,
           shipping_address: data.customer.shipping_address?.trim() || null,
           city: data.customer.city?.trim() || null,
           state: data.customer.state?.trim() || null,
