@@ -176,7 +176,13 @@ export default function InvoicesList() {
       const exportData = filteredForExport.map((inv) => ({
         'Invoice Number': inv.invoice_number,
         'Type': inv.type || 'SALES',
-        'Client': inv.customer.company_name || inv.customer.customer_name,
+        'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+        'Phone': inv.customer?.phone || '',
+        'Address': inv.customer?.billing_address || '',
+        'City': inv.customer?.city || '',
+        'State': inv.customer?.state || '',
+        'Pincode': inv.customer?.pincode || '',
+        'GSTIN': inv.customer?.GSTIN || '',
         'Amount': Number(inv.grand_total).toFixed(2),
         'Invoice Date': new Date(inv.invoice_date).toLocaleDateString(),
         'Due Date': new Date(inv.due_date).toLocaleDateString(),
@@ -227,7 +233,13 @@ export default function InvoicesList() {
       ws['!cols'] = [
         { wch: 18 }, // Invoice Number
         { wch: 12 }, // Type
-        { wch: 30 }, // Client
+        { wch: 25 }, // Client
+        { wch: 15 }, // Phone
+        { wch: 30 }, // Address
+        { wch: 15 }, // City
+        { wch: 15 }, // State
+        { wch: 10 }, // Pincode
+        { wch: 18 }, // GSTIN
         { wch: 15 }, // Amount
         { wch: 15 }, // Invoice Date
         { wch: 15 }, // Due Date

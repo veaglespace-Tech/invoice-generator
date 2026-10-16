@@ -69,8 +69,18 @@ const getAllInvoices = async (req, res, next) => {
         include: {
           customer: {
             select: {
+              id: true,
               customer_name: true,
-              company_name: true
+              company_name: true,
+              email: true,
+              phone: true,
+              billing_address: true,
+              city: true,
+              state: true,
+              country: true,
+              pincode: true,
+              GSTIN: true,
+              PAN: true
             }
           },
           organization: {
@@ -260,6 +270,40 @@ const createInvoice = async (req, res, next) => {
 
       if (existingCustomer) {
         finalCustomerId = existingCustomer.id;
+        const updateData = {};
+        if (data.customer.billing_address !== undefined && data.customer.billing_address !== null) {
+          updateData.billing_address = data.customer.billing_address.trim() || null;
+        }
+        if (data.customer.city !== undefined && data.customer.city !== null) {
+          updateData.city = data.customer.city.trim() || null;
+        }
+        if (data.customer.state !== undefined && data.customer.state !== null) {
+          updateData.state = data.customer.state.trim() || null;
+        }
+        if (data.customer.pincode !== undefined && data.customer.pincode !== null) {
+          updateData.pincode = data.customer.pincode.trim() || null;
+        }
+        if (trimmedPhone && !existingCustomer.phone) {
+          updateData.phone = trimmedPhone;
+        }
+        if (trimmedEmail && !existingCustomer.email) {
+          updateData.email = trimmedEmail;
+        }
+        if (trimmedGstin && !existingCustomer.GSTIN) {
+          updateData.GSTIN = trimmedGstin;
+        }
+        if (data.customer.PAN && data.customer.PAN.trim() && !existingCustomer.PAN) {
+          updateData.PAN = data.customer.PAN.trim();
+        }
+        if (trimmedCompany && !existingCustomer.company_name) {
+          updateData.company_name = trimmedCompany;
+        }
+        if (Object.keys(updateData).length > 0) {
+          await _server.prisma.customer.update({
+            where: { id: existingCustomer.id },
+            data: updateData
+          });
+        }
       } else {
         customerToCreate = {
           organization_id: targetOrgId,
@@ -277,6 +321,41 @@ const createInvoice = async (req, res, next) => {
           PAN: data.customer.PAN?.trim() || null,
           notes: data.customer.notes?.trim() || null
         };
+      }
+    } else if (finalCustomerId && data.customer) {
+      const updateData = {};
+      if (data.customer.billing_address !== undefined && data.customer.billing_address !== null) {
+        updateData.billing_address = data.customer.billing_address.trim() || null;
+      }
+      if (data.customer.city !== undefined && data.customer.city !== null) {
+        updateData.city = data.customer.city.trim() || null;
+      }
+      if (data.customer.state !== undefined && data.customer.state !== null) {
+        updateData.state = data.customer.state.trim() || null;
+      }
+      if (data.customer.pincode !== undefined && data.customer.pincode !== null) {
+        updateData.pincode = data.customer.pincode.trim() || null;
+      }
+      if (data.customer.phone && data.customer.phone.trim()) {
+        updateData.phone = data.customer.phone.trim();
+      }
+      if (data.customer.email && data.customer.email.trim()) {
+        updateData.email = data.customer.email.trim();
+      }
+      if (data.customer.GSTIN && data.customer.GSTIN.trim()) {
+        updateData.GSTIN = data.customer.GSTIN.trim();
+      }
+      if (data.customer.PAN && data.customer.PAN.trim()) {
+        updateData.PAN = data.customer.PAN.trim();
+      }
+      if (data.customer.company_name && data.customer.company_name.trim()) {
+        updateData.company_name = data.customer.company_name.trim();
+      }
+      if (Object.keys(updateData).length > 0) {
+        await _server.prisma.customer.update({
+          where: { id: finalCustomerId },
+          data: updateData
+        });
       }
     }
 
@@ -433,6 +512,43 @@ const updateInvoice = async (req, res, next) => {
 
     if (!finalCustomerId && !customerToCreate) {
       finalCustomerId = existingInvoice.customer_id;
+    }
+
+    if (finalCustomerId && data.customer) {
+      const updateData = {};
+      if (data.customer.billing_address !== undefined && data.customer.billing_address !== null) {
+        updateData.billing_address = data.customer.billing_address.trim() || null;
+      }
+      if (data.customer.city !== undefined && data.customer.city !== null) {
+        updateData.city = data.customer.city.trim() || null;
+      }
+      if (data.customer.state !== undefined && data.customer.state !== null) {
+        updateData.state = data.customer.state.trim() || null;
+      }
+      if (data.customer.pincode !== undefined && data.customer.pincode !== null) {
+        updateData.pincode = data.customer.pincode.trim() || null;
+      }
+      if (data.customer.phone && data.customer.phone.trim()) {
+        updateData.phone = data.customer.phone.trim();
+      }
+      if (data.customer.email && data.customer.email.trim()) {
+        updateData.email = data.customer.email.trim();
+      }
+      if (data.customer.GSTIN && data.customer.GSTIN.trim()) {
+        updateData.GSTIN = data.customer.GSTIN.trim();
+      }
+      if (data.customer.PAN && data.customer.PAN.trim()) {
+        updateData.PAN = data.customer.PAN.trim();
+      }
+      if (data.customer.company_name && data.customer.company_name.trim()) {
+        updateData.company_name = data.customer.company_name.trim();
+      }
+      if (Object.keys(updateData).length > 0) {
+        await _server.prisma.customer.update({
+          where: { id: finalCustomerId },
+          data: updateData
+        });
+      }
     }
 
     // Backend-side calculation engine

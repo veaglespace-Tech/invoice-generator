@@ -71,8 +71,17 @@ const getReports = async (req, res, next) => {
       include: {
         customer: {
           select: {
+            id: true,
             customer_name: true,
             company_name: true,
+            email: true,
+            phone: true,
+            billing_address: true,
+            city: true,
+            state: true,
+            pincode: true,
+            GSTIN: true,
+            PAN: true
           }
         },
         items: true

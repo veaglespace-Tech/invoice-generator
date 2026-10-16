@@ -83,6 +83,12 @@ export default function Dashboard() {
           'Invoice Number': inv.invoice_number,
           'Type': inv.type || 'SALES',
           'Client': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+          'Phone': inv.customer?.phone || '',
+          'Address': inv.customer?.billing_address || '',
+          'City': inv.customer?.city || '',
+          'State': inv.customer?.state || '',
+          'Pincode': inv.customer?.pincode || '',
+          'GSTIN': inv.customer?.GSTIN || '',
           'Items': itemNames,
           'Item Count': itemCount,
           'Amount': Number(inv.grand_total).toFixed(2),
@@ -122,8 +128,14 @@ export default function Dashboard() {
       ws['!cols'] = [
         { wch: 18 }, // Invoice Number
         { wch: 12 }, // Type
-        { wch: 30 }, // Client
-        { wch: 40 }, // Items
+        { wch: 25 }, // Client
+        { wch: 15 }, // Phone
+        { wch: 30 }, // Address
+        { wch: 15 }, // City
+        { wch: 15 }, // State
+        { wch: 10 }, // Pincode
+        { wch: 18 }, // GSTIN
+        { wch: 35 }, // Items
         { wch: 12 }, // Item Count
         { wch: 15 }, // Amount
         { wch: 15 }, // Invoice Date

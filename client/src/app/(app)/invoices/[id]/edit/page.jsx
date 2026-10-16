@@ -432,7 +432,10 @@ export default function EditInvoicePage() {
 
     if (customerMode === 'existing' && invoiceData.customerId) {
       payload.customer_id = invoiceData.customerId;
-    } else {
+    }
+
+    // Always attach customer details so address, city, state, pincode, etc. get saved or updated
+    if (invoiceData.clientName || invoiceData.clientAddress || invoiceData.clientCity || invoiceData.clientPhone) {
       payload.customer = {
         customer_name: (invoiceData.clientName || 'Unknown Client').trim(),
         company_name: invoiceData.clientCompany?.trim() || null,

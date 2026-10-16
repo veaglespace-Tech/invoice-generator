@@ -73,6 +73,12 @@ export default function ReportsPage() {
           'Type': inv.displayType,
           'Invoice Number': inv.invoice_number,
           'Party Name': inv.customer?.company_name || inv.customer?.customer_name || 'N/A',
+          'Phone': inv.customer?.phone || '',
+          'Address': inv.customer?.billing_address || '',
+          'City': inv.customer?.city || '',
+          'State': inv.customer?.state || '',
+          'Pincode': inv.customer?.pincode || '',
+          'GSTIN': inv.customer?.GSTIN || '',
           'Items': itemNames,
           'Item Count': itemCount,
           'Amount': amount.toFixed(2),
@@ -89,6 +95,12 @@ export default function ReportsPage() {
           'Type': '',
           'Invoice Number': '',
           'Party Name': 'TOTAL',
+          'Phone': '',
+          'Address': '',
+          'City': '',
+          'State': '',
+          'Pincode': '',
+          'GSTIN': '',
           'Items': '',
           'Item Count': '',
           'Amount': totalAmount.toFixed(2),
@@ -103,8 +115,14 @@ export default function ReportsPage() {
           { wch: 12 }, // Date
           { wch: 12 }, // Type
           { wch: 18 }, // Invoice Number
-          { wch: 30 }, // Party Name
-          { wch: 40 }, // Items
+          { wch: 25 }, // Party Name
+          { wch: 15 }, // Phone
+          { wch: 30 }, // Address
+          { wch: 15 }, // City
+          { wch: 15 }, // State
+          { wch: 10 }, // Pincode
+          { wch: 18 }, // GSTIN
+          { wch: 35 }, // Items
           { wch: 12 }, // Item Count
           { wch: 15 }, // Amount
           { wch: 15 }  // Status
@@ -355,8 +373,15 @@ export default function ReportsPage() {
                               {inv.displayType}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
-                            {inv.customer?.company_name || inv.customer?.customer_name || 'N/A'}
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">
+                              {inv.customer?.company_name || inv.customer?.customer_name || 'N/A'}
+                            </div>
+                            {(inv.customer?.city || inv.customer?.state) && (
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                {[inv.customer?.city, inv.customer?.state].filter(Boolean).join(', ')}
+                              </div>
+                            )}
                           </td>
                           <td className="px-6 py-4 text-right font-medium text-slate-900 dark:text-slate-100">
                             ₹{Number(inv.grand_total).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
