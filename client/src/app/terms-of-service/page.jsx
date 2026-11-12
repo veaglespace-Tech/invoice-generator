@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
               <br />
               Pune, Maharashtra, India
               <br />
-              Phone/WhatsApp: +91 8237999101
+              Phone/WhatsApp: +91 92252 41608
             </p>
           </div>
         </div>

@@ -98,10 +98,10 @@ export default function ContactPage() {
                     Mon-Sat, 10am - 7pm
                   </p>
                   <a
-                    href="tel:+918237999101"
+                    href="tel:+919225241608"
                     className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
                   >
-                    +91 8237999101
+                    +91 92252 41608
                   </a>
                 </div>
               </div>
